@@ -1,0 +1,13 @@
+#cg dark00.bmp
+なにかの扉が
+
+#cg dark01.bmp
+ゆっくりと　音を立てて
+
+#cg dark02.bmp
+閉まった……
+
+#cg black.bmp
+バタム
+
+#end

@@ -1,0 +1,23 @@
+#cg scene_colde00.bmp
+#midi coldecot.mid
+「そこにいるのはだれ？」
+
+#cg scene_self00.bmp
+
+#cg scene_colde00.bmp
+「御遣い？　現象？
+
+「それともただの孤独かしら？
+
+「はやくいらっしゃい……
+
+#cg scene_colde01.bmp
+「凍てつかせてさしあげるわ」
+
+……
+
+…………
+
+…………―― See you next stage.
+
+#end
