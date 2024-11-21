@@ -35,7 +35,7 @@ const props = defineProps({
         speedX: [0.4, 0.8],
       },
       {
-        size: 5,
+        size: 6,
         count: 10,
         speedY: [0.3, 0.5],
         speedX: [0.5, 1],
@@ -90,7 +90,7 @@ class Snowflake {
 
 let snowflakes = [];
 
-const preRender = (snowflakes, duration = 5000, timestep = 16) => {
+const preRender = (snowflakes, duration = 5000, timestep = 8) => {
   // 计算需要预渲染的帧数
   const frames = Math.floor(duration / timestep);
 
@@ -109,8 +109,6 @@ const initCanvas = () => {
   const rect = parent.getBoundingClientRect();
   const dpr = window.devicePixelRatio || 1;
 
-  canvas.value.style.width = `${rect.width}px`;
-  canvas.value.style.height = `${rect.height}px`;
   canvas.value.width = rect.width * dpr;
   canvas.value.height = rect.height * dpr;
 

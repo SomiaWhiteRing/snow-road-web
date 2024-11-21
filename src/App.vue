@@ -8,6 +8,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
+import { assetManager } from "./services/assetManager";
 
 // 游戏窗口基础尺寸
 const BASE_WIDTH = 600;
@@ -32,6 +33,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener("resize", handleResize);
+  assetManager.clearAssets();
 });
 
 // 计算容器样式,保持600*400的比例
@@ -71,7 +73,6 @@ body,
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background-color: white;
 }
 
 .app-container {

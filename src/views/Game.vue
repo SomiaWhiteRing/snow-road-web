@@ -3,14 +3,14 @@
     <!-- 左侧场景区域 -->
     <div class="scene-area">
       <!-- 这里渲染雪景和敌人 -->
-      <img src="../assets/sprite/snow0.bmp" alt="scene" />
+      <img :src="useAsset('sprite/snow0.bmp')" alt="scene" />
       <SnowEffect />
     </div>
 
     <!-- 右侧状态区域 -->
     <div class="status-area">
       <div class="character">
-        <img src="../assets/sprite/self.bmp" alt="character" />
+        <img :src="useAsset('sprite/self.bmp')" alt="character" />
       </div>
 
       <div class="stats">
@@ -38,13 +38,24 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { useGameStore } from "../stores/game";
 import SnowEffect from "../components/SnowEffect.vue";
+import { assetManager } from "../services/assetManager";
+
 const gameStore = useGameStore();
+
+// 获取资产
+const useAsset = (path: string) => {
+  return assetManager.useAsset(path).value;
+};
 </script>
 
 <style lang="scss" scoped>
+body {
+  background: #fff;
+}
+
 .game-view {
   display: flex;
   width: 100%;
