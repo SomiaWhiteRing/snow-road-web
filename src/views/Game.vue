@@ -14,25 +14,28 @@
       </div>
 
       <div class="stats">
-        <div class="stat-line">進んだ距離: {{ gameStore.distance }}</div>
         <div class="stat-line">
-          LV {{ gameStore.level }} EXP:{{ gameStore.exp }}/{{
-            gameStore.nextExp
-          }}
+          {{ t("game.stats.distance") }}: {{ gameStore.distance }}
         </div>
         <div class="stat-line">
-          HP: {{ gameStore.hp }}/{{ gameStore.maxHp }}
+          {{ t("game.stats.level") }} {{ gameStore.level }}
+          {{ t("game.stats.exp") }}:{{ gameStore.exp }}/{{ gameStore.nextExp }}
+        </div>
+        <div class="stat-line">
+          {{ t("game.stats.hp") }}: {{ gameStore.hp }}/{{ gameStore.maxHp }}
         </div>
       </div>
 
       <div class="buttons buttons-1">
-        <button>進む</button>
+        <button>{{ t("game.actions.forward") }}</button>
       </div>
       <div class="buttons buttons-2">
-        <button>制御</button>
+        <button>{{ t("game.actions.control") }}</button>
       </div>
       <div class="buttons buttons-3">
-        <button>マッチ {{ gameStore.matches }}本</button>
+        <button>
+          {{ t("game.actions.matches", { count: gameStore.matches }) }}
+        </button>
       </div>
     </div>
   </div>
@@ -42,8 +45,10 @@
 import { useGameStore } from "../stores/game";
 import SnowEffect from "../components/SnowEffect.vue";
 import { assetManager } from "../services/assetManager";
+import { useI18n } from "vue-i18n";
 
 const gameStore = useGameStore();
+const { t } = useI18n();
 
 // 获取资产
 const useAsset = (path: string) => {

@@ -35,7 +35,7 @@
     </div>
 
     <!-- 游戏名称 -->
-    <div class="game-name">雪道</div>
+    <div class="game-name">{{ t("game.title") }}</div>
 
     <!-- 加载进度条和文本 -->
     <div class="loading-status">
@@ -50,11 +50,13 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 import { assetManager } from "../services/assetManager";
 import SnowEffect from "../components/SnowEffect.vue";
 
+const { t } = useI18n();
 const progress = ref(0);
-const loadingText = ref("正在检查资源...");
+const loadingText = ref(t("game.loading.checking"));
 const loaded = ref(false);
 const router = useRouter();
 
@@ -67,17 +69,17 @@ onMounted(async () => {
       return;
     }
 
-    loadingText.value = "正在加载游戏资源...";
+    loadingText.value = t("game.loading.loading");
     await assetManager.loadAllAssets((current, total) => {
       progress.value = Math.floor((current / total) * 100);
-      loadingText.value = `正在加载游戏资源... (${current}/${total})`;
+      loadingText.value = t("game.loading.progress", { current, total });
     });
 
     loadingText.value = "";
     loaded.value = true;
   } catch (error) {
     console.error("资产加载失败:", error);
-    loadingText.value = "资源加载失败，请刷新页面重试...";
+    loadingText.value = t("game.loading.error");
   }
 });
 </script>
