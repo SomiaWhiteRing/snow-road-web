@@ -4,6 +4,7 @@
     <div class="scene-area">
       <!-- 这里渲染雪景和敌人 -->
       <img src="../assets/sprite/snow0.bmp" alt="scene" />
+      <SnowEffect />
     </div>
 
     <!-- 右侧状态区域 -->
@@ -13,13 +14,15 @@
       </div>
 
       <div class="stats">
-        <div>進んだ距離: {{ gameStore.distance }}</div>
-        <div>
+        <div class="stat-line">進んだ距離: {{ gameStore.distance }}</div>
+        <div class="stat-line">
           LV {{ gameStore.level }} EXP:{{ gameStore.exp }}/{{
             gameStore.nextExp
           }}
         </div>
-        <div>HP: {{ gameStore.hp }}/{{ gameStore.maxHp }}</div>
+        <div class="stat-line">
+          HP: {{ gameStore.hp }}/{{ gameStore.maxHp }}
+        </div>
       </div>
 
       <div class="buttons buttons-1">
@@ -37,6 +40,7 @@
 
 <script setup>
 import { useGameStore } from "../stores/game";
+import SnowEffect from "../components/SnowEffect.vue";
 const gameStore = useGameStore();
 </script>
 
@@ -53,7 +57,9 @@ const gameStore = useGameStore();
 
   .scene-area {
     height: 100%;
+    width: 100%;
     padding-top: 10px;
+    position: relative;
   }
 
   .status-area {
@@ -75,11 +81,15 @@ const gameStore = useGameStore();
     .stats {
       position: absolute;
       left: 0;
-      top: 160px;
+      top: 170px;
       color: #fff;
-      line-height: 1.2;
-      font-size: 12px;
-      padding-left: 8px;
+
+      .stat-line {
+        line-height: 1;
+        margin-bottom: 2px;
+        height: 12px;
+        font-size: 12px;
+      }
     }
 
     .buttons {
