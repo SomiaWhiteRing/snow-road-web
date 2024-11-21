@@ -53,6 +53,11 @@ button {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
+  height: 24px;
+  min-width: 48px;
+  padding: 0 4px;
+  width: auto;
+  font-weight: bold;
 }
 
 button:active {
