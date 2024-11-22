@@ -27,12 +27,18 @@
       "@/*": [
         "src/*"
       ]
-    }
+    },
+    "typeRoots": [
+      "./node_modules/@types",
+      "./src/types"
+    ]
   },
   "include": [
     "src/**/*.ts",
     "src/**/*.d.ts",
     "src/**/*.tsx",
-    "src/**/*.vue"
+    "src/**/*.vue",
+    "src/types/**/*.ts",
+    "src/types/**/*.d.ts"
   ]
 }

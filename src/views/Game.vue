@@ -70,6 +70,7 @@
         </div>
       </template>
     </div>
+    <BackgroundMusic />
   </div>
 </template>
 
@@ -83,6 +84,7 @@ import EventMessage from "../components/EventMessage.vue";
 import { assetManager } from "../services/assetManager";
 import { useI18n } from "vue-i18n";
 import { createForwardService } from "../services/forwardService";
+import BackgroundMusic from "../components/BackgroundMusic.vue";
 
 const gameStore = useGameStore();
 const { t } = useI18n();

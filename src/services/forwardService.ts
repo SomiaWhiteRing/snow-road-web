@@ -1,6 +1,7 @@
 import { useGameStore } from '../stores/game'
 import { ENEMIES, BOSSES, type EnemyType } from '../types/enemies'
 import { type Composer } from 'vue-i18n'
+import { soundManager, SOUND } from '../services/soundManager'
 
 export type ForwardEventType = 'nothing' | 'thought' | 'shop' | 'inn' | 'save' | 'matches' | 'battle'
 
@@ -108,15 +109,18 @@ export class ForwardService {
     let rand = Math.random() * this.getTotalWeight()
 
     if ((rand -= EVENT_WEIGHTS.nothing) < 0) {
+      soundManager.playSound(SOUND.ZURL)
       return { type: 'nothing' }
     }
     if ((rand -= EVENT_WEIGHTS.thought) < 0) {
+      soundManager.playSound(SOUND.ZURL)
       return {
         type: 'thought',
         message: this.translateMessage('events.thought.default')
       }
     }
     if ((rand -= EVENT_WEIGHTS.shop) < 0) {
+      soundManager.playSound(SOUND.ZURL)
       return {
         type: 'shop',
         sprite: 'sprite/shop.png',
@@ -124,6 +128,7 @@ export class ForwardService {
       }
     }
     if ((rand -= EVENT_WEIGHTS.inn) < 0) {
+      soundManager.playSound(SOUND.ZURL)
       return {
         type: 'inn',
         sprite: 'sprite/inn.png',
@@ -135,6 +140,7 @@ export class ForwardService {
       }
     }
     if ((rand -= EVENT_WEIGHTS.save) < 0) {
+      soundManager.playSound(SOUND.ZURL)
       return {
         type: 'save',
         sprite: 'sprite/candle0.png',
@@ -147,6 +153,7 @@ export class ForwardService {
       }
     }
     if ((rand -= EVENT_WEIGHTS.matches) < 0) {
+      soundManager.playSound(SOUND.POPON)
       return {
         type: 'matches',
         sprite: 'sprite/chas0.png',
@@ -157,6 +164,7 @@ export class ForwardService {
       }
     }
     if ((rand -= EVENT_WEIGHTS.matchesExtra) < 0) {
+      soundManager.playSound(SOUND.POPON)
       return {
         type: 'matches',
         sprite: 'sprite/chas2.png',
@@ -167,6 +175,7 @@ export class ForwardService {
       }
     }
     if ((rand -= EVENT_WEIGHTS.bearWarning) < 0 && this.hasBearInCurrentStage()) {
+      soundManager.playSound(SOUND.ZURL)
       return {
         type: 'thought',
         sprite: 'sprite/warning.png',

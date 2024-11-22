@@ -1,5 +1,5 @@
 <template>
-  <div class="loading-view" @click="loaded && router.push('/game')">
+  <div class="loading-view" @click="startGame">
     <!-- 标题窗格 -->
     <div class="title-window">
       <img src="../assets/sprite/title.png" alt="title" class="title-image" />
@@ -48,11 +48,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, getCurrentInstance } from "vue";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { assetManager } from "../services/assetManager";
 import SnowEffect from "../components/SnowEffect.vue";
+
+const { proxy } = getCurrentInstance()!;
 
 const { t } = useI18n();
 const progress = ref<number>(0);
@@ -82,6 +84,12 @@ onMounted(async () => {
     loadingText.value = t("game.loading.error");
   }
 });
+
+const startGame = () => {
+  if (!loaded.value) return;
+  proxy!.$sound.playSound(proxy!.$SOUND.THATHATHA);
+  router.push("/game");
+};
 </script>
 
 <style lang="scss" scoped>
