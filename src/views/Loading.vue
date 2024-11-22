@@ -2,7 +2,7 @@
   <div class="loading-view" @click="loaded && router.push('/game')">
     <!-- 标题窗格 -->
     <div class="title-window">
-      <img src="../assets/sprite/title.bmp" alt="title" class="title-image" />
+      <img src="../assets/sprite/title.png" alt="title" class="title-image" />
       <!-- 雪景效果 -->
       <SnowEffect
         :flakes="[

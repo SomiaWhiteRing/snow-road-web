@@ -34,7 +34,7 @@ export const ENEMIES: EnemyType[] = [
     exp: 1,
     stages: [0, 8],
     sprite: {
-      path: 'sprite/snowman.bmp'
+      path: 'sprite/snowman.png'
     }
   },
   {
@@ -47,7 +47,7 @@ export const ENEMIES: EnemyType[] = [
     exp: 2,
     stages: [0],
     sprite: {
-      path: 'sprite/iceflare.bmp'
+      path: 'sprite/iceflare.png'
     }
   },
   {
@@ -60,7 +60,7 @@ export const ENEMIES: EnemyType[] = [
     exp: 3,
     stages: [0, 8],
     sprite: {
-      path: 'sprite/snowman2.bmp'
+      path: 'sprite/snowman2.png'
     }
   },
   {
@@ -73,7 +73,7 @@ export const ENEMIES: EnemyType[] = [
     exp: 4,
     stages: [1],
     sprite: {
-      path: 'sprite/snowwes.bmp'
+      path: 'sprite/snowwes.png'
     }
   },
   {
@@ -86,7 +86,7 @@ export const ENEMIES: EnemyType[] = [
     exp: 4,
     stages: [3],
     sprite: {
-      path: 'sprite/flower0.bmp'
+      path: 'sprite/flower0.png'
     }
   },
   {
@@ -99,7 +99,7 @@ export const ENEMIES: EnemyType[] = [
     exp: 8,
     stages: [6],
     sprite: {
-      path: 'sprite/epitaph0.bmp'
+      path: 'sprite/epitaph0.png'
     }
   },
   {
@@ -112,7 +112,7 @@ export const ENEMIES: EnemyType[] = [
     exp: 7,
     stages: [4],
     sprite: {
-      path: 'sprite/whitebear.bmp'
+      path: 'sprite/whitebear.png'
     }
   },
   {
@@ -125,7 +125,7 @@ export const ENEMIES: EnemyType[] = [
     exp: 10,
     stages: [6],
     sprite: {
-      path: 'sprite/bearman.bmp'
+      path: 'sprite/bearman.png'
     }
   },
   {
@@ -138,7 +138,7 @@ export const ENEMIES: EnemyType[] = [
     exp: 9,
     stages: [5],
     sprite: {
-      path: 'sprite/snowwes4.bmp'
+      path: 'sprite/snowwes4.png'
     }
   },
   {
@@ -151,7 +151,7 @@ export const ENEMIES: EnemyType[] = [
     exp: 11,
     stages: [5],
     sprite: {
-      path: 'sprite/snowwes3.bmp'
+      path: 'sprite/snowwes3.png'
     }
   },
   {
@@ -164,7 +164,7 @@ export const ENEMIES: EnemyType[] = [
     exp: 3,
     stages: [6],
     sprite: {
-      path: 'sprite/hell2.bmp'
+      path: 'sprite/hell2.png'
     }
   },
   {
@@ -177,7 +177,7 @@ export const ENEMIES: EnemyType[] = [
     exp: 15,
     stages: [8],
     sprite: {
-      path: 'sprite/snowwes2.bmp'
+      path: 'sprite/snowwes2.png'
     },
     copyPlayerStats: {
       attack: true
@@ -193,7 +193,7 @@ export const ENEMIES: EnemyType[] = [
     exp: 12,
     stages: [8],
     sprite: {
-      path: 'sprite/snowwes3.bmp'
+      path: 'sprite/snowwes3.png'
     },
     copyPlayerStats: {
       defense: true
@@ -209,7 +209,7 @@ export const ENEMIES: EnemyType[] = [
     exp: 30,
     stages: [8, 9],
     sprite: {
-      path: 'sprite/whitebear2.bmp'
+      path: 'sprite/whitebear2.png'
     },
     copyPlayerStats: {
       hp: true
@@ -225,7 +225,7 @@ export const ENEMIES: EnemyType[] = [
     exp: 25,
     stages: [9],
     sprite: {
-      path: 'sprite/coldecot.bmp'
+      path: 'sprite/coldecot.png'
     }
   },
   {
@@ -238,7 +238,7 @@ export const ENEMIES: EnemyType[] = [
     exp: 50,
     stages: [10],
     sprite: {
-      path: 'sprite/engine.bmp'
+      path: 'sprite/engine.png'
     }
   },
   {
@@ -251,7 +251,7 @@ export const ENEMIES: EnemyType[] = [
     exp: 0,
     stages: [10],
     sprite: {
-      path: 'sprite/self.bmp'
+      path: 'sprite/self.png'
     },
     copyPlayerStats: {
       hp: true,
@@ -274,7 +274,7 @@ export const BOSSES: EnemyType[] = [
     isBoss: true,
     stage: 0,
     sprite: {
-      path: 'sprite/snowman3.bmp'
+      path: 'sprite/snowman3.png'
     }
   },
   {
@@ -288,7 +288,7 @@ export const BOSSES: EnemyType[] = [
     isBoss: true,
     stage: 1,
     sprite: {
-      path: 'sprite/snowman4.bmp'
+      path: 'sprite/snowman4.png'
     }
   },
   {
@@ -302,7 +302,7 @@ export const BOSSES: EnemyType[] = [
     isBoss: true,
     stage: 2,
     sprite: {
-      path: 'sprite/snowdoll.bmp'
+      path: 'sprite/snowdoll.png'
     }
   },
   {
@@ -316,7 +316,7 @@ export const BOSSES: EnemyType[] = [
     isBoss: true,
     stage: 3,
     sprite: {
-      path: 'sprite/flower1.bmp'
+      path: 'sprite/flower1.png'
     }
   },
   {
@@ -330,7 +330,7 @@ export const BOSSES: EnemyType[] = [
     isBoss: true,
     stage: 4,
     sprite: {
-      path: 'sprite/bearman.bmp'
+      path: 'sprite/bearman.png'
     }
   },
   {
@@ -344,7 +344,7 @@ export const BOSSES: EnemyType[] = [
     isBoss: true,
     stage: 5,
     sprite: {
-      path: 'sprite/snowwes.bmp'
+      path: 'sprite/snowwes.png'
     }
   },
   {
@@ -358,7 +358,7 @@ export const BOSSES: EnemyType[] = [
     isBoss: true,
     stage: 6,
     sprite: {
-      path: 'sprite/epitaph1.bmp'
+      path: 'sprite/epitaph1.png'
     }
   },
   {
@@ -372,7 +372,7 @@ export const BOSSES: EnemyType[] = [
     isBoss: true,
     stage: 7,
     sprite: {
-      path: 'sprite/noenemy.bmp'
+      path: 'sprite/noenemy.png'
     }
   },
   {
@@ -386,7 +386,7 @@ export const BOSSES: EnemyType[] = [
     isBoss: true,
     stage: 8,
     sprite: {
-      path: 'sprite/kudou.bmp'
+      path: 'sprite/kudou.png'
     }
   },
   {
@@ -400,7 +400,7 @@ export const BOSSES: EnemyType[] = [
     isBoss: true,
     stage: 9, // Final
     sprite: {
-      path: 'sprite/coldecot.bmp'
+      path: 'sprite/coldecot.png'
     }
   }
 ] 
