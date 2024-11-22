@@ -4,10 +4,16 @@ interface TextGeneratorOptions {
   maxAttempts?: number;
 }
 
+// 添加新的接口定义
+interface TextLine {
+  text: string;
+  offset: number;
+}
+
 export function generateControlText(
   texts: string[],
   options: TextGeneratorOptions = {}
-): string[] {
+): TextLine[] {
   const {
     maxChars = /[a-zA-Z]/.test(texts[0]) ? 100 : 50,
     lineCount = 25,
@@ -33,7 +39,7 @@ export function generateControlText(
     return positions1.some(pos => positions2.includes(pos));
   };
 
-  const lines: string[] = [];
+  const lines: TextLine[] = [];
   let lastUsedTexts: string[] = [];
   let lastPunctuationPositions: number[] = [];
 
@@ -73,7 +79,7 @@ export function generateControlText(
         const tempText = selectedText + randomText;
 
         // 检查添加新文本后是否会与上一行产生重复
-        if (lines.length > 0 && hasRepeatingSegments(lines[lines.length - 1], tempText)) {
+        if (lines.length > 0 && hasRepeatingSegments(lines[lines.length - 1].text, tempText)) {
           availableTexts = availableTexts.filter(t => t !== randomText);
           continue;
         }
@@ -83,10 +89,6 @@ export function generateControlText(
         availableTexts = texts.filter(text => !lastUsedTexts.includes(text));
       }
 
-      if (selectedText.length > maxChars) {
-        selectedText = selectedText.slice(0, maxChars);
-      }
-
       const currentPunctuationPositions = getPunctuationPositions(selectedText);
 
       // 检查标点位置是否重叠
@@ -94,7 +96,7 @@ export function generateControlText(
         !hasOverlappingPositions(currentPunctuationPositions, lastPunctuationPositions)) {
 
         // 最后一次检查，确保没有重复
-        if (lines.length === 0 || !hasRepeatingSegments(lines[lines.length - 1], selectedText)) {
+        if (lines.length === 0 || !hasRepeatingSegments(lines[lines.length - 1].text, selectedText)) {
           lastPunctuationPositions = currentPunctuationPositions;
           return selectedText;
         }
@@ -112,7 +114,10 @@ export function generateControlText(
     while (!lineText) {
       lineText = generateLine();
     }
-    lines.push(lineText);
+    lines.push({
+      text: lineText,
+      offset: Math.floor(Math.random() * 20 - 20) // -20 到 0 之间的随机值
+    });
   }
 
   return lines;

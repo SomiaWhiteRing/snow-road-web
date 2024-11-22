@@ -8,8 +8,12 @@
       <!-- 添加控制文本显示区域 -->
       <div class="control-overlay" v-if="showControl">
         <div class="control-text">
-          <div v-for="(line, index) in controlLines" :key="index">
-            {{ line }}
+          <div
+            v-for="(line, index) in controlLines"
+            :key="index"
+            :style="{ transform: `translateX(${line.offset}px)` }"
+          >
+            {{ line.text }}
           </div>
         </div>
         <div class="control-exit">
@@ -50,7 +54,7 @@
         </div>
         <div class="buttons buttons-3">
           <button>
-            {{ t("game.actions.matches", { count: gameStore.matches }) }}
+            {{ t("game.actions.matches", { count: gameStore.items.matches }) }}
           </button>
         </div>
       </template>
@@ -76,7 +80,14 @@ const useAsset = (path: string) => {
 
 const showStatus = ref(true);
 const showControl = ref(false);
-const controlLines = ref<string[]>([]);
+
+// 修改类型定义
+interface TextLine {
+  text: string;
+  offset: number;
+}
+
+const controlLines = ref<TextLine[]>([]);
 
 // 切换控制面板
 const toggleControl = () => {

@@ -9,7 +9,7 @@ export const messages = {
         error: '资源加载失败，请刷新页面重试...'
       },
       stats: {
-        distance: '当前距离',
+        distance: '前进距离',
         level: 'LV',
         exp: 'EXP',
         hp: 'HP'

@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container">
+  <div class="app-container" :lang="currentLang">
     <div class="game-container" :style="containerStyle">
       <router-view></router-view>
     </div>
@@ -9,6 +9,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { assetManager } from "./services/assetManager";
+import { useI18n } from "vue-i18n";
 
 // 游戏窗口基础尺寸
 const BASE_WIDTH = 600;
@@ -58,6 +59,9 @@ const containerStyle = computed(() => {
     top: `${top}px`,
   };
 });
+
+const { locale } = useI18n();
+const currentLang = computed(() => locale.value);
 </script>
 
 <style lang="scss">
