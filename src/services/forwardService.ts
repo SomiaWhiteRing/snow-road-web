@@ -2,13 +2,14 @@ import { useGameStore } from '../stores/game'
 import { ENEMIES, BOSSES, type EnemyType } from '../types/enemies'
 import { type Composer } from 'vue-i18n'
 
-export type ForwardEventType = 'nothing' | 'thought' | 'shop' | 'sleep' | 'save' | 'matches' | 'battle'
+export type ForwardEventType = 'nothing' | 'thought' | 'shop' | 'inn' | 'save' | 'matches' | 'battle'
 
 interface ForwardEvent {
   type: ForwardEventType
   enemy?: EnemyType
   sprite?: string
   message?: string
+  extra?: any
 }
 
 // 添加事件权重配置
@@ -16,7 +17,7 @@ const EVENT_WEIGHTS = {
   nothing: 30,
   thought: 10,
   shop: 10,
-  sleep: 10,
+  inn: 10,
   save: 10,
   matches: 10,
   matchesExtra: 1,
@@ -69,6 +70,10 @@ export class ForwardService {
   }
 
   private translateMessage(key: string, params?: Record<string, any>): string {
+    const messages = this.i18n.tm(key) as string | string[]
+    if (Array.isArray(messages)) {
+      return messages[Math.floor(Math.random() * messages.length)]
+    }
     return this.i18n.t(key, params || {})
   }
 
@@ -108,32 +113,47 @@ export class ForwardService {
         message: this.translateMessage('events.shop')
       }
     }
-    if ((rand -= EVENT_WEIGHTS.sleep) < 0) {
+    if ((rand -= EVENT_WEIGHTS.inn) < 0) {
       return {
-        type: 'sleep',
+        type: 'inn',
         sprite: 'sprite/inn.png',
-        message: this.translateMessage('events.sleep')
+        message: this.translateMessage('events.inn.before'),
+        extra: {
+          afterMessage: this.translateMessage('events.inn.after'),
+          cost: Math.floor(Math.random() * 3) + 1
+        }
       }
     }
     if ((rand -= EVENT_WEIGHTS.save) < 0) {
       return {
         type: 'save',
         sprite: 'sprite/candle0.png',
-        message: this.translateMessage('events.save')
+        message: this.translateMessage('events.save.before'),
+        extra: {
+          afterMessage: this.translateMessage('events.save.after'),
+          afterSprite: 'sprite/candle2.png',
+          cost: Math.floor(Math.random() * 3) + 1
+        }
       }
     }
     if ((rand -= EVENT_WEIGHTS.matches) < 0) {
       return {
         type: 'matches',
         sprite: 'sprite/chas0.png',
-        message: this.translateMessage('events.matches.default')
+        message: this.translateMessage('events.matches.default'),
+        extra: {
+          getNum: 1
+        }
       }
     }
     if ((rand -= EVENT_WEIGHTS.matchesExtra) < 0) {
       return {
         type: 'matches',
         sprite: 'sprite/chas2.png',
-        message: this.translateMessage('events.matches.extra', { extra: '10' })
+        message: this.translateMessage('events.matches.extra'),
+        extra: {
+          getNum: 10
+        }
       }
     }
     if ((rand -= EVENT_WEIGHTS.bearWarning) < 0 && this.hasBearInCurrentStage()) {

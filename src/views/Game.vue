@@ -28,6 +28,32 @@
 
       <template v-if="viewType === 'normal'">
         <div class="buttons buttons-1">
+          <button
+            @click="handleInn"
+            v-if="subEvent === 'inn'"
+            :disabled="
+              gameStore.items.matches < subEventExtra.cost ||
+              message === subEventExtra.afterMessage
+            "
+          >
+            {{ t("game.actions.inn") }} ({{ subEventExtra.cost }})
+          </button>
+
+          <button
+            @click="handleCandle"
+            v-if="subEvent === 'save'"
+            :disabled="
+              gameStore.items.matches < subEventExtra.cost ||
+              message === subEventExtra.afterMessage
+            "
+          >
+            {{ t("game.actions.candle") }} ({{ subEventExtra.cost }})
+          </button>
+
+          <button @click="handleShop" v-if="subEvent === 'shop'">
+            {{ t("game.actions.shop") }}
+          </button>
+
           <button @click="handleForward">
             {{ t("game.actions.forward") }}
           </button>
@@ -69,9 +95,10 @@ const useAsset = (path: string) => {
 type GameViewType = "normal" | "control" | "battle";
 const viewType = ref<GameViewType>("normal");
 
-type SubEvent = "nothing" | "shop" | "sleep" | "save" | "matches" | "thought";
+type SubEvent = "nothing" | "shop" | "inn" | "save" | "matches" | "thought";
 const subEvent = ref<SubEvent>("nothing");
 const subEventSprite = ref<string>("");
+const subEventExtra = ref();
 
 const message = ref<string>("");
 
@@ -80,8 +107,33 @@ const handleForward = () => {
   if (event.type !== "battle") {
     subEvent.value = event.type;
     subEventSprite.value = event.sprite || "";
+    subEventExtra.value = event.extra;
     message.value = event.message || "";
+    if (event.type === "matches") {
+      gameStore.items.matches += event.extra.getNum;
+    }
+  } else {
+    subEvent.value = "nothing";
+    subEventSprite.value = "";
+    subEventExtra.value = {};
+    message.value = "";
+    return;
   }
+};
+
+const handleInn = () => {
+  gameStore.items.matches -= subEventExtra.value.cost;
+  message.value = subEventExtra.value.afterMessage;
+};
+
+const handleCandle = () => {
+  gameStore.items.matches -= subEventExtra.value.cost;
+  message.value = subEventExtra.value.afterMessage;
+  subEventSprite.value = subEventExtra.value.afterSprite;
+};
+
+const handleShop = () => {
+  message.value = t("game.actions.shop");
 };
 </script>
 

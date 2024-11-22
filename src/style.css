@@ -77,6 +77,24 @@ button:focus {
   outline-offset: -4px;
 }
 
+button:disabled {
+  color: #808080;
+  text-shadow: 1px 1px #ffffff;
+  background: #d4d4d4;
+  border-color: #808080 #808080 #808080 #808080;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+button:disabled:active {
+  top: 0;
+  left: 0;
+}
+
+button:disabled:focus {
+  outline: none;
+}
+
 /* 移除其他不需要的样式 */
 
 :lang(zh) {

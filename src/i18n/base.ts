@@ -23,7 +23,10 @@ export const base = {
       actions: {
         forward: '前进',
         control: '制御',
-        matches: '火柴 {count}根'
+        matches: '火柴 {count}根',
+        inn: '住店',
+        candle: '点燃',
+        shop: '购物'
       },
       controlText: [
         '第六层。',
