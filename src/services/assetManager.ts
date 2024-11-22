@@ -1,4 +1,4 @@
-import { ref, shallowRef } from 'vue';
+import { shallowRef } from 'vue';
 import { openDB, IDBPDatabase } from 'idb';
 import router from '../router';
 
