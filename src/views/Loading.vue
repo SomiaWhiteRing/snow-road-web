@@ -47,7 +47,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
@@ -55,9 +55,9 @@ import { assetManager } from "../services/assetManager";
 import SnowEffect from "../components/SnowEffect.vue";
 
 const { t } = useI18n();
-const progress = ref(0);
-const loadingText = ref(t("game.loading.checking"));
-const loaded = ref(false);
+const progress = ref<number>(0);
+const loadingText = ref<string>(t("game.loading.checking"));
+const loaded = ref<boolean>(false);
 const router = useRouter();
 
 onMounted(async () => {
@@ -70,7 +70,7 @@ onMounted(async () => {
     }
 
     loadingText.value = t("game.loading.loading");
-    await assetManager.loadAllAssets((current, total) => {
+    await assetManager.loadAllAssets((current: number, total: number) => {
       progress.value = Math.floor((current / total) * 100);
       loadingText.value = t("game.loading.progress", { current, total });
     });

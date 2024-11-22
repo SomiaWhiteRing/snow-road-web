@@ -9,7 +9,12 @@ interface ForwardEvent {
   enemy?: EnemyType
   sprite?: string
   message?: string
-  extra?: any
+  extra?: {
+    cost?: number
+    afterMessage?: string
+    afterSprite?: string
+    getNum?: number
+  }
 }
 
 // 添加事件权重配置
@@ -24,6 +29,11 @@ const EVENT_WEIGHTS = {
   bearWarning: 10,
   battle: 10
 } as const
+
+// 事件权重类型
+type EventWeights = {
+  readonly [K in keyof typeof EVENT_WEIGHTS]: number
+}
 
 export class ForwardService {
   private gameStore: ReturnType<typeof useGameStore> | null = null

@@ -32,7 +32,7 @@
             @click="handleInn"
             v-if="subEvent === 'inn'"
             :disabled="
-              gameStore.items.matches < subEventExtra.cost ||
+              gameStore.items.matches < (subEventExtra.cost || 0) ||
               message === subEventExtra.afterMessage
             "
           >
@@ -43,7 +43,7 @@
             @click="handleCandle"
             v-if="subEvent === 'save'"
             :disabled="
-              gameStore.items.matches < subEventExtra.cost ||
+              gameStore.items.matches < (subEventExtra.cost || 0) ||
               message === subEventExtra.afterMessage
             "
           >
@@ -93,23 +93,29 @@ const useAsset = (path: string) => {
 };
 
 type GameViewType = "normal" | "control" | "battle";
-const viewType = ref<GameViewType>("normal");
-
 type SubEvent = "nothing" | "shop" | "inn" | "save" | "matches" | "thought";
+
+interface SubEventExtra {
+  cost?: number;
+  afterMessage?: string;
+  afterSprite?: string;
+  getNum?: number;
+}
+
+const viewType = ref<GameViewType>("normal");
 const subEvent = ref<SubEvent>("nothing");
 const subEventSprite = ref<string>("");
-const subEventExtra = ref();
-
+const subEventExtra = ref<SubEventExtra>({});
 const message = ref<string>("");
 
 const handleForward = () => {
   const event = forwardService.handleForward();
   if (event.type !== "battle") {
-    subEvent.value = event.type;
+    subEvent.value = event.type as SubEvent;
     subEventSprite.value = event.sprite || "";
-    subEventExtra.value = event.extra;
+    subEventExtra.value = event.extra || {};
     message.value = event.message || "";
-    if (event.type === "matches") {
+    if (event.type === "matches" && event.extra?.getNum) {
       gameStore.items.matches += event.extra.getNum;
     }
   } else {
@@ -122,14 +128,14 @@ const handleForward = () => {
 };
 
 const handleInn = () => {
-  gameStore.items.matches -= subEventExtra.value.cost;
-  message.value = subEventExtra.value.afterMessage;
+  gameStore.items.matches -= subEventExtra.value.cost || 0;
+  message.value = subEventExtra.value.afterMessage || "";
 };
 
 const handleCandle = () => {
-  gameStore.items.matches -= subEventExtra.value.cost;
-  message.value = subEventExtra.value.afterMessage;
-  subEventSprite.value = subEventExtra.value.afterSprite;
+  gameStore.items.matches -= subEventExtra.value.cost || 0;
+  message.value = subEventExtra.value.afterMessage || "";
+  subEventSprite.value = subEventExtra.value.afterSprite || "";
 };
 
 const handleShop = () => {
