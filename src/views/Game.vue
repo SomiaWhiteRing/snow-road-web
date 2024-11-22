@@ -5,7 +5,6 @@
         :src="useAsset(`sprite/snow${gameStore.distance % 3}.png`)"
         alt="scene"
       />
-      <SnowEffect />
       <ControlPanel
         v-if="viewType === 'control'"
         @close="viewType = 'normal'"
@@ -16,48 +15,16 @@
         :src="useAsset(subEventSprite)"
         alt="sub-event"
       />
+      <SnowEffect />
+      <EventMessage :message="message" />
     </div>
 
-    <!-- 右侧状态区域 -->
     <div class="status-area">
       <div class="character">
         <img :src="useAsset('sprite/self.png')" alt="character" />
       </div>
 
-      <div class="stats">
-        <div class="stat-line" v-if="gameStore.stage > 0">
-          {{ t("game.stats.stage", { stage: gameStore.stage }) }}
-        </div>
-        <div class="stat-line">
-          {{ t("game.stats.distance") }}: {{ gameStore.distance }}
-        </div>
-        <div class="stat-line">
-          {{ t("game.stats.level") }} {{ gameStore.level }}
-          {{ t("game.stats.exp") }}:{{ gameStore.exp }}/{{ gameStore.nextExp }}
-        </div>
-        <div class="stat-line">
-          {{ t("game.stats.hp") }}: {{ gameStore.hp }}/{{ gameStore.maxHp }}
-        </div>
-        <div class="stat-line" v-if="gameStore.mp > 0">
-          {{ t("game.stats.mp") }}: {{ gameStore.mp }}/{{ gameStore.maxMp }}
-        </div>
-        <div class="stat-line" v-if="gameStore.attack > 0">
-          {{ t("game.stats.attack") }}: {{ gameStore.attack }}
-        </div>
-        <div class="stat-line" v-if="gameStore.defense > 0">
-          {{ t("game.stats.defense") }}: {{ gameStore.defense }}
-        </div>
-        <div class="stat-line" v-if="gameStore.weapon.name">
-          {{ t("game.stats.weapon") }}: {{ gameStore.weapon.name }}（{{
-            gameStore.weapon.attack
-          }}）
-        </div>
-        <div class="stat-line" v-if="gameStore.armor.name">
-          {{ t("game.stats.armor") }}: {{ gameStore.armor.name }}（{{
-            gameStore.armor.defense
-          }}）
-        </div>
-      </div>
+      <StatusPanel />
 
       <template v-if="viewType === 'normal'">
         <div class="buttons buttons-1">
@@ -85,30 +52,35 @@ import { ref } from "vue";
 import { useGameStore } from "../stores/game";
 import SnowEffect from "../components/SnowEffect.vue";
 import ControlPanel from "../components/ControlPanel.vue";
+import StatusPanel from "../components/StatusPanel.vue";
+import EventMessage from "../components/EventMessage.vue";
 import { assetManager } from "../services/assetManager";
 import { useI18n } from "vue-i18n";
-import { forwardService } from "../services/forwardService";
+import { createForwardService } from "../services/forwardService";
 
 const gameStore = useGameStore();
 const { t } = useI18n();
+const forwardService = createForwardService(useI18n());
 
 const useAsset = (path: string) => {
   return assetManager.useAsset(path).value;
 };
 
-// 当前界面类型定义
 type GameViewType = "normal" | "control" | "battle";
 const viewType = ref<GameViewType>("normal");
-// 子事件类型定义
+
 type SubEvent = "nothing" | "shop" | "sleep" | "save" | "matches" | "thought";
 const subEvent = ref<SubEvent>("nothing");
 const subEventSprite = ref<string>("");
+
+const message = ref<string>("");
 
 const handleForward = () => {
   const event = forwardService.handleForward();
   if (event.type !== "battle") {
     subEvent.value = event.type;
     subEventSprite.value = event.sprite || "";
+    message.value = event.message || "";
   }
 };
 </script>
@@ -141,6 +113,21 @@ body {
       top: 0;
       left: 0;
     }
+    .sub-event-message {
+      position: absolute;
+      top: 260px;
+      left: 25px;
+      color: #fff;
+      font-size: 12px;
+      line-height: 1;
+      padding: 1px;
+      span {
+        display: block;
+        margin-bottom: 4px;
+        background: #000;
+        padding: 1px;
+      }
+    }
   }
 
   .status-area {
@@ -156,20 +143,6 @@ body {
       img {
         width: 100%;
         height: auto;
-      }
-    }
-
-    .stats {
-      position: absolute;
-      left: 0;
-      top: 170px;
-      color: #fff;
-
-      .stat-line {
-        line-height: 1;
-        margin-bottom: 2px;
-        height: 12px;
-        font-size: 12px;
       }
     }
 

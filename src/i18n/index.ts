@@ -4,6 +4,7 @@ import { enemyNames } from './enemies';
 import { spellNames } from './spells';
 import { equipmentNames } from './equipment';
 import { controlNames } from './control';
+import { eventMessages } from './events';
 
 // 合并所有翻译
 const mergedMessages = {
@@ -12,21 +13,24 @@ const mergedMessages = {
     ...enemyNames.zh,
     ...spellNames.zh,
     ...equipmentNames.zh,
-    ...controlNames.zh
+    ...controlNames.zh,
+    ...eventMessages.zh
   },
   ja: {
     ...base.ja,
     ...enemyNames.ja,
     ...spellNames.ja,
     ...equipmentNames.ja,
-    ...controlNames.ja
+    ...controlNames.ja,
+    ...eventMessages.ja
   },
   en: {
     ...base.en,
     ...enemyNames.en,
     ...spellNames.en,
     ...equipmentNames.en,
-    ...controlNames.en
+    ...controlNames.en,
+    ...eventMessages.en
   }
 };
 
