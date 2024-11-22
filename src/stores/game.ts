@@ -7,7 +7,7 @@ export const useGameStore = defineStore('game', {
     exp: 0,
     nextExp: 5,
     hp: 15,
-    maxHp: 15,
+    maxHp: 120,
     potential: 0,
     attack: 0,
     defense: 0,
@@ -22,7 +22,8 @@ export const useGameStore = defineStore('game', {
       matches: 10,
       books: 0,
       stars: 0
-    }
+    },
+    learnedSkills: [] as string[]
   }),
   actions: {
     levelUp() {
@@ -82,6 +83,18 @@ export const useGameStore = defineStore('game', {
         this.exp -= this.nextExp
         this.levelUp()
       }
+    },
+
+    // 添加学习技能的方法
+    learnSkill(skillId: string) {
+      if (!this.learnedSkills.includes(skillId)) {
+        this.learnedSkills.push(skillId);
+      }
+    },
+
+    // 添加消耗HP的方法
+    consumeMaxHp(amount: number) {
+      this.maxHp -= amount;
     }
   },
 });

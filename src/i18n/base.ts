@@ -1,4 +1,4 @@
-export const messages = {
+export const base = {
   zh: {
     game: {
       title: '雪道',

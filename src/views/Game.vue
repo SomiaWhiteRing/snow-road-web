@@ -1,27 +1,9 @@
 <template>
   <div class="game-view">
-    <!-- 左侧场景区域 -->
     <div class="scene-area">
-      <!-- 这里渲染雪景和敌人 -->
       <img :src="useAsset('sprite/snow0.bmp')" alt="scene" />
       <SnowEffect />
-      <!-- 添加控制文本显示区域 -->
-      <div class="control-overlay" v-if="showControl">
-        <div class="control-text">
-          <div
-            v-for="(line, index) in controlLines"
-            :key="index"
-            :style="{ transform: `translateX(${line.offset}px)` }"
-          >
-            {{ line.text }}
-          </div>
-        </div>
-        <div class="control-exit">
-          <button @click="closeControl">
-            {{ t("game.controlMenu.exit") }}
-          </button>
-        </div>
-      </div>
+      <ControlPanel v-if="showControl" @close="closeControl" />
     </div>
 
     <!-- 右侧状态区域 -->
@@ -66,14 +48,13 @@
 import { ref } from "vue";
 import { useGameStore } from "../stores/game";
 import SnowEffect from "../components/SnowEffect.vue";
+import ControlPanel from "../components/ControlPanel.vue";
 import { assetManager } from "../services/assetManager";
 import { useI18n } from "vue-i18n";
-import { generateControlText } from "../utils/textGenerator";
 
 const gameStore = useGameStore();
-const { t, tm } = useI18n();
+const { t } = useI18n();
 
-// 获取资产
 const useAsset = (path: string) => {
   return assetManager.useAsset(path).value;
 };
@@ -81,26 +62,13 @@ const useAsset = (path: string) => {
 const showStatus = ref(true);
 const showControl = ref(false);
 
-// 修改类型定义
-interface TextLine {
-  text: string;
-  offset: number;
-}
-
-const controlLines = ref<TextLine[]>([]);
-
-// 切换控制面板
+// 切换制御面板
 const toggleControl = () => {
   showStatus.value = false;
   showControl.value = true;
-
-  const texts = tm("game.controlText") as string[];
-  if (texts && texts.length) {
-    controlLines.value = generateControlText(texts);
-  }
 };
 
-// 关闭控制面板
+// 关闭制御面板
 const closeControl = () => {
   showStatus.value = true;
   showControl.value = false;
@@ -127,48 +95,6 @@ body {
     width: 300px;
     padding-top: 10px;
     position: relative;
-
-    .control-overlay {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 250px;
-      height: 250px;
-      background: #770000;
-      overflow: hidden;
-
-      .control-text {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%) scale(0.9);
-        z-index: 1;
-        height: 285px;
-        width: 285px;
-        overflow: hidden;
-        text-align: center;
-        color: #aa3300;
-        font-size: 12px;
-        font-weight: 400;
-        line-height: 1;
-        white-space: pre-wrap;
-        user-select: none;
-
-        div {
-          line-height: 1;
-          white-space: nowrap;
-        }
-      }
-
-      .control-exit {
-        position: absolute;
-        bottom: 0;
-        right: 0;
-        z-index: 2;
-        font-weight: bold;
-      }
-    }
   }
 
   .status-area {
