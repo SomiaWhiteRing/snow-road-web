@@ -12,17 +12,17 @@ interface AssetDB {
 // 资产列表配置
 const ASSET_LIST = {
   sprite: [
-    'ax.bmp', 'bearman.bmp', 'blackbear.bmp', 'candle0.bmp', 'candle1.bmp',
-    'candle2.bmp', 'chas0.bmp', 'chas1.bmp', 'chas2.bmp', 'cloak.bmp',
-    'coldecot.bmp', 'epitaph0.bmp', 'epitaph1.bmp', 'fish00.bmp', 'fish01.bmp',
-    'flower0.bmp', 'flower1.bmp', 'gameover.bmp', 'gameover2.bmp', 'hell0.bmp',
-    'hell1.bmp', 'hell2.bmp', 'iceflare.bmp', 'inn.bmp', 'kudou.bmp',
-    'lighter.bmp', 'lucifer.bmp', 'memo.bmp', 'nazo00.bmp', 'noenemy.bmp',
-    'self.bmp', 'selfclosed.bmp', 'shop.bmp', 'snow0.bmp', 'snow1.bmp',
-    'snow2.bmp', 'snowdoll.bmp', 'snowman.bmp', 'snowman2.bmp', 'snowman3.bmp',
-    'snowman4.bmp', 'snowwes.bmp', 'snowwes2.bmp', 'snowwes3.bmp', 'snowwes4.bmp',
-    'title.bmp', 'warning.bmp', 'welcome.bmp', 'whitebear.bmp', 'whitebear2.bmp',
-    'zereta.bmp'
+    'ax.png', 'bearman.png', 'blackbear.png', 'candle0.png', 'candle1.png',
+    'candle2.png', 'chas0.png', 'chas1.png', 'chas2.png', 'cloak.png',
+    'coldecot.png', 'epitaph0.png', 'epitaph1.png', 'fish00.png', 'fish01.png',
+    'flower0.png', 'flower1.png', 'gameover.png', 'gameover2.png', 'hell0.png',
+    'hell1.png', 'hell2.png', 'iceflare.png', 'inn.png', 'kudou.png',
+    'lighter.png', 'lucifer.png', 'memo.png', 'nazo00.png', 'noenemy.png',
+    'self.png', 'selfclosed.png', 'shop.png', 'snow0.png', 'snow1.png',
+    'snow2.png', 'snowdoll.png', 'snowman.png', 'snowman2.png', 'snowman3.png',
+    'snowman4.png', 'snowwes.png', 'snowwes2.png', 'snowwes3.png', 'snowwes4.png',
+    'title.png', 'warning.png', 'welcome.png', 'whitebear.png', 'whitebear2.png',
+    'zereta.png'
   ],
   cg: [
     'black.bmp', 'dark00.bmp', 'dark01.bmp', 'dark02.bmp',
@@ -135,7 +135,7 @@ class AssetManager {
 
   /**
    * 获取资产的 URL
-   * @param path 资产路径 (例如: 'sprite/snow0.bmp')
+   * @param path 资产路径 (例如: 'sprite/snow0.png')
    * @returns 资产的 URL
    */
   async getAssetUrl(path: string): Promise<string> {

@@ -9,10 +9,16 @@ export const base = {
         error: '资源加载失败，请刷新页面重试...'
       },
       stats: {
+        stage: '- Stage {stage} -',
         distance: '前进距离',
         level: 'LV',
         exp: 'EXP',
-        hp: 'HP'
+        hp: 'HP',
+        mp: 'MP',
+        attack: '攻击力',
+        defense: '防御力',
+        weapon: '武器',
+        armor: '防具'
       },
       actions: {
         forward: '前进',
@@ -79,10 +85,16 @@ export const base = {
         error: '読み込みに失敗しました。ページを更新してください...'
       },
       stats: {
+        stage: '- Stage {stage} -',
         distance: '進んだ距離',
         level: 'LV',
         exp: 'EXP',
-        hp: 'HP'
+        hp: 'HP',
+        mp: 'MP',
+        attack: '攻撃力',
+        defense: '防御力',
+        weapon: '武器',
+        armor: '防具'
       },
       actions: {
         forward: '進む',
@@ -149,10 +161,16 @@ export const base = {
         error: 'Loading failed, please refresh the page...'
       },
       stats: {
+        stage: '- Stage {stage} -',
         distance: 'Distance',
         level: 'LV',
         exp: 'EXP',
-        hp: 'HP'
+        hp: 'HP',
+        mp: 'MP',
+        attack: 'Attack',
+        defense: 'Defense',
+        weapon: 'Weapon',
+        armor: 'Armor'
       },
       actions: {
         forward: 'Forward',

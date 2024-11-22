@@ -3,27 +3,35 @@ import { defineStore } from 'pinia';
 export const useGameStore = defineStore('game', {
   state: () => ({
     distance: 0,
+    stage: 0,
     level: 1,
     exp: 0,
     nextExp: 5,
     hp: 15,
-    maxHp: 120,
+    maxHp: 15,
+    maxMp: 0,
     potential: 0,
     attack: 0,
+    virtualAttack: 0,
     defense: 0,
+    virtualDefense: 0,
     mp: 0,
-    maxMp: 0,
     virtualMp: 0,
-    maxVirtualMp: 0,
-    weapon: null,
-    armor: null,
-    spells: [],
+    weapon: {
+      name: null,
+      attack: 0
+    },
+    armor: {
+      name: null,
+      defense: 0
+    },
     items: {
       matches: 10,
-      books: 0,
+      books: false,
       stars: 0
     },
-    learnedSkills: [] as string[]
+    learnedSkills: [] as string[],
+    learnedSpells: [] as string[]
   }),
   actions: {
     levelUp() {

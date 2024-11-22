@@ -1,18 +1,33 @@
 <template>
   <div class="game-view">
     <div class="scene-area">
-      <img :src="useAsset('sprite/snow0.bmp')" alt="scene" />
+      <img
+        :src="useAsset(`sprite/snow${gameStore.distance % 3}.png`)"
+        alt="scene"
+      />
       <SnowEffect />
-      <ControlPanel v-if="showControl" @close="closeControl" />
+      <ControlPanel
+        v-if="viewType === 'control'"
+        @close="viewType = 'normal'"
+      />
+      <img
+        class="sub-event"
+        v-if="viewType === 'normal' && subEvent !== 'nothing' && subEventSprite"
+        :src="useAsset(subEventSprite)"
+        alt="sub-event"
+      />
     </div>
 
     <!-- 右侧状态区域 -->
     <div class="status-area">
       <div class="character">
-        <img :src="useAsset('sprite/self.bmp')" alt="character" />
+        <img :src="useAsset('sprite/self.png')" alt="character" />
       </div>
 
       <div class="stats">
+        <div class="stat-line" v-if="gameStore.stage > 0">
+          {{ t("game.stats.stage", { stage: gameStore.stage }) }}
+        </div>
         <div class="stat-line">
           {{ t("game.stats.distance") }}: {{ gameStore.distance }}
         </div>
@@ -23,14 +38,35 @@
         <div class="stat-line">
           {{ t("game.stats.hp") }}: {{ gameStore.hp }}/{{ gameStore.maxHp }}
         </div>
+        <div class="stat-line" v-if="gameStore.mp > 0">
+          {{ t("game.stats.mp") }}: {{ gameStore.mp }}/{{ gameStore.maxMp }}
+        </div>
+        <div class="stat-line" v-if="gameStore.attack > 0">
+          {{ t("game.stats.attack") }}: {{ gameStore.attack }}
+        </div>
+        <div class="stat-line" v-if="gameStore.defense > 0">
+          {{ t("game.stats.defense") }}: {{ gameStore.defense }}
+        </div>
+        <div class="stat-line" v-if="gameStore.weapon.name">
+          {{ t("game.stats.weapon") }}: {{ gameStore.weapon.name }}（{{
+            gameStore.weapon.attack
+          }}）
+        </div>
+        <div class="stat-line" v-if="gameStore.armor.name">
+          {{ t("game.stats.armor") }}: {{ gameStore.armor.name }}（{{
+            gameStore.armor.defense
+          }}）
+        </div>
       </div>
 
-      <template v-if="showStatus">
+      <template v-if="viewType === 'normal'">
         <div class="buttons buttons-1">
-          <button>{{ t("game.actions.forward") }}</button>
+          <button @click="handleForward">
+            {{ t("game.actions.forward") }}
+          </button>
         </div>
         <div class="buttons buttons-2">
-          <button @click="toggleControl">
+          <button @click="viewType = 'control'">
             {{ t("game.actions.control") }}
           </button>
         </div>
@@ -51,6 +87,7 @@ import SnowEffect from "../components/SnowEffect.vue";
 import ControlPanel from "../components/ControlPanel.vue";
 import { assetManager } from "../services/assetManager";
 import { useI18n } from "vue-i18n";
+import { forwardService } from "../services/forwardService";
 
 const gameStore = useGameStore();
 const { t } = useI18n();
@@ -59,19 +96,20 @@ const useAsset = (path: string) => {
   return assetManager.useAsset(path).value;
 };
 
-const showStatus = ref(true);
-const showControl = ref(false);
+// 当前界面类型定义
+type GameViewType = "normal" | "control" | "battle";
+const viewType = ref<GameViewType>("normal");
+// 子事件类型定义
+type SubEvent = "nothing" | "shop" | "sleep" | "save" | "matches" | "thought";
+const subEvent = ref<SubEvent>("nothing");
+const subEventSprite = ref<string>("");
 
-// 切换制御面板
-const toggleControl = () => {
-  showStatus.value = false;
-  showControl.value = true;
-};
-
-// 关闭制御面板
-const closeControl = () => {
-  showStatus.value = true;
-  showControl.value = false;
+const handleForward = () => {
+  const event = forwardService.handleForward();
+  if (event.type !== "battle") {
+    subEvent.value = event.type;
+    subEventSprite.value = event.sprite || "";
+  }
 };
 </script>
 
@@ -95,6 +133,14 @@ body {
     width: 300px;
     padding-top: 10px;
     position: relative;
+    flex-shrink: 0;
+    img {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
   }
 
   .status-area {
