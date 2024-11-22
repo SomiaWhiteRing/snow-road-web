@@ -37,9 +37,9 @@ const ASSET_LIST = {
     'scene_white.bmp'
   ],
   music: [
-    'coldecot.mid', 'fuleuden.mid', 'haruyori.mid', 'haumu.mid',
-    'macchi.mid', 'simoyake.mid', 'sironotuiku.mid', 'thanatos.mid',
-    'yukimichi.mid', 'yukio.mid'
+    'coldecot.mp3', 'fuleuden.mp3', 'haruyori.mp3', 'haumu.mp3',
+    'macchi.mp3', 'simoyake.mp3', 'sironotuiku.mp3', 'thanatos.mp3',
+    'yukimichi.mp3', 'yukio.mp3'
   ],
   sound: [
     'break.wav', 'bub.wav', 'dh.wav', 'dun.wav', 'duty.wav',
