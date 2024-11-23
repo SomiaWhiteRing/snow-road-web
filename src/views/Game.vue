@@ -5,10 +5,6 @@
         :src="useAsset(`sprite/snow${gameStore.distance % 3}.png`)"
         alt="scene"
       />
-      <ControlPanel
-        v-if="viewType === 'control'"
-        @close="viewType = 'normal'"
-      />
       <img
         class="sub-event"
         v-if="viewType === 'normal' && subEvent !== 'nothing' && subEventSprite"
@@ -17,6 +13,10 @@
       />
       <SnowEffect />
       <EventMessage :message="message" />
+      <ControlPanel
+        v-if="viewType === 'control'"
+        @close="viewType = 'normal'"
+      />
     </div>
 
     <div class="status-area">

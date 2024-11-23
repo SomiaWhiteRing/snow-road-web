@@ -14,8 +14,8 @@ class SoundManager {
     }
   }
 
-  // 播放音效
-  async playSound(soundName: string) {
+  // 播放音效，添加速度参数，默认为1
+  async playSound(soundName: string, playbackRate: number = 1) {
     try {
       // 获取音效文件URL
       const soundUrl = await assetManager.getAssetUrl(`sound/${soundName}`);
@@ -27,8 +27,9 @@ class SoundManager {
       audio.pause();
       audio.currentTime = 0;
       
-      // 设置新的音源并播放
+      // 设置新的音源和播放速度
       audio.src = soundUrl;
+      audio.playbackRate = playbackRate; // 设置播放速度
       await audio.play();
       
       // 更新索引
@@ -84,8 +85,10 @@ export const SOUND = {
   SPELL_9: 'spell09.wav',
   SUKA: 'suka.wav',
   THATHATHA: 'thathatha.wav',
+  THATHA: 'thatha.wav',
   TURN: 'turn.wav',
   UP: 'up.wav',
   WEAK: 'weak.wav',
-  ZURL: 'zurl.wav'
+  ZURL: 'zurl.wav',
+  STEP: 'step.wav'
 } as const; 

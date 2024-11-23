@@ -5,7 +5,9 @@ export const base = {
       loading: {
         checking: '正在检查资源...',
         loading: '正在加载游戏资源...',
-        progress: '正在加载游戏资源... ({current}/{total})',
+        loading_progress: '正在加载游戏资源... ({current}/{total})',
+        preloading: '正在预加载图片资源...',
+        preloading_progress: '正在预加载图片资源... ({current}/{total})',
         error: '资源加载失败，请刷新页面重试...'
       },
       stats: {
@@ -84,7 +86,9 @@ export const base = {
       loading: {
         checking: 'リソースを確認中...',
         loading: 'ゲームリソースを読み込み中...',
-        progress: 'ゲームリソースを読み込み中... ({current}/{total})',
+        loading_progress: 'ゲームリソースを読み込み中... ({current}/{total})',
+        preloading: '画像リソースを先読み中...',
+        preloading_progress: '画像リソースを先読み中... ({current}/{total})',
         error: '読み込みに失敗しました。ページを更新してください...'
       },
       stats: {
@@ -160,7 +164,9 @@ export const base = {
       loading: {
         checking: 'Checking resources...',
         loading: 'Loading game resources...',
-        progress: 'Loading game resources... ({current}/{total})',
+        loading_progress: 'Loading game resources... ({current}/{total})',
+        preloading: 'Preloading image resources...',
+        preloading_progress: 'Preloading image resources... ({current}/{total})',
         error: 'Loading failed, please refresh the page...'
       },
       stats: {

@@ -14,7 +14,7 @@ const ASSET_LIST = {
   sprite: [
     'ax.png', 'bearman.png', 'blackbear.png', 'candle0.png', 'candle1.png',
     'candle2.png', 'chas0.png', 'chas1.png', 'chas2.png', 'cloak.png',
-    'coldecot.png', 'epitaph0.png', 'epitaph1.png', 'fish00.png', 'fish01.png',
+    'coldeco.png', 'epitaph0.png', 'epitaph1.png', 'fish00.png', 'fish01.png',
     'flower0.png', 'flower1.png', 'gameover.png', 'gameover2.png', 'hell0.png',
     'hell1.png', 'hell2.png', 'iceflare.png', 'inn.png', 'kudou.png',
     'lighter.png', 'lucifer.png', 'memo.png', 'nazo00.png', 'noenemy.png',
@@ -47,7 +47,7 @@ const ASSET_LIST = {
     'popon.wav', 'roar.wav', 'spell00.wav', 'spell01.wav', 'spell02.wav',
     'spell03.wav', 'spell04.wav', 'spell05.wav', 'spell06.wav', 'spell07.wav',
     'spell08.wav', 'spell09.wav', 'suka.wav', 'thathatha.wav', 'turn.wav',
-    'up.wav', 'weak.wav', 'zurl.wav'
+    'up.wav', 'weak.wav', 'zurl.wav', 'step.wav'
   ],
   story: [
     'story00.txt', 'story01.txt', 'story02.txt', 'story03.txt',
@@ -64,6 +64,7 @@ class AssetManager {
   private totalAssets: number = 0;
   private loadedAssets: number = 0;
   private urlCache: Map<string, string> = new Map();
+  private imageUrls: string[] = [];
 
   constructor() {
     this.totalAssets = Object.values(ASSET_LIST).reduce(
@@ -190,15 +191,16 @@ class AssetManager {
       return url;
     }
 
+    // 如果不在缓存中，说明是动态生成的路径（如 snow0.png, snow1.png, snow2.png）
     // 使用 getAssetUrl 方法从 IndexedDB 获取资源
     this.getAssetUrl(path)
       .then(assetUrl => {
+        // 获取到 URL 后也加入缓存
         assetCache.set(path, assetUrl);
         url.value = assetUrl;
       })
       .catch(error => {
         console.error(`加载资源失败: ${path}`, error);
-        // 不再设置fallback图片，错误会触发重定向到加载页面
       });
 
     return url;
@@ -210,6 +212,56 @@ class AssetManager {
       URL.revokeObjectURL(url);
     });
     assetCache.clear();
+  }
+
+  // 获取所有图片资源的路径
+  getImagePaths(): string[] {
+    const imagePaths: string[] = [];
+    
+    // 添加 sprite 和 cg 类型的资源
+    ['sprite', 'cg'].forEach(type => {
+      ASSET_LIST[type as keyof typeof ASSET_LIST].forEach(file => {
+        imagePaths.push(`${type}/${file}`);
+      });
+    });
+    
+    return imagePaths;
+  }
+
+  // 预加载所有图片
+  async preloadAllImages(onProgress?: (current: number, total: number) => void): Promise<void> {
+    const imagePaths = this.getImagePaths();
+    let loadedCount = 0;
+    const total = imagePaths.length;
+
+    const promises = imagePaths.map(path => {
+      return new Promise<void>((resolve, reject) => {
+        this.getAssetUrl(path)
+          .then(url => {
+            // 同时存入 assetCache，这样 useAsset 可以直接使用
+            assetCache.set(path, url);
+            this.addImageUrl(url);
+            loadedCount++;
+            onProgress?.(loadedCount, total);
+            resolve();
+          })
+          .catch(reject);
+      });
+    });
+
+    await Promise.all(promises);
+  }
+
+  // 获取所有需要预加载的图片URL
+  getPreloadImageUrls(): string[] {
+    return this.imageUrls;
+  }
+
+  // 添加需要预加载的图片URL
+  addImageUrl(url: string) {
+    if (!this.imageUrls.includes(url)) {
+      this.imageUrls.push(url);
+    }
   }
 }
 

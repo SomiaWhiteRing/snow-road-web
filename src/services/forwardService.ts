@@ -31,11 +31,6 @@ const EVENT_WEIGHTS = {
   battle: 10
 } as const
 
-// 事件权重类型
-type EventWeights = {
-  readonly [K in keyof typeof EVENT_WEIGHTS]: number
-}
-
 export class ForwardService {
   private gameStore: ReturnType<typeof useGameStore> | null = null
   private i18n: Composer
@@ -109,18 +104,18 @@ export class ForwardService {
     let rand = Math.random() * this.getTotalWeight()
 
     if ((rand -= EVENT_WEIGHTS.nothing) < 0) {
-      soundManager.playSound(SOUND.ZURL)
+      soundManager.playSound(SOUND.STEP)
       return { type: 'nothing' }
     }
     if ((rand -= EVENT_WEIGHTS.thought) < 0) {
-      soundManager.playSound(SOUND.ZURL)
+      soundManager.playSound(SOUND.STEP)
       return {
         type: 'thought',
         message: this.translateMessage('events.thought.default')
       }
     }
     if ((rand -= EVENT_WEIGHTS.shop) < 0) {
-      soundManager.playSound(SOUND.ZURL)
+      soundManager.playSound(SOUND.STEP)
       return {
         type: 'shop',
         sprite: 'sprite/shop.png',
@@ -128,7 +123,7 @@ export class ForwardService {
       }
     }
     if ((rand -= EVENT_WEIGHTS.inn) < 0) {
-      soundManager.playSound(SOUND.ZURL)
+      soundManager.playSound(SOUND.STEP)
       return {
         type: 'inn',
         sprite: 'sprite/inn.png',
@@ -140,7 +135,7 @@ export class ForwardService {
       }
     }
     if ((rand -= EVENT_WEIGHTS.save) < 0) {
-      soundManager.playSound(SOUND.ZURL)
+      soundManager.playSound(SOUND.STEP)
       return {
         type: 'save',
         sprite: 'sprite/candle0.png',
@@ -175,7 +170,7 @@ export class ForwardService {
       }
     }
     if ((rand -= EVENT_WEIGHTS.bearWarning) < 0 && this.hasBearInCurrentStage()) {
-      soundManager.playSound(SOUND.ZURL)
+      soundManager.playSound(SOUND.STEP)
       return {
         type: 'thought',
         sprite: 'sprite/warning.png',
@@ -183,6 +178,7 @@ export class ForwardService {
       }
     }
 
+    soundManager.playSound(SOUND.STEP)
     const enemy = this.getRandomEnemy()
     return {
       type: 'battle',
