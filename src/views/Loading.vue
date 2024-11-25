@@ -2,7 +2,7 @@
   <div class="loading-view" @click="startGame">
     <!-- 标题窗格 -->
     <div class="title-window">
-      <img src="../assets/sprite/title.png" alt="title" class="title-image" />
+      <img src="/assets/sprite/title.png" alt="title" class="title-image" />
       <!-- 雪景效果 -->
       <SnowEffect
         :flakes="[
@@ -114,7 +114,6 @@ const handlePreload = async () => {
 
   // 获取需要预加载的图片URL列表
   imageUrls.value = assetManager.getPreloadImageUrls();
-  console.log("URLs to preload:", imageUrls.value);
 
   if (imageUrls.value.length === 0) {
     console.log("No images to preload, completing...");
@@ -127,7 +126,6 @@ const handlePreload = async () => {
 
 // 处理预加载进度
 const handlePreloadProgress = (current: number, total: number) => {
-  console.log(`Preload progress: ${current}/${total}`);
   progress.value = Math.floor((current / total) * 100);
   loadingText.value = t("game.loading.preloading_progress", { current, total });
 };
@@ -255,3 +253,4 @@ onUnmounted(() => {
   }
 }
 </style>
+

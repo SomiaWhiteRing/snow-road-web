@@ -100,16 +100,17 @@ class AssetManager {
     for (const [type, files] of Object.entries(ASSET_LIST)) {
       for (const file of files) {
         try {
-          // 检查资产是否已存在
-          const existing = await this.db!.get('assets', `${type}/${file}`);
+          const key = `${type}/${file}`;
+          const existing = await this.db!.get('assets', key);
           if (!existing) {
-            const response = await fetch(`/src/assets/${type}/${file}`);
+            const assetPath = `/assets/${type}/${file}`;
+            const response = await fetch(assetPath);
             if (!response.ok) {
-              throw new Error(`Failed to load ${type}/${file}`);
+              throw new Error(`Failed to load ${key}`);
             }
             const blob = await response.blob();
             await this.db!.put('assets', {
-              key: `${type}/${file}`,
+              key,
               value: blob
             });
           }
@@ -217,14 +218,14 @@ class AssetManager {
   // 获取所有图片资源的路径
   getImagePaths(): string[] {
     const imagePaths: string[] = [];
-    
+
     // 添加 sprite 和 cg 类型的资源
     ['sprite', 'cg'].forEach(type => {
       ASSET_LIST[type as keyof typeof ASSET_LIST].forEach(file => {
         imagePaths.push(`${type}/${file}`);
       });
     });
-    
+
     return imagePaths;
   }
 

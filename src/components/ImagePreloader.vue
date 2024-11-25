@@ -24,10 +24,8 @@ const props = defineProps<Props>();
 const loadedCount = ref(0);
 
 // 添加调试日志
-console.log("Images to preload:", props.imageSources);
 
 const handleImageLoad = (index: number) => {
-  console.log(`Image loaded: ${props.imageSources[index]}`);
   loadedCount.value++;
   props.onProgress?.(loadedCount.value, props.imageSources.length);
 
@@ -72,3 +70,4 @@ onMounted(() => {
   pointer-events: none;
 }
 </style>
+
