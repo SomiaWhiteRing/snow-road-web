@@ -26,9 +26,9 @@ export const base = {
         forward: '前进',
         control: '制御',
         matches: '火柴 {count}根',
-        inn: '住店',
-        candle: '点燃',
-        shop: '购物'
+        inn: '住宿',
+        candle: '保存',
+        shop: '光顾'
       },
       controlText: [
         '第六层。',
@@ -106,7 +106,10 @@ export const base = {
       actions: {
         forward: '進む',
         control: '制御',
-        matches: 'マッチ {count}本'
+        matches: 'マッチ {count}本',
+        inn: '泊まる',
+        candle: 'セーブ',
+        shop: '寄る'
       },
       controlText: [
         '第六の階層。',
@@ -184,7 +187,10 @@ export const base = {
       actions: {
         forward: 'Forward',
         control: 'Control',
-        matches: 'Matches: {count}'
+        matches: 'Matches: {count}',
+        inn: 'Rest',
+        candle: 'Save',
+        shop: 'Visit'
       },
       controlText: [
         'The Sixth Layer.',
