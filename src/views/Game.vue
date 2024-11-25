@@ -89,7 +89,14 @@ const useAsset = (path: string) => {
 };
 
 type GameViewType = "normal" | "control" | "battle";
-type SubEvent = "nothing" | "shop" | "inn" | "save" | "matches" | "thought";
+type SubEvent =
+  | "nothing"
+  | "shop"
+  | "inn"
+  | "save"
+  | "matches"
+  | "thought"
+  | "note";
 
 interface SubEventExtra {
   cost?: number;

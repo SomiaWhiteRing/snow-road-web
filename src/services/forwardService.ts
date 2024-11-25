@@ -1,9 +1,10 @@
 import { useGameStore } from '../stores/game'
 import { ENEMIES, BOSSES, type EnemyType } from '../types/enemies'
+import { SPELLS } from '../types/spells'
 import { type Composer } from 'vue-i18n'
 import { soundManager, SOUND } from '../services/soundManager'
 
-export type ForwardEventType = 'nothing' | 'thought' | 'shop' | 'inn' | 'save' | 'matches' | 'battle'
+export type ForwardEventType = 'nothing' | 'thought' | 'shop' | 'inn' | 'save' | 'matches' | 'battle' | 'note'
 
 interface ForwardEvent {
   type: ForwardEventType
@@ -28,7 +29,8 @@ const EVENT_WEIGHTS = {
   matches: 10,
   matchesExtra: 1,
   bearWarning: 10,
-  battle: 10
+  battle: 10,
+  note: 10
 } as const
 
 export class ForwardService {
@@ -143,7 +145,7 @@ export class ForwardService {
         message: this.translateMessage('events.save.before'),
         extra: {
           afterMessage: this.translateMessage('events.save.after'),
-          afterSprite: 'sprite/candle2.png',
+          afterSprite: 'sprite/candle1.png',
           cost: 1
         }
       }
@@ -168,6 +170,18 @@ export class ForwardService {
         extra: {
           getNum: 10
         }
+      }
+    }
+    if ((rand -= EVENT_WEIGHTS.note) < 0) {
+      soundManager.playSound(SOUND.STEP)
+      // 随机选择一个法术
+      const spell = SPELLS[Math.floor(Math.random() * SPELLS.length)]
+      return {
+        type: 'note',
+        sprite: 'sprite/memo.png',
+        message: this.translateMessage('events.note', {
+          name: this.translateMessage(`spell.${spell.id}`)
+        })
       }
     }
     if ((rand -= EVENT_WEIGHTS.bearWarning) < 0 && this.hasBearInCurrentStage()) {
