@@ -20,7 +20,7 @@ interface ForwardEvent {
 
 // 添加事件权重配置
 const EVENT_WEIGHTS = {
-  nothing: 30,
+  nothing: 40,
   thought: 10,
   shop: 10,
   inn: 10,
@@ -124,13 +124,14 @@ export class ForwardService {
     }
     if ((rand -= EVENT_WEIGHTS.inn) < 0) {
       soundManager.playSound(SOUND.STEP)
+      const cost = Math.floor(Math.random() * 3) + 1
       return {
         type: 'inn',
         sprite: 'sprite/inn.png',
-        message: this.translateMessage('events.inn.before'),
+        message: this.translateMessage('events.inn.before', { num: cost }),
         extra: {
           afterMessage: this.translateMessage('events.inn.after'),
-          cost: Math.floor(Math.random() * 3) + 1
+          cost
         }
       }
     }
@@ -143,7 +144,7 @@ export class ForwardService {
         extra: {
           afterMessage: this.translateMessage('events.save.after'),
           afterSprite: 'sprite/candle2.png',
-          cost: Math.floor(Math.random() * 3) + 1
+          cost: 1
         }
       }
     }

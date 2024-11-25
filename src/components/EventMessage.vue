@@ -24,14 +24,16 @@ const messageLines = computed(() => {
   top: 260px;
   left: 25px;
   color: #fff;
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 
   span {
-    display: block;
+    display: inline;
     margin-bottom: 4px;
     background: rgba(0, 0, 0, 0.7);
-    padding: 1px;
     white-space: nowrap;
+    line-height: 1.1;
   }
 }
 </style>

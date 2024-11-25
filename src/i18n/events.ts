@@ -2,67 +2,76 @@ export const eventMessages = {
   zh: {
     events: {
       thought: {
-        default: ['你思考着前方的旅程1', '你思考着前方的旅程2', '你思考着前方的旅程3'],
-        bear_warning: '空气中弥漫着危险的气息...'
+        default: ['好冷啊……', '我', '还要继续', '没有人来救我', '好冷……', '呼出白气',
+          '咯吱咯吱', '手都冻僵了', '神明大人', '好冷啊', '哈——'
+        ],
+        bear_warning: '感觉有危险的气息...'
       },
-      shop: '发现了一家商店',
+      shop: '是自动贩卖机。',
       inn: {
-        before: '发现了一家旅馆',
-        after: '你住进了一家旅馆'
+        before: '是旅馆。\n用{num}根火柴就能住一晚。',
+        after: '暂时取暖了。'
       },
       save: {
-        before: '发现了一根蜡烛',
-        after: '你点燃了一根蜡烛'
+        before: '是存档蜡烛。\n用1根火柴就能存档。',
+        after: '已保存进度。'
       },
       matches: {
-        default: '捡到了一根火柴',
-        extra: '捡到了一盒大火柴！'
+        default: '捡到了1根火柴。',
+        extra: '太好了，是火柴盒！\n获得了10根火柴。'
       },
-      battle: '遭遇了 {enemy}'
+      battle: '{enemy}出现了！',
+      note: '有张便条。\n『{name}』'
     }
   },
   ja: {
     events: {
       thought: {
-        default: ['旅の行方を考えている1', '旅の行方を考えている2', '旅の行方を考えている3'],
+        default: ['はやく……', '私は', 'まだ　まだ', '誰も助けてくれないから', '寒い……', '息が白い',
+          'ざっくざっく', '手がかじかむ', 'かみさま', 'さむいよう', 'はーっ'
+        ],
         bear_warning: '危険な気配が漂っている...'
       },
-      shop: '店を見つけた',
+      shop: '自動販売機た。',
       inn: {
-        before: '発見した旅館',
-        after: '旅館に泊まった'
+        before: '宿屋だ。\nマッチ{num}本で泊めてくれる。',
+        after: 'ひとときの暖を取れた。'
       },
       save: {
-        before: '発見したろうそく',
-        after: 'ろうそくを燃やした'
+        before: 'セーブキャンドルだ。\nマッチ1本でセーブできる。',
+        after: 'セーブしました。'
       },
       matches: {
-        default: 'マッチを拾った',
-        extra: '大きなマッチを拾った！'
+        default: 'マッチを1本拾った。',
+        extra: 'やったあ、マッチ箱だ！\nマッチを10本手に入れた。'
       },
-      battle: '{enemy} が現れた'
+      battle: '{enemy}があらわれた！',
+      note: 'メモがある。\n『{name}』'
     }
   },
   en: {
     events: {
       thought: {
-        default: ['You think about your journey1', 'You think about your journey2', 'You think about your journey3'],
-        bear_warning: 'There\'s a dangerous presence in the air...'
+        default: ['So cold...', 'I', 'Must go on', 'No one will save me', 'It\'s cold...', 'White breath',
+          'Crunch crunch', 'My hands are numb', 'Dear God', 'So cold', 'Haah—'
+        ],
+        bear_warning: 'There\'s a dangerous presence...'
       },
-      shop: 'You found a shop',
+      shop: 'It\'s a vending machine.',
       inn: {
-        before: 'You found an inn',
-        after: 'You stayed at an inn'
+        before: 'It\'s an inn.\nThey\'ll let me stay for {num} matches.',
+        after: 'I was able to warm up for a while.'
       },
       save: {
-        before: 'You found a candle',
-        after: 'You lit a candle'
+        before: 'It\'s a save candle.\nI can save using 1 match.',
+        after: 'Progress saved.'
       },
       matches: {
-        default: 'You found some matches',
-        extra: 'You found a large box of matches!'
+        default: 'Found 1 match.',
+        extra: 'Yes! A matchbox!\nGot 10 matches.'
       },
-      battle: 'Encountered {enemy}'
+      battle: 'A {enemy} appeared!',
+      note: 'There\'s a note.\n"{name}"'
     }
   }
 } 

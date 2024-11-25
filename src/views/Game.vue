@@ -30,24 +30,18 @@
         <div class="buttons buttons-1">
           <button
             @click="handleInn"
-            v-if="subEvent === 'inn'"
-            :disabled="
-              gameStore.items.matches < (subEventExtra.cost || 0) ||
-              message === subEventExtra.afterMessage
-            "
+            v-if="subEvent === 'inn' && message !== subEventExtra.afterMessage"
+            :disabled="gameStore.items.matches < (subEventExtra.cost || 0)"
           >
-            {{ t("game.actions.inn") }} ({{ subEventExtra.cost }})
+            {{ t("game.actions.inn") }}
           </button>
 
           <button
             @click="handleCandle"
-            v-if="subEvent === 'save'"
-            :disabled="
-              gameStore.items.matches < (subEventExtra.cost || 0) ||
-              message === subEventExtra.afterMessage
-            "
+            v-if="subEvent === 'save' && message !== subEventExtra.afterMessage"
+            :disabled="gameStore.items.matches < (subEventExtra.cost || 0)"
           >
-            {{ t("game.actions.candle") }} ({{ subEventExtra.cost }})
+            {{ t("game.actions.candle") }}
           </button>
 
           <button @click="handleShop" v-if="subEvent === 'shop'">
@@ -228,3 +222,4 @@ body {
   }
 }
 </style>
+
