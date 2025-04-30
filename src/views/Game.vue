@@ -1,22 +1,13 @@
 <template>
   <div class="game-view">
     <div class="scene-area">
-      <img
-        :src="useAsset(`sprite/snow${gameStore.distance % 3}.png`)"
-        alt="scene"
-      />
-      <img
-        class="sub-event"
-        v-if="viewType === 'normal' && subEvent !== 'nothing' && subEventSprite"
-        :src="useAsset(subEventSprite)"
-        alt="sub-event"
-      />
+      <img :src="useAsset(`sprite/snow${gameStore.distance % 3}.png`)" alt="scene" />
+      <img class="sub-event" v-if="viewType !== 'control' && subEvent !== 'nothing' && subEventSprite"
+        :src="useAsset(subEventSprite)" alt="sub-event" />
       <SnowEffect />
       <EventMessage :message="message" />
-      <ControlPanel
-        v-if="viewType === 'control'"
-        @close="viewType = 'normal'"
-      />
+      <ControlPanel v-if="viewType === 'control'" @close="viewType = 'normal'" />
+      <EnemyStatus v-if="viewType === 'battle'" />
     </div>
 
     <div class="status-area">
@@ -28,19 +19,13 @@
 
       <template v-if="viewType === 'normal'">
         <div class="buttons buttons-1">
-          <button
-            @click="handleInn"
-            v-if="subEvent === 'inn' && message !== subEventExtra.afterMessage"
-            :disabled="gameStore.items.matches < (subEventExtra.cost || 0)"
-          >
+          <button @click="handleInn" v-if="subEvent === 'inn' && message !== subEventExtra.afterMessage"
+            :disabled="gameStore.items.matches < (subEventExtra.cost || 0)">
             {{ t("game.actions.inn") }}
           </button>
 
-          <button
-            @click="handleCandle"
-            v-if="subEvent === 'save' && message !== subEventExtra.afterMessage"
-            :disabled="gameStore.items.matches < (subEventExtra.cost || 0)"
-          >
+          <button @click="handleCandle" v-if="subEvent === 'save' && message !== subEventExtra.afterMessage"
+            :disabled="gameStore.items.matches < (subEventExtra.cost || 0)">
             {{ t("game.actions.candle") }}
           </button>
 
@@ -75,9 +60,11 @@ import SnowEffect from "../components/SnowEffect.vue";
 import ControlPanel from "../components/ControlPanel.vue";
 import StatusPanel from "../components/StatusPanel.vue";
 import EventMessage from "../components/EventMessage.vue";
+import EnemyStatus from "@/components/EnemyStatus.vue";
 import { assetManager } from "../services/assetManager";
 import { useI18n } from "vue-i18n";
 import { createForwardService } from "../services/forwardService";
+import { type EnemyType } from "../types/enemies";
 import BackgroundMusic from "../components/BackgroundMusic.vue";
 
 const gameStore = useGameStore();
@@ -96,7 +83,8 @@ type SubEvent =
   | "save"
   | "matches"
   | "thought"
-  | "note";
+  | "note"
+  | "battle";
 
 interface SubEventExtra {
   cost?: number;
@@ -113,20 +101,16 @@ const message = ref<string>("");
 
 const handleForward = () => {
   const event = forwardService.handleForward();
-  if (event.type !== "battle") {
-    subEvent.value = event.type as SubEvent;
-    subEventSprite.value = event.sprite || "";
-    subEventExtra.value = event.extra || {};
-    message.value = event.message || "";
-    if (event.type === "matches" && event.extra?.getNum) {
-      gameStore.items.matches += event.extra.getNum;
-    }
-  } else {
-    subEvent.value = "nothing";
-    subEventSprite.value = "";
-    subEventExtra.value = {};
-    message.value = "";
-    return;
+  subEvent.value = event.type as SubEvent;
+  subEventSprite.value = event.sprite || "";
+  subEventExtra.value = event.extra || {};
+  message.value = event.message || "";
+  if (event.type === "matches" && event.extra?.getNum) {
+    gameStore.items.matches += event.extra.getNum;
+  }
+  if (event.type === "battle") {
+    viewType.value = "battle";
+    createEnemy(event.enemy as EnemyType);
   }
 };
 
@@ -143,6 +127,31 @@ const handleCandle = () => {
 
 const handleShop = () => {
   message.value = t("game.actions.shop");
+};
+
+const createEnemy = (enemy: EnemyType) => {
+  const enemyData = {
+    name: enemy.name,
+    hp: 0,
+    maxHp: 0,
+    mp: 0,
+    attack: 0,
+    defense: 0,
+  };
+  const setEnemyAttribute = (attribute: Exclude<keyof typeof enemyData, 'name'>, value: number | [number, number]) => {
+    if (typeof value === "number") {
+      enemyData[attribute] = value as number;
+    } else if (Array.isArray(value)) {
+      enemyData[attribute] = Math.floor(Math.random() * (value[1] - value[0] + 1)) + value[0] as number;
+    }
+  };
+
+  setEnemyAttribute('hp', enemy.hp);
+  setEnemyAttribute('mp', enemy.mp);
+  setEnemyAttribute('attack', enemy.attack);
+  setEnemyAttribute('defense', enemy.defense);
+  enemyData.maxHp = enemyData.hp;
+  gameStore.battle.enemy = enemyData;
 };
 </script>
 
@@ -167,6 +176,7 @@ body {
     padding-top: 10px;
     position: relative;
     flex-shrink: 0;
+
     img {
       width: 100%;
       height: 100%;
@@ -174,6 +184,7 @@ body {
       top: 0;
       left: 0;
     }
+
     .sub-event-message {
       position: absolute;
       top: 260px;
@@ -182,6 +193,7 @@ body {
       font-size: 12px;
       line-height: 1;
       padding: 1px;
+
       span {
         display: block;
         margin-bottom: 4px;
@@ -229,4 +241,3 @@ body {
   }
 }
 </style>
-

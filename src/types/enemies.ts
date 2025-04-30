@@ -1,84 +1,84 @@
 export interface EnemyType {
-  id: string
-  name: string
-  hp: number | [number, number] // 固定值或范围
-  mp: number | [number, number]
-  attack: number | [number, number]
-  defense: number | [number, number]
-  exp: number
-  isBoss?: boolean
-  stage?: number // boss专用
-  stages?: number[] // 普通敌人可能出现在多个关卡
+  id: string;
+  name: string;
+  hp: number | [number, number]; // 固定值或范围
+  mp: number | [number, number];
+  attack: number | [number, number];
+  defense: number | [number, number];
+  exp: number;
+  isBoss?: boolean;
+  stage?: number; // boss专用
+  stages?: number[]; // 普通敌人可能出现在多个关卡
   sprite: {
-    path: string
-    x?: number // 展示坐标，可选
-    y?: number
-  }
+    path: string;
+    x?: number; // 展示坐标，可选
+    y?: number;
+  };
   // 特殊属性
   copyPlayerStats?: {
-    hp?: boolean
-    mp?: boolean
-    attack?: boolean
-    defense?: boolean
-  }
+    hp?: boolean;
+    mp?: boolean;
+    attack?: boolean;
+    defense?: boolean;
+  };
 }
 
 export const ENEMIES: EnemyType[] = [
   {
-    id: 'yukio',
-    name: 'ゆきお',
+    id: "yukio",
+    name: "ゆきお",
     hp: [1, 4],
     mp: 0,
     attack: 1,
     defense: 0,
     exp: 1,
-    stages: [0, 8],
+    stages: [0, 1, 5],
     sprite: {
-      path: 'sprite/snowman.png'
-    }
+      path: "sprite/snowman.png",
+    },
   },
   {
-    id: 'ice_flare',
-    name: 'アイスフレア',
+    id: "ice_flare",
+    name: "アイスフレア",
     hp: [1, 2],
     mp: 0,
     attack: [1, 4],
     defense: 0,
     exp: 2,
-    stages: [0],
+    stages: [0, 1],
     sprite: {
-      path: 'sprite/iceflare.png'
-    }
+      path: "sprite/iceflare.png",
+    },
   },
   {
-    id: 'yukiko',
-    name: 'ゆきこ',
+    id: "yukiko",
+    name: "ゆきこ",
     hp: [2, 4],
     mp: 0,
     attack: [2, 3],
     defense: [1, 2],
     exp: 3,
-    stages: [0, 8],
+    stages: [1, 2, 5],
     sprite: {
-      path: 'sprite/snowman2.png'
-    }
+      path: "sprite/snowman2.png",
+    },
   },
   {
-    id: 'yukimasa',
-    name: 'ゆきまさ',
+    id: "yukimasa",
+    name: "ゆきまさ",
     hp: [10, 12],
     mp: 0,
     attack: [5, 6],
     defense: [0, 1],
     exp: 4,
-    stages: [1],
+    stages: [2, 3],
     sprite: {
-      path: 'sprite/snowwes.png'
-    }
+      path: "sprite/snowwes.png",
+    },
   },
   {
-    id: 'unopened_flower',
-    name: 'ひらかぬ花',
+    id: "unopened_flower",
+    name: "ひらかぬ花",
     hp: [1, 2],
     mp: 0,
     attack: [4, 6],
@@ -86,51 +86,51 @@ export const ENEMIES: EnemyType[] = [
     exp: 4,
     stages: [3],
     sprite: {
-      path: 'sprite/flower0.png'
-    }
+      path: "sprite/flower0.png",
+    },
   },
   {
-    id: 'epitaph',
-    name: 'エピタフ',
+    id: "epitaph",
+    name: "エピタフ",
     hp: [5, 7],
     mp: 0,
     attack: [4, 6],
     defense: [7, 8],
     exp: 8,
-    stages: [6],
+    stages: [3, 6],
     sprite: {
-      path: 'sprite/epitaph0.png'
-    }
+      path: "sprite/epitaph0.png",
+    },
   },
   {
-    id: 'white_bear',
-    name: '白熊',
+    id: "white_bear",
+    name: "白熊",
     hp: [9, 11],
     mp: 0,
     attack: [5, 6],
     defense: [5, 6],
     exp: 7,
-    stages: [4],
+    stages: [1, 2, 4],
     sprite: {
-      path: 'sprite/whitebear.png'
-    }
+      path: "sprite/whitebear.png",
+    },
   },
   {
-    id: 'white_bear_king',
-    name: '白熊王',
+    id: "white_bear_king",
+    name: "白熊王",
     hp: [12, 14],
     mp: 0,
     attack: [7, 8],
     defense: [7, 8],
     exp: 10,
-    stages: [6],
+    stages: [4, 6],
     sprite: {
-      path: 'sprite/bearman.png'
-    }
+      path: "sprite/bearman.png",
+    },
   },
   {
-    id: 'yukihiko',
-    name: 'ゆきひこ',
+    id: "yukihiko",
+    name: "ゆきひこ",
     hp: [4, 6],
     mp: 0,
     attack: [10, 12],
@@ -138,12 +138,12 @@ export const ENEMIES: EnemyType[] = [
     exp: 9,
     stages: [5],
     sprite: {
-      path: 'sprite/snowwes4.png'
-    }
+      path: "sprite/snowwes4.png",
+    },
   },
   {
-    id: 'yukie',
-    name: 'ゆきえ',
+    id: "yukie",
+    name: "ゆきえ",
     hp: [7, 8],
     mp: [2, 5],
     attack: [6, 8],
@@ -151,12 +151,12 @@ export const ENEMIES: EnemyType[] = [
     exp: 11,
     stages: [5],
     sprite: {
-      path: 'sprite/snowwes3.png'
-    }
+      path: "sprite/snowwes3.png",
+    },
   },
   {
-    id: 'fearsome_match',
-    name: 'おそるべきマッチ',
+    id: "fearsome_match",
+    name: "おそるべきマッチ",
     hp: 1,
     mp: 0,
     attack: [1, 25],
@@ -164,12 +164,12 @@ export const ENEMIES: EnemyType[] = [
     exp: 3,
     stages: [6],
     sprite: {
-      path: 'sprite/hell2.png'
-    }
+      path: "sprite/hell2.png",
+    },
   },
   {
-    id: 'absolute_yukio',
-    name: '絶対ゆきお',
+    id: "absolute_yukio",
+    name: "絶対ゆきお",
     hp: [15, 19],
     mp: 0,
     attack: 0,
@@ -177,15 +177,15 @@ export const ENEMIES: EnemyType[] = [
     exp: 15,
     stages: [8],
     sprite: {
-      path: 'sprite/snowwes2.png'
+      path: "sprite/snowwes2.png",
     },
     copyPlayerStats: {
-      attack: true
-    }
+      attack: true,
+    },
   },
   {
-    id: 'absolute_yukiko',
-    name: '絶対ゆきこ',
+    id: "absolute_yukiko",
+    name: "絶対ゆきこ",
     hp: [1, 3],
     mp: 0,
     attack: [14, 16],
@@ -193,31 +193,31 @@ export const ENEMIES: EnemyType[] = [
     exp: 12,
     stages: [8],
     sprite: {
-      path: 'sprite/snowwes3.png'
+      path: "sprite/snowwes3.png",
     },
     copyPlayerStats: {
-      defense: true
-    }
+      defense: true,
+    },
   },
   {
-    id: 'absolute_bear',
-    name: '絶対熊',
+    id: "absolute_bear",
+    name: "絶対熊",
     hp: 0,
     mp: 10,
     attack: [20, 24],
     defense: [20, 24],
     exp: 30,
-    stages: [8, 9],
+    stages: [8, 9, 10],
     sprite: {
-      path: 'sprite/whitebear2.png'
+      path: "sprite/whitebear2.png",
     },
     copyPlayerStats: {
-      hp: true
-    }
+      hp: true,
+    },
   },
   {
-    id: 'coldecot_aura',
-    name: 'コルデコットオーラ',
+    id: "coldecot_aura",
+    name: "コルデコットオーラ",
     hp: [0, 25],
     mp: [0, 25],
     attack: [0, 25],
@@ -225,12 +225,12 @@ export const ENEMIES: EnemyType[] = [
     exp: 25,
     stages: [9],
     sprite: {
-      path: 'sprite/coldecot.png'
-    }
+      path: "sprite/coldecot.png",
+    },
   },
   {
-    id: 'from_engine',
-    name: 'フロムエンジン',
+    id: "from_engine",
+    name: "フロムエンジン",
     hp: [0, 50],
     mp: [0, 50],
     attack: [0, 50],
@@ -238,12 +238,12 @@ export const ENEMIES: EnemyType[] = [
     exp: 50,
     stages: [10],
     sprite: {
-      path: 'sprite/engine.png'
-    }
+      path: "sprite/engine.png",
+    },
   },
   {
-    id: 'red_silhouette',
-    name: 'レッドシルエット',
+    id: "red_silhouette",
+    name: "レッドシルエット",
     hp: 0,
     mp: 0,
     attack: 0,
@@ -251,21 +251,21 @@ export const ENEMIES: EnemyType[] = [
     exp: 0,
     stages: [10],
     sprite: {
-      path: 'sprite/self.png'
+      path: "sprite/self.png",
     },
     copyPlayerStats: {
       hp: true,
       mp: true,
       attack: true,
-      defense: true
-    }
-  }
-]
+      defense: true,
+    },
+  },
+];
 
 export const BOSSES: EnemyType[] = [
   {
-    id: 'yukinobu',
-    name: 'ゆきのぶ',
+    id: "yukinobu",
+    name: "ゆきのぶ",
     hp: 7,
     mp: 0,
     attack: 2,
@@ -274,12 +274,12 @@ export const BOSSES: EnemyType[] = [
     isBoss: true,
     stage: 0,
     sprite: {
-      path: 'sprite/snowman3.png'
-    }
+      path: "sprite/snowman3.png",
+    },
   },
   {
-    id: 'yukino',
-    name: 'ゆきの',
+    id: "yukino",
+    name: "ゆきの",
     hp: 15,
     mp: 0,
     attack: 4,
@@ -288,12 +288,12 @@ export const BOSSES: EnemyType[] = [
     isBoss: true,
     stage: 1,
     sprite: {
-      path: 'sprite/snowman4.png'
-    }
+      path: "sprite/snowman4.png",
+    },
   },
   {
-    id: 'snow_doll',
-    name: 'スノードール',
+    id: "snow_doll",
+    name: "スノードール",
     hp: 25,
     mp: 0,
     attack: 6,
@@ -302,26 +302,26 @@ export const BOSSES: EnemyType[] = [
     isBoss: true,
     stage: 2,
     sprite: {
-      path: 'sprite/snowdoll.png'
-    }
+      path: "sprite/snowdoll.png",
+    },
   },
   {
-    id: 'opened_flower',
-    name: 'ひらいた花',
+    id: "opened_flower",
+    name: "ひらいた花",
     hp: 20,
     mp: 0,
     attack: 9,
     defense: 3,
-    exp: 25,
+    exp: 60,
     isBoss: true,
     stage: 3,
     sprite: {
-      path: 'sprite/flower1.png'
-    }
+      path: "sprite/flower1.png",
+    },
   },
   {
-    id: 'bear_heart',
-    name: 'ベアーハート',
+    id: "bear_heart",
+    name: "ベアーハート",
     hp: 15,
     mp: 0,
     attack: 9,
@@ -330,12 +330,12 @@ export const BOSSES: EnemyType[] = [
     isBoss: true,
     stage: 4,
     sprite: {
-      path: 'sprite/bearman.png'
-    }
+      path: "sprite/bearman.png",
+    },
   },
   {
-    id: 'yukimichi',
-    name: 'ゆきみち',
+    id: "yukimichi",
+    name: "ゆきみち",
     hp: 98,
     mp: 0,
     attack: 12,
@@ -344,12 +344,12 @@ export const BOSSES: EnemyType[] = [
     isBoss: true,
     stage: 5,
     sprite: {
-      path: 'sprite/snowwes.png'
-    }
+      path: "sprite/snowwes.png",
+    },
   },
   {
-    id: 'fearsome_epitaph',
-    name: 'おそるべきエピタフ',
+    id: "fearsome_epitaph",
+    name: "おそるべきエピタフ",
     hp: 1,
     mp: 5,
     attack: 15,
@@ -358,12 +358,12 @@ export const BOSSES: EnemyType[] = [
     isBoss: true,
     stage: 6,
     sprite: {
-      path: 'sprite/epitaph1.png'
-    }
+      path: "sprite/epitaph1.png",
+    },
   },
   {
-    id: 'nobody',
-    name: 'だれもいない',
+    id: "nobody",
+    name: "だれもいない",
     hp: 0,
     mp: 0,
     attack: 0,
@@ -372,12 +372,12 @@ export const BOSSES: EnemyType[] = [
     isBoss: true,
     stage: 7,
     sprite: {
-      path: 'sprite/noenemy.png'
-    }
+      path: "sprite/noenemy.png",
+    },
   },
   {
-    id: 'kudou',
-    name: 'クドウ',
+    id: "kudou",
+    name: "クドウ",
     hp: 50,
     mp: 20,
     attack: 20,
@@ -386,12 +386,12 @@ export const BOSSES: EnemyType[] = [
     isBoss: true,
     stage: 8,
     sprite: {
-      path: 'sprite/kudou.png'
-    }
+      path: "sprite/kudou.png",
+    },
   },
   {
-    id: 'coldecot',
-    name: 'コルデコット',
+    id: "coldecot",
+    name: "コルデコット",
     hp: 250,
     mp: 30,
     attack: 30,
@@ -400,7 +400,7 @@ export const BOSSES: EnemyType[] = [
     isBoss: true,
     stage: 9, // Final
     sprite: {
-      path: 'sprite/coldecot.png'
-    }
-  }
-] 
+      path: "sprite/coldecot.png",
+    },
+  },
+];
