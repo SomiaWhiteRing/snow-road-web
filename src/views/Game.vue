@@ -48,6 +48,38 @@
           </button>
         </div>
       </template>
+
+      <template v-if="viewType === 'battle'">
+        <div class="buttons buttons-1">
+          <button @click="handleInn" v-if="subEvent === 'inn' && message !== subEventExtra.afterMessage"
+            :disabled="gameStore.items.matches < (subEventExtra.cost || 0)">
+            {{ t("game.actions.inn") }}
+          </button>
+
+          <button @click="handleCandle" v-if="subEvent === 'save' && message !== subEventExtra.afterMessage"
+            :disabled="gameStore.items.matches < (subEventExtra.cost || 0)">
+            {{ t("game.actions.candle") }}
+          </button>
+
+          <button @click="handleShop" v-if="subEvent === 'shop'">
+            {{ t("game.actions.shop") }}
+          </button>
+
+          <button @click="handleForward">
+            {{ t("game.actions.forward") }}
+          </button>
+        </div>
+        <div class="buttons buttons-2">
+          <button @click="viewType = 'control'">
+            {{ t("game.actions.control") }}
+          </button>
+        </div>
+        <div class="buttons buttons-3">
+          <button>
+            {{ t("game.actions.matches", { count: gameStore.items.matches }) }}
+          </button>
+        </div>
+      </template>
     </div>
     <BackgroundMusic />
   </div>

@@ -7,28 +7,28 @@
       <SnowEffect
         :flakes="[
           {
-            size: 1, // 雪花大小
-            count: 40, // 该大小的雪花数量
-            speedY: [0.2, 0.4], // 纵向速度范围 [最小值, 最大值]
-            speedX: [0.1, 0.8], // 水平速度范围 [最小值, 最大值]
+            size: 8,
+            count: 21,
+            speedY: [0.8, 1.6],
+            speedX: [1.0, 2.6],
           },
           {
-            size: 2,
-            count: 20,
-            speedY: [0.3, 0.5],
-            speedX: [0.2, 0.8],
+            size: 12,
+            count: 14,
+            speedY: [1.2, 2.0],
+            speedX: [1.2, 2.8],
           },
           {
-            size: 3,
-            count: 5,
-            speedY: [0.3, 0.5],
-            speedX: [0.3, 0.6],
+            size: 16,
+            count: 7,
+            speedY: [1.6, 2.4],
+            speedX: [1.4, 3.0],
           },
           {
-            size: 4,
+            size: 20,
             count: 3,
-            speedY: [0.3, 0.5],
-            speedX: [0.4, 0.8],
+            speedY: [2.0, 2.8],
+            speedX: [1.6, 3.2],
           },
         ]"
       />
