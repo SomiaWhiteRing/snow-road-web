@@ -20,15 +20,135 @@ export const base = {
         attack: '攻击力',
         defense: '防御力',
         weapon: '武器',
-        armor: '防具'
+        armor: '防具',
+        book: '已持有书',
+        stars: '星印',
+        star_dance: '≪星舞い≫'
       },
       actions: {
         forward: '前进',
         control: '制御',
         matches: '火柴 {count}根',
+        lighter: '打火机 {count}个',
         inn: '住宿',
         candle: '保存',
-        shop: '光顾'
+        shop: '光顾',
+        fight: '战斗',
+        flee: '逃跑',
+        magic: '魔法',
+        secret: '低语 {count}',
+        equip: '装备',
+        do_not_equip: '不装备',
+        build: '构筑',
+        cancel: '取消',
+        restart: '重新开始'
+      },
+      items: {
+        no_matches: '没有火柴了。',
+        no_stars: '没有星印了。',
+        no_lighter: '没有打火机了。',
+        not_enough_matches: '火柴不够。',
+        match_healed: '回复了{value}点HP。',
+        match_wasted: '现在用火柴太浪费了。',
+        star_restored: '星印闪烁了。HP和MP完全恢复了。'
+      },
+      system: {
+        saved: '已保存进度。'
+      },
+      events: {
+        inn_free: '免费暖和了一会儿。'
+      },
+      shop: {
+        title: '自动贩卖机',
+        matches: '火柴 {count}根',
+        weapon: '武器',
+        armor: '防具',
+        book: '书',
+        star: '星印',
+        sold_out: '（售罄）',
+        already_read: '（已读）',
+        maxed: '（已满）',
+        weapon_bought: '买到了{name}（{power}）。并立刻装备。',
+        armor_bought: '买到了{name}（{power}）。并立刻装备。',
+        book_bought: '买下了书。现在可以构筑咒文了。',
+        star_bought: '得到了第{count}个星印。'
+      },
+      magic: {
+        title: '魔法',
+        exit: 'EXIT',
+        build_title: '咒文构筑（{cost}）',
+        build_placeholder: '输入咒文',
+        build_failed: '什么也没有发生。',
+        learned: '习得了『{name}』。',
+        not_enough_mp: 'MP不够。',
+        no_target: '这里没有施法对象。',
+        no_effect: '『{name}』没有效果。',
+        damage_dealt: '『{name}』造成了{damage}点伤害！',
+        hp_restored: 'HP完全恢复了。',
+        virtual_mp_added: '虚构MP变成了{value}。',
+        virtual_mp_multiplied: '虚构MP变成了{value}。',
+        weapon_generated: '真红之斧诞生了。（{power}）',
+        armor_generated: '摇曳如阳炎的披风诞生了。（{power}）',
+        chain_attack_ready: '接下来可以连续攻击{hits}次。',
+        whisper_remaining: '低语（剩余{count}次）',
+        built_out: '已经调查殆尽了。',
+        star_dance_ready: '星光闪烁了……'
+      },
+      magicNames: {
+        freeze: '——冻僵吧',
+        cremate: '——火葬'
+      },
+      battle: {
+        enemy_defeated: '{enemy}被击倒了！',
+        exp_gain: '获得了{exp}点经验值。',
+        level_up: '升级了！',
+        max_hp_up: '最大HP提升了{value}点！',
+        max_mp_up: '最大MP提升了1点！',
+        attack_up: '攻击力提升了1点！',
+        defense_up: '防御力提升了1点！',
+        match_reward: '得到了{value}根火柴！',
+        stage_advanced: '进入了 Stage {stage}。',
+        stage_another: '进入了 Stage Another。',
+        final_cleared: '科尔德科特倒下了。前方还有另一扇门。',
+        final_clear: '路西法倒下了。太阳升起了。',
+        journey_ended: '那扇门关上了。',
+        death_notice: '被杀死了……',
+        game_over: '倒下了。',
+        enemy_missed: '{enemy}的攻击落空了。',
+        attack_deflected: '弹开了{enemy}的攻击！',
+        damage_taken: '受到了{damage}点伤害。',
+        damage_dealt: '造成了{damage}点伤害！',
+        player_missed: '{enemy}弹开了攻击！',
+        drive_hit: '驱动了{name}，造成{damage}点伤害！',
+        drive_ready: '驱动了{name}。',
+        drive_broken: '{name}粉碎了。',
+        flip_ready: '翻起了{name}。',
+        flip_broken: '{name}碎成了细片。',
+        equipment_prompt: '捡到了{name}。\n要装备吗？',
+        equipment_equipped: '装备了{name}！',
+        weapon_obtained: '得到了{name}（{power}），并立刻装备。',
+        armor_obtained: '得到了{name}（{power}），并立刻装备。',
+        enemy_magic_hit: '{enemy}咏唱了「{magic}」，造成{damage}点伤害！',
+        enemy_magic_blocked: '{enemy}咏唱了「{magic}」，但没有生效。',
+        secret_phrase: '结束了，把你撕成碎片吧啊啊啊啊啊啊！！',
+        secret_damage: '对{enemy}造成了{damage}点伤害！',
+        secret_recoil: '反作用让身体扭曲了……（最大HP-{value}）',
+        secret_whisper: '低语了一句。还剩{count}次，造成{damage}点伤害！',
+        secret_lost_hp: '失去了重要之物。（最大HP-{value}）',
+        secret_empty: '已经没有可低语的话了。',
+        secret_boss_blocked: 'Boss 战中不能使用。',
+        escape_success: '从{enemy}身边逃开了。',
+        escape_failed: '没能逃掉！'
+      },
+      story: {
+        next: '下一页',
+        close: '继续',
+        another_title: 'Another',
+        another_prompt: '要继续前往 Another 吗？',
+        hell_awakens: '重新成形，醒来了。',
+        hell_rises: '从熔岩中爬了出来。',
+        yes: '是',
+        no: '否'
       },
       controlText: [
         '第六层。',
@@ -76,7 +196,7 @@ export const base = {
         '深夜中见证的光明。'
       ],
       controlMenu: {
-        exit: 'Exit'
+        exit: 'EXIT'
       }
     }
   },
@@ -101,15 +221,135 @@ export const base = {
         attack: '攻撃力',
         defense: '防御力',
         weapon: '武器',
-        armor: '防具'
+        armor: '防具',
+        book: '本所持',
+        stars: '星印',
+        star_dance: '≪星舞い≫'
       },
       actions: {
         forward: '進む',
         control: '制御',
         matches: 'マッチ {count}本',
+        lighter: 'ライター {count}個',
         inn: '泊まる',
         candle: 'セーブ',
-        shop: '寄る'
+        shop: '寄る',
+        fight: '戦う',
+        flee: '逃げる',
+        magic: '魔法',
+        secret: 'つぶやく {count}',
+        equip: '装備する',
+        do_not_equip: '装備しない',
+        build: '構築',
+        cancel: '取消',
+        restart: 'やり直す'
+      },
+      items: {
+        no_matches: 'マッチが無い。',
+        no_stars: '星印が無い。',
+        no_lighter: 'ライターが無い。',
+        not_enough_matches: 'マッチが足りない。',
+        match_healed: 'HPが{value}点回復した。',
+        match_wasted: 'マッチがもったいない。',
+        star_restored: '星印がまたたいた。HPとMPが全回復した。'
+      },
+      system: {
+        saved: 'セーブしました。'
+      },
+      events: {
+        inn_free: '無料でひとときの暖を取れた。'
+      },
+      shop: {
+        title: '自動販売機',
+        matches: 'マッチ {count}本',
+        weapon: '武器',
+        armor: '防具',
+        book: '本',
+        star: '星印',
+        sold_out: '（品切れ）',
+        already_read: '（既読）',
+        maxed: '（上限）',
+        weapon_bought: '{name}（{power}）を手に入れて装備した！',
+        armor_bought: '{name}（{power}）を手に入れて装備した！',
+        book_bought: '本を買った。呪文構築ができるようになった。',
+        star_bought: '星印を{count}個持つことになった。'
+      },
+      magic: {
+        title: '魔法',
+        exit: 'EXIT',
+        build_title: '呪文構築（{cost}）',
+        build_placeholder: '呪文を入力',
+        build_failed: '何も起こらなかった。',
+        learned: '『{name}』を習得した。',
+        not_enough_mp: 'MPが足りない。',
+        no_target: 'ここでは攻撃魔法を使えない。',
+        no_effect: '『{name}』は効かなかった。',
+        damage_dealt: '『{name}』で{damage}点のダメージをあたえた！',
+        hp_restored: 'HPが全回復した。',
+        virtual_mp_added: '捏造MPが{value}になった。',
+        virtual_mp_multiplied: '捏造MPが{value}になった。',
+        weapon_generated: '真っ赤に輝く斧が生成された。（{power}）',
+        armor_generated: '陽炎のようにゆらめくマントが生成された。（{power}）',
+        chain_attack_ready: '次から{hits}回連続で攻撃できる。',
+        whisper_remaining: 'つぶやく（残り{count}回）',
+        built_out: '調べ尽くした',
+        star_dance_ready: '星がまたたいた……'
+      },
+      magicNames: {
+        freeze: '――こごえろ',
+        cremate: '――火葬'
+      },
+      battle: {
+        enemy_defeated: '{enemy}を倒した！',
+        exp_gain: '{exp}点の経験値を得た。',
+        level_up: 'レベルが上がった！',
+        max_hp_up: '最大ＨＰが{value}点上がった！',
+        max_mp_up: '最大ＭＰが1点上がった！',
+        attack_up: '攻撃力が1点上がった！',
+        defense_up: '防御力が1点上がった！',
+        match_reward: '{value}本のマッチを手に入れた！',
+        stage_advanced: 'Stage {stage} に進んだ。',
+        stage_another: 'Stage Another に進んだ。',
+        final_cleared: 'コルデコットを倒した。まだ先がある。',
+        final_clear: 'ルシファーを倒した。太陽が昇った。',
+        journey_ended: '扉は閉じてしまった。',
+        death_notice: '殺されてしまった……',
+        game_over: '倒れてしまった。',
+        enemy_missed: '{enemy}の攻撃は当たらなかった。',
+        attack_deflected: '{enemy}の攻撃をはじいた！',
+        damage_taken: '{damage}点のダメージをくらった！',
+        damage_dealt: '{damage}点のダメージをあたえた！',
+        player_missed: '{enemy}は攻撃をはじいた！',
+        drive_hit: '{name}を駆動し、{damage}点のダメージをあたえた！',
+        drive_ready: '{name}を駆動した。',
+        drive_broken: '{name}は砕け散った。',
+        flip_ready: '{name}を翻した。',
+        flip_broken: '{name}は細切れになった。',
+        equipment_prompt: '{name}を拾った。\n装備しますか？',
+        equipment_equipped: '{name}を装備した！',
+        weapon_obtained: '{name}（{power}）を手に入れて装備した！',
+        armor_obtained: '{name}（{power}）を手に入れて装備した！',
+        enemy_magic_hit: '{enemy}は「{magic}」を唱え、{damage}点のダメージをあたえた！',
+        enemy_magic_blocked: '{enemy}は「{magic}」を唱えたが効かなかった。',
+        secret_phrase: 'もうお仕舞い、ズタズタになあぁぁれええぇぇぇ！！',
+        secret_damage: '{enemy}に{damage}点のダメージをあたえた！',
+        secret_recoil: '反動で体が歪んだ……　（最大ＨＰ－{value}）',
+        secret_whisper: 'つぶやいた。（残り{count}回） {damage}点のダメージ！',
+        secret_lost_hp: 'なにか大切なものを失った。（最大ＨＰ－{value}）',
+        secret_empty: 'もうつぶやけない。',
+        secret_boss_blocked: 'ボス戦では使えません。',
+        escape_success: '{enemy}から逃げ出した。',
+        escape_failed: '逃げられなかった！'
+      },
+      story: {
+        next: '次へ',
+        close: '進む',
+        another_title: 'Another',
+        another_prompt: 'Stage Another へ進みますか？',
+        hell_awakens: 'ふたたび形を成し、目覚めました。',
+        hell_rises: '溶岩から這い出ました。',
+        yes: 'はい',
+        no: 'いいえ'
       },
       controlText: [
         '第六の階層。',
@@ -157,7 +397,7 @@ export const base = {
         '深夜に見る光明。'
       ],
       controlMenu: {
-        exit: 'Exit'
+        exit: 'EXIT'
       }
     }
   },
@@ -182,15 +422,135 @@ export const base = {
         attack: 'Attack',
         defense: 'Defense',
         weapon: 'Weapon',
-        armor: 'Armor'
+        armor: 'Armor',
+        book: 'Book',
+        stars: 'Star Mark',
+        star_dance: '<<Star Dance>>'
       },
       actions: {
         forward: 'Forward',
         control: 'Control',
         matches: 'Matches: {count}',
+        lighter: 'Lighter {count}',
         inn: 'Rest',
         candle: 'Save',
-        shop: 'Visit'
+        shop: 'Visit',
+        fight: 'Fight',
+        flee: 'Flee',
+        magic: 'Magic',
+        secret: 'Whisper {count}',
+        equip: 'Equip',
+        do_not_equip: 'Leave It',
+        build: 'Build',
+        cancel: 'Cancel',
+        restart: 'Restart'
+      },
+      items: {
+        no_matches: 'No matches left.',
+        no_stars: 'No star marks left.',
+        no_lighter: 'No lighter charges left.',
+        not_enough_matches: 'Not enough matches.',
+        match_healed: 'Recovered {value} HP.',
+        match_wasted: 'Using a match now would be wasteful.',
+        star_restored: 'The star mark shimmered. HP and MP were fully restored.'
+      },
+      system: {
+        saved: 'Progress saved.'
+      },
+      events: {
+        inn_free: 'I warmed up for free.'
+      },
+      shop: {
+        title: 'Vending Machine',
+        matches: 'Matches: {count}',
+        weapon: 'Weapon',
+        armor: 'Armor',
+        book: 'Book',
+        star: 'Star Mark',
+        sold_out: '(Sold Out)',
+        already_read: '(Read)',
+        maxed: '(Max)',
+        weapon_bought: 'Bought {name} ({power}) and equipped it.',
+        armor_bought: 'Bought {name} ({power}) and equipped it.',
+        book_bought: 'Bought a book. Spell building is now available.',
+        star_bought: 'Now carrying {count} star mark(s).'
+      },
+      magic: {
+        title: 'Magic',
+        exit: 'EXIT',
+        build_title: 'Spell Build ({cost})',
+        build_placeholder: 'Enter incantation',
+        build_failed: 'Nothing happened.',
+        learned: 'Learned "{name}".',
+        not_enough_mp: 'Not enough MP.',
+        no_target: 'There is no target for attack magic here.',
+        no_effect: '"{name}" had no effect.',
+        damage_dealt: '"{name}" dealt {damage} damage!',
+        hp_restored: 'HP was fully restored.',
+        virtual_mp_added: 'Virtual MP became {value}.',
+        virtual_mp_multiplied: 'Virtual MP became {value}.',
+        weapon_generated: 'A crimson axe was generated. ({power})',
+        armor_generated: 'A mirage-like mantle was generated. ({power})',
+        chain_attack_ready: 'The next attacks will strike {hits} times.',
+        whisper_remaining: 'Whisper ({count} left)',
+        built_out: 'Nothing remains to investigate.',
+        star_dance_ready: 'The stars shimmered...'
+      },
+      magicNames: {
+        freeze: '-- Freeze',
+        cremate: '-- Cremate'
+      },
+      battle: {
+        enemy_defeated: '{enemy} was defeated!',
+        exp_gain: 'Gained {exp} EXP.',
+        level_up: 'Level up!',
+        max_hp_up: 'Max HP increased by {value}!',
+        max_mp_up: 'Max MP increased by 1!',
+        attack_up: 'Attack increased by 1!',
+        defense_up: 'Defense increased by 1!',
+        match_reward: 'Got {value} matches!',
+        stage_advanced: 'Advanced to Stage {stage}.',
+        stage_another: 'Advanced to Stage Another.',
+        final_cleared: 'Coldecot has fallen. Another path remains.',
+        final_clear: 'Lucifer has fallen. The sun has risen.',
+        journey_ended: 'The door has closed.',
+        death_notice: 'You were killed...',
+        game_over: 'You collapsed.',
+        enemy_missed: '{enemy} missed.',
+        attack_deflected: 'Deflected {enemy}\'s attack!',
+        damage_taken: 'Took {damage} damage.',
+        damage_dealt: 'Dealt {damage} damage.',
+        player_missed: '{enemy} deflected the attack!',
+        drive_hit: 'Drove {name} for {damage} damage!',
+        drive_ready: 'Drove {name}.',
+        drive_broken: '{name} shattered.',
+        flip_ready: 'Flipped {name}.',
+        flip_broken: '{name} was shredded.',
+        equipment_prompt: 'Found {name}.\nEquip it?',
+        equipment_equipped: 'Equipped {name}!',
+        weapon_obtained: 'Obtained {name} ({power}) and equipped it.',
+        armor_obtained: 'Obtained {name} ({power}) and equipped it.',
+        enemy_magic_hit: '{enemy} cast "{magic}" and dealt {damage} damage!',
+        enemy_magic_blocked: '{enemy} cast "{magic}", but it had no effect.',
+        secret_phrase: 'It is over. Be torn to shreds!!',
+        secret_damage: 'Dealt {damage} damage to {enemy}!',
+        secret_recoil: 'The backlash warped the body... (Max HP -{value})',
+        secret_whisper: 'You whispered. {damage} damage dealt. {count} use(s) remain.',
+        secret_lost_hp: 'Something precious was lost. (Max HP -{value})',
+        secret_empty: 'There is nothing left to whisper.',
+        secret_boss_blocked: 'This cannot be used in boss battles.',
+        escape_success: 'Escaped from {enemy}.',
+        escape_failed: 'Could not escape!'
+      },
+      story: {
+        next: 'Next',
+        close: 'Continue',
+        another_title: 'Another',
+        another_prompt: 'Do you want to continue into Another?',
+        hell_awakens: 'It took shape once more and awoke.',
+        hell_rises: 'It crawled out from the lava.',
+        yes: 'Yes',
+        no: 'No'
       },
       controlText: [
         'The Sixth Layer.',
@@ -238,7 +598,7 @@ export const base = {
         'Light witnessed in deep night.'
       ],
       controlMenu: {
-        exit: 'Exit'
+        exit: 'EXIT'
       }
     }
   }

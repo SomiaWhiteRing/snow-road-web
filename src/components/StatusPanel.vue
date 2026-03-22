@@ -13,14 +13,17 @@
     <div class="stat-line">
       {{ t("game.stats.hp") }}: {{ gameStore.hp }}/{{ gameStore.maxHp }}
     </div>
-    <div class="stat-line" v-if="gameStore.mp > 0">
+    <div class="stat-line" v-if="gameStore.maxMp > 0 || gameStore.virtualMp > 0">
       {{ t("game.stats.mp") }}: {{ gameStore.mp }}/{{ gameStore.maxMp }}
+      <template v-if="gameStore.virtualMp > 0">
+        +{{ gameStore.virtualMp }}
+      </template>
     </div>
     <div class="stat-line" v-if="gameStore.attack > 0">
-      {{ t("game.stats.attack") }}: {{ gameStore.attack }}
+      {{ t("game.stats.attack") }}: {{ gameStore.totalAttack }}
     </div>
     <div class="stat-line" v-if="gameStore.defense > 0">
-      {{ t("game.stats.defense") }}: {{ gameStore.defense }}
+      {{ t("game.stats.defense") }}: {{ gameStore.totalDefense }}
     </div>
     <div class="stat-line" v-if="gameStore.weapon.name">
       {{ t("game.stats.weapon") }}: {{ gameStore.weapon.name }}（{{
@@ -32,15 +35,30 @@
         gameStore.armor.defense
       }}）
     </div>
+    <div class="stat-line" v-if="gameStore.items.books">
+      {{ t("game.stats.book") }}
+    </div>
+    <div class="stat-line" v-if="gameStore.starCapacity > 0">
+      {{ t("game.stats.stars") }}: {{ starMarks }}
+    </div>
+    <div class="stat-line" v-if="gameStore.starDanceActive">
+      {{ t("game.stats.star_dance") }}
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
 import { useGameStore } from "../stores/game";
 import { useI18n } from "vue-i18n";
 
 const gameStore = useGameStore();
 const { t } = useI18n();
+const starMarks = computed(() => {
+  const lit = "★".repeat(gameStore.fuel);
+  const unlit = "☆".repeat(Math.max(0, gameStore.starCapacity - gameStore.fuel));
+  return `${lit}${unlit}`;
+});
 </script>
 
 <style lang="scss" scoped>

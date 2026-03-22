@@ -1,6 +1,7 @@
 import { useGameStore } from "../stores/game";
 import { ENEMIES, BOSSES, type EnemyType } from "../types/enemies";
 import { SPELLS } from "../types/spells";
+import { ARMORS, WEAPONS } from "../types/equipment";
 import { type Composer } from "vue-i18n";
 import { soundManager, SOUND } from "../services/soundManager";
 
@@ -27,19 +28,50 @@ interface ForwardEvent {
   };
 }
 
-// 添加事件权重配置
-const EVENT_WEIGHTS = {
-  nothing: 40,
-  thought: 10,
-  shop: 10,
-  inn: 10,
-  save: 10,
-  matches: 10,
-  matchesExtra: 1,
-  bearWarning: 10,
-  battle: 10,
-  note: 10,
-} as const;
+const REGULAR_ENEMY_POOLS: Record<number, string[]> = {
+  0: ["yukio", "ice_flare"],
+  1: ["yukiko", "ice_flare", "yukio", "white_bear"],
+  2: ["yukiko", "yukimasa", "white_bear"],
+  3: ["yukimasa", "unopened_flower", "epitaph"],
+  4: ["white_bear", "white_bear", "white_bear_king"],
+  5: ["yukihiko", "yukie", "yukio", "yukiko", "yukimasa"],
+  6: ["epitaph", "fearsome_match", "white_bear_king"],
+  7: [],
+  8: ["absolute_yukio", "absolute_yukiko", "absolute_bear"],
+  9: ["coldecot_aura", "coldecot_aura", "absolute_bear"],
+  10: ["absolute_bear", "from_engine", "red_silhouette"],
+};
+
+const STANDARD_WEAPONS = WEAPONS.filter((weapon) => !weapon.isSpecial).sort(
+  (left, right) => left.power - right.power
+);
+const STANDARD_ARMORS = ARMORS.filter((armor) => !armor.isSpecial).sort(
+  (left, right) => left.power - right.power
+);
+
+const randomInt = (maxExclusive: number) =>
+  Math.floor(Math.random() * maxExclusive);
+
+const triangularNumber = (value: number) => (value * (value + 1)) / 2;
+
+const selectTriangularWeighted = <T>(entries: T[]): T | undefined => {
+  if (!entries.length) {
+    return undefined;
+  }
+
+  const totalWeight = entries.length * entries.length;
+  const roll = randomInt(totalWeight);
+  let threshold = 0;
+
+  for (let index = 0; index < entries.length; index += 1) {
+    threshold += entries.length * 2 - 1 - index * 2;
+    if (roll < threshold) {
+      return entries[index];
+    }
+  }
+
+  return entries[entries.length - 1];
+};
 
 export class ForwardService {
   private gameStore: ReturnType<typeof useGameStore> | null = null;
@@ -49,49 +81,11 @@ export class ForwardService {
     this.i18n = i18n;
   }
 
-  // 获取 store 实例
   private getStore() {
     if (!this.gameStore) {
       this.gameStore = useGameStore();
     }
     return this.gameStore;
-  }
-
-  // 获取当前关卡的怪物池
-  private getCurrentStageEnemies(): EnemyType[] {
-    return ENEMIES.filter(
-      (enemy) => enemy.stages?.includes(this.getStore().stage)
-      // 名称要通过 i18n 获取
-    ).map((enemy) => ({
-      ...enemy,
-      name: this.translateMessage(`enemy.${enemy.id}`),
-    }));
-  }
-
-  // 获取当前关卡的BOSS
-  private getCurrentStageBoss(): EnemyType | undefined {
-    return BOSSES.find((boss) => boss.stage === this.getStore().stage);
-  }
-
-  // 检查当前关卡是否有熊类怪物
-  private hasBearInCurrentStage(): boolean {
-    return this.getCurrentStageEnemies().some((enemy) =>
-      enemy.id.includes("bear")
-    );
-  }
-
-  // 随机选择一个普通怪物
-  private getRandomEnemy(): EnemyType {
-    const enemies = this.getCurrentStageEnemies();
-    return enemies[Math.floor(Math.random() * enemies.length)];
-  }
-
-  // 计算总权重
-  private getTotalWeight(): number {
-    return Object.values(EVENT_WEIGHTS).reduce(
-      (sum, weight) => sum + weight,
-      0
-    );
   }
 
   private translateMessage(key: string, params?: Record<string, any>): string {
@@ -102,59 +96,168 @@ export class ForwardService {
     return this.i18n.t(key, params || {});
   }
 
-  // 处理前进事件
-  public handleForward(): ForwardEvent {
-    // 增加距离
-    this.getStore().distance++;
+  private getCurrentStageBoss(): EnemyType | undefined {
+    const boss = BOSSES.find((entry) => entry.stage === this.getStore().stage);
+    if (!boss) {
+      return undefined;
+    }
 
-    // 检查是否是BOSS战
-    if (this.getStore().distance % 100 === 0) {
+    return {
+      ...boss,
+      name: this.translateMessage(`enemy.${boss.id}`),
+    };
+  }
+
+  private getEnemyById(id: string): EnemyType | undefined {
+    const enemy = ENEMIES.find((entry) => entry.id === id);
+    if (!enemy) {
+      return undefined;
+    }
+
+    return {
+      ...enemy,
+      name: this.translateMessage(`enemy.${enemy.id}`),
+    };
+  }
+
+  private rollRegularEnemy(): EnemyType | undefined {
+    const stagePool = REGULAR_ENEMY_POOLS[this.getStore().stage] ?? [];
+    const enemyId = selectTriangularWeighted(stagePool);
+    return enemyId ? this.getEnemyById(enemyId) : undefined;
+  }
+
+  private rollEquipmentEncounter(): EnemyType {
+    let rank = Math.min(15, this.getStore().stage + 5);
+    for (let index = 0; index < 4 && rank < 15; index += 1) {
+      if (randomInt(2) === 0) {
+        rank += 1;
+      }
+    }
+
+    const isWeapon = randomInt(2) === 0;
+    const equipment = isWeapon
+      ? STANDARD_WEAPONS[rank - 1]
+      : STANDARD_ARMORS[rank - 1];
+    const name = this.translateMessage(`equipment.${equipment.id}`);
+    const triangle = triangularNumber(rank);
+
+    return {
+      id: `${equipment.id}_encounter`,
+      name,
+      hp: rank,
+      mp: 0,
+      attack: isWeapon ? triangle : rank,
+      defense: isWeapon ? rank : triangle,
+      exp: triangle,
+      matchReward: 0,
+      sprite: {
+        path: isWeapon ? "sprite/ax.png" : "sprite/cloak.png",
+      },
+      rewardEquipment: {
+        kind: isWeapon ? "weapon" : "armor",
+        id: equipment.id,
+        name,
+        power: equipment.power,
+      },
+    };
+  }
+
+  private rollInnCost(): number {
+    let cost = 1;
+    if (randomInt(2) === 0) {
+      cost *= 2;
+    }
+    if (randomInt(5) === 0) {
+      cost *= 5;
+    }
+    if (randomInt(10) === 0) {
+      cost *= 10;
+    }
+    return cost;
+  }
+
+  private createBattleEvent(enemy: EnemyType): ForwardEvent {
+    if (
+      enemy.id.includes("bear") &&
+      this.getStore().bearWarningStage !== this.getStore().stage
+    ) {
+      this.getStore().bearWarningStage = this.getStore().stage;
+      soundManager.playSound(SOUND.STEP);
+      return {
+        type: "thought",
+        sprite: "sprite/warning.png",
+        message: this.translateMessage("events.thought.bear_warning"),
+      };
+    }
+
+    soundManager.playSound(SOUND.STEP);
+    return {
+      type: "battle",
+      enemy,
+      sprite: enemy.sprite.path,
+      message: this.translateMessage("events.battle", { enemy: enemy.name }),
+    };
+  }
+
+  public handleForward(): ForwardEvent {
+    const store = this.getStore();
+    store.distance += 1;
+
+    if (store.distance % 100 === 0) {
       const boss = this.getCurrentStageBoss();
       if (boss) {
+        soundManager.playSound(SOUND.STEP);
         return {
           type: "battle",
           enemy: boss,
           sprite: boss.sprite.path,
+          message: this.translateMessage("events.battle", { enemy: boss.name }),
         };
       }
     }
 
-    // 根据权重随机选择事件
-    let rand = Math.random() * this.getTotalWeight();
+    const roll = randomInt(100);
 
-    // 测试用：如果是第一步，必定遇到怪物
-    if (this.getStore().distance === 1) {
-      const enemy = this.getRandomEnemy();
-      return {
-        type: "battle",
-        enemy,
-        sprite: enemy.sprite.path,
-        message: this.translateMessage("events.battle", { enemy: enemy.name }),
-      };
-    }
-
-    if ((rand -= EVENT_WEIGHTS.nothing) < 0) {
-      soundManager.playSound(SOUND.STEP);
-      return { type: "nothing" };
-    }
-    if ((rand -= EVENT_WEIGHTS.thought) < 0) {
+    if (roll < 10) {
       soundManager.playSound(SOUND.STEP);
       return {
         type: "thought",
         message: this.translateMessage("events.thought.default"),
       };
     }
-    if ((rand -= EVENT_WEIGHTS.shop) < 0) {
-      soundManager.playSound(SOUND.STEP);
+
+    if (roll < 40) {
+      if (randomInt(20) === 0) {
+        return this.createBattleEvent(this.rollEquipmentEncounter());
+      }
+
+      const enemy = this.rollRegularEnemy();
+      if (!enemy) {
+        soundManager.playSound(SOUND.STEP);
+        return { type: "nothing" };
+      }
+
+      return this.createBattleEvent(enemy);
+    }
+
+    if (roll < 50) {
+      soundManager.playSound(SOUND.POPON);
+      const isMatchBox = randomInt(100) === 0;
       return {
-        type: "shop",
-        sprite: "sprite/shop.png",
-        message: this.translateMessage("events.shop"),
+        type: "matches",
+        sprite: isMatchBox ? "sprite/chas2.png" : "sprite/chas0.png",
+        message: this.translateMessage(
+          isMatchBox ? "events.matches.extra" : "events.matches.default"
+        ),
+        extra: {
+          getNum: isMatchBox ? 10 : 1,
+        },
       };
     }
-    if ((rand -= EVENT_WEIGHTS.inn) < 0) {
+
+    if (roll < 55) {
       soundManager.playSound(SOUND.STEP);
-      const cost = Math.floor(Math.random() * 3) + 1;
+      const cost = this.rollInnCost();
       return {
         type: "inn",
         sprite: "sprite/inn.png",
@@ -165,45 +268,15 @@ export class ForwardService {
         },
       };
     }
-    if ((rand -= EVENT_WEIGHTS.save) < 0) {
+
+    if (roll < 95) {
       soundManager.playSound(SOUND.STEP);
-      return {
-        type: "save",
-        sprite: "sprite/candle0.png",
-        message: this.translateMessage("events.save.before"),
-        extra: {
-          afterMessage: this.translateMessage("events.save.after"),
-          afterSprite: "sprite/candle1.png",
-          cost: 1,
-        },
-      };
+      return { type: "nothing" };
     }
-    if ((rand -= EVENT_WEIGHTS.matches) < 0) {
-      soundManager.playSound(SOUND.POPON);
-      return {
-        type: "matches",
-        sprite: "sprite/chas0.png",
-        message: this.translateMessage("events.matches.default"),
-        extra: {
-          getNum: 1,
-        },
-      };
-    }
-    if ((rand -= EVENT_WEIGHTS.matchesExtra) < 0) {
-      soundManager.playSound(SOUND.POPON);
-      return {
-        type: "matches",
-        sprite: "sprite/chas2.png",
-        message: this.translateMessage("events.matches.extra"),
-        extra: {
-          getNum: 10,
-        },
-      };
-    }
-    if ((rand -= EVENT_WEIGHTS.note) < 0) {
+
+    if (roll === 95) {
       soundManager.playSound(SOUND.STEP);
-      // 随机选择一个法术
-      const spell = SPELLS[Math.floor(Math.random() * SPELLS.length)];
+      const spell = SPELLS[randomInt(SPELLS.length)];
       return {
         type: "note",
         sprite: "sprite/memo.png",
@@ -212,31 +285,30 @@ export class ForwardService {
         }),
       };
     }
-    if (
-      (rand -= EVENT_WEIGHTS.bearWarning) < 0 &&
-      this.hasBearInCurrentStage()
-    ) {
+
+    if (roll < 98) {
       soundManager.playSound(SOUND.STEP);
       return {
-        type: "thought",
-        sprite: "sprite/warning.png",
-        message: this.translateMessage("events.thought.bear_warning"),
+        type: "shop",
+        sprite: "sprite/shop.png",
+        message: this.translateMessage("events.shop"),
       };
     }
 
     soundManager.playSound(SOUND.STEP);
-    const enemy = this.getRandomEnemy();
     return {
-      type: "battle",
-      enemy,
-      sprite: enemy.sprite.path,
-      message: this.translateMessage("events.battle", { enemy: enemy.name }),
+      type: "save",
+      sprite: "sprite/candle0.png",
+      message: this.translateMessage("events.save.before"),
+      extra: {
+        afterMessage: this.translateMessage("events.save.after"),
+        afterSprite: "sprite/candle1.png",
+        cost: 1,
+      },
     };
   }
 }
 
-// 修改服务实例化的方式
 export const createForwardService = (i18n: Composer) => {
   return new ForwardService(i18n);
 };
-

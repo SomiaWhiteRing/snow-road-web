@@ -7,6 +7,17 @@ import { ref, watch, onMounted, onUnmounted } from "vue";
 import { useGameStore } from "../stores/game";
 import { assetManager } from "../services/assetManager";
 
+const props = withDefaults(
+  defineProps<{
+    suspended?: boolean;
+    overrideTrack?: string | null;
+  }>(),
+  {
+    suspended: false,
+    overrideTrack: null,
+  }
+);
+
 const gameStore = useGameStore();
 const audioRef = ref<HTMLAudioElement | null>(null);
 const currentMusic = ref<string>("");
@@ -19,22 +30,41 @@ const stageMusicMap: Record<number, string> = {
   3: "fuleuden.mp3", // 第三阶段
   4: "haruyori.mp3", // 第四阶段
   5: "coldecot.mp3", // 第五阶段
-  // 可以根据需要添加更多阶段的音乐
+  6: "yukimichi.mp3",
+  7: "simoyake.mp3",
+  8: "yukio.mp3",
+  9: "coldecot.mp3",
+  10: "thanatos.mp3",
+};
+
+const resolveStageMusicPath = () => {
+  const musicFile = stageMusicMap[gameStore.stage] || "thanatos.mp3";
+  return `music/${musicFile}`;
 };
 
 // 更新背景音乐
 const updateBackgroundMusic = async () => {
-  const musicFile = stageMusicMap[gameStore.stage] || "yukimichi.mp3";
+  if (!audioRef.value) {
+    return;
+  }
 
-  if (currentMusic.value === musicFile) return;
+  if (props.suspended && !props.overrideTrack) {
+    audioRef.value.pause();
+    return;
+  }
+
+  const musicPath = props.overrideTrack ?? resolveStageMusicPath();
 
   try {
-    const musicUrl = await assetManager.getAssetUrl(`music/${musicFile}`);
-    if (audioRef.value) {
+    if (currentMusic.value !== musicPath) {
+      const musicUrl = await assetManager.getAssetUrl(musicPath);
       audioRef.value.src = musicUrl;
       audioRef.value.volume = 0.5; // 设置适当的音量
-      audioRef.value.play();
-      currentMusic.value = musicFile;
+      currentMusic.value = musicPath;
+    }
+
+    if (audioRef.value.paused) {
+      await audioRef.value.play();
     }
   } catch (error) {
     console.error("加载背景音乐失败:", error);
@@ -42,7 +72,14 @@ const updateBackgroundMusic = async () => {
 };
 
 // 监听游戏阶段变化
-watch(() => gameStore.stage, updateBackgroundMusic);
+watch(
+  [
+    () => gameStore.stage,
+    () => props.suspended,
+    () => props.overrideTrack,
+  ],
+  updateBackgroundMusic
+);
 
 onMounted(() => {
   updateBackgroundMusic();

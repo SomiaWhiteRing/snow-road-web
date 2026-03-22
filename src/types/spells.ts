@@ -1,3 +1,6 @@
+// 来源说明：
+// - 咒文名与 MP 消耗主要来自原版资料页。
+// - 本文件的 schema 是 Web 实现侧的统一抽象，不等于原版内部数据结构。
 export interface SpellType {
   id: string
   name: string
@@ -43,7 +46,7 @@ export const SPELLS: SpellType[] = [
     name: '消し炭になあれ',
     mpCost: 20,
     isVirtualMp: true,
-    power: 0 // 等于玩家当前MP
+    power: 0 // 实际按施法前的真实MP+虚构MP结算
   },
   {
     id: 'warmth_of_others',
@@ -102,7 +105,7 @@ export const SPELLS: SpellType[] = [
     mpCost: 99,
     isVirtualMp: true,
     effects: {
-      continuousAttack: true // 连续攻击次数由星印数量决定
+      continuousAttack: true // Web层用此标记映射原版“≪星舞い≫”状态
     }
   }
 ]

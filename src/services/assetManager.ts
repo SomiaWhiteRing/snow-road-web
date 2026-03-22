@@ -129,7 +129,7 @@ class AssetManager {
     await this.ensureDB();
     const asset = await this.db!.get('assets', path);
     if (!asset) {
-      await router.push('/loading');
+      await router.push('/');
       throw new Error(`Asset not found: ${path}`);
     }
     return asset.value;

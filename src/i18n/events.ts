@@ -5,7 +5,7 @@ export const eventMessages = {
         default: ['好冷啊……', '我', '还要继续', '没有人来救我', '好冷……', '呼出白气',
           '咯吱咯吱', '手都冻僵了', '神明大人', '好冷啊', '哈——'
         ],
-        bear_warning: '感觉有危险的气息...'
+        bear_warning: '有熊出没。'
       },
       shop: '是自动贩卖机。',
       inn: {
@@ -30,9 +30,9 @@ export const eventMessages = {
         default: ['はやく……', '私は', 'まだ　まだ', '誰も助けてくれないから', '寒い……', '息が白い',
           'ざっくざっく', '手がかじかむ', 'かみさま', 'さむいよう', 'はーっ'
         ],
-        bear_warning: '危険な気配が漂っている...'
+        bear_warning: '熊が出ます'
       },
-      shop: '自動販売機た。',
+      shop: '自動販売機だ。',
       inn: {
         before: '宿屋だ。\nマッチ{num}本で泊めてくれる。',
         after: 'ひとときの暖を取れた。'
@@ -55,7 +55,7 @@ export const eventMessages = {
         default: ['So cold...', 'I', 'Must go on', 'No one will save me', 'It\'s cold...', 'White breath',
           'Crunch crunch', 'My hands are numb', 'Dear God', 'So cold', 'Haah—'
         ],
-        bear_warning: 'There\'s a dangerous presence...'
+        bear_warning: 'Beware of bears.'
       },
       shop: 'It\'s a vending machine.',
       inn: {

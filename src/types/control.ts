@@ -1,17 +1,23 @@
+// 来源说明：
+// - 制御项、基础耗费与显示前提当前以逆向结果为主。
+// - 本文件中的类型划分与 action schema 仍是 Web 层实现抽象。
 export interface ControlSkillType {
   id: string
   name: string
   cost: number // HP消耗
-  type: 'skill' | 'stat' // 技能或属性提升
+  type: 'skill' | 'stat' | 'action' // 技能、属性提升或特殊动作
   requirement?: {
     skill?: string // 需要已学会的技能
     maxHp?: number // 需要的最大HP
+    hasBook?: boolean // 需要已经买到书
+    stageMin?: number // 最低阶段
   }
   effect: {
     learnSkill?: string // 学习技能
     attackUp?: number // 攻击力提升
     defenseUp?: number // 防御力提升
     maxMpUp?: number // 最大MP提升
+    action?: 'spell_build' | 'primeval'
   }
   costCalculation?: {
     // 动态消耗计算
@@ -109,6 +115,30 @@ export const CONTROL_SKILLS: ControlSkillType[] = [
     },
     effect: {
       maxMpUp: 1
+    }
+  },
+  {
+    id: 'spell_build',
+    name: '呪文構築',
+    cost: 3,
+    type: 'action',
+    requirement: {
+      hasBook: true
+    },
+    effect: {
+      action: 'spell_build'
+    }
+  },
+  {
+    id: 'primeval',
+    name: '原初へ',
+    cost: 99,
+    type: 'action',
+    requirement: {
+      stageMin: 10
+    },
+    effect: {
+      action: 'primeval'
     }
   }
 ]

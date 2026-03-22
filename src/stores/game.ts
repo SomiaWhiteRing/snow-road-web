@@ -1,9 +1,22 @@
 import { defineStore } from "pinia";
+import {
+  createEmptyBattleEnemy,
+  rollMatchRecovery,
+  type BattleEnemy,
+} from "../services/gameMechanics";
+
+interface EquipmentState {
+  id: string | null;
+  name: string | null;
+  attack?: number;
+  defense?: number;
+}
 
 export const useGameStore = defineStore("game", {
   state: () => ({
     distance: 0,
     stage: 0,
+    playerName: "",
     level: 1,
     exp: 0,
     nextExp: 5,
@@ -17,83 +30,76 @@ export const useGameStore = defineStore("game", {
     virtualDefense: 0,
     mp: 0,
     virtualMp: 0,
+    starCapacity: 0,
+    fuel: 0,
+    starDanceActive: false,
+    spellBuildRemaining: 0,
     weapon: {
+      id: null,
       name: null,
       attack: 0,
-    },
+    } as EquipmentState,
     armor: {
+      id: null,
       name: null,
       defense: 0,
-    },
+    } as EquipmentState,
     items: {
       matches: 10,
       books: false,
-      stars: 0,
     },
+    bearWarningStage: -1,
+    scarred: false,
     learnedSkills: [] as string[],
     learnedSpells: [] as string[],
     battle: {
-      enemy: {
-        name: "",
-        hp: 0,
-        maxHp: 0,
-        mp: 0,
-        attack: 0,
-        defense: 0,
-      },
+      enemy: createEmptyBattleEnemy() as BattleEnemy,
     },
   }),
+  getters: {
+    totalAttack: (state) => state.attack + (state.weapon.attack ?? 0),
+    totalDefense: (state) => state.defense + (state.armor.defense ?? 0),
+    hasMagic: (state) => state.learnedSpells.length > 0,
+  },
   actions: {
     levelUp() {
-      // 1. 基础等级提升
       this.level++;
 
-      // 2. 随机数X(1-6)
       const x = Math.floor(Math.random() * 6) + 1;
-
-      // 3. 计算最大HP增加值: (潜能值/5的整数部分 + X)
       const hpIncrease = Math.floor(this.potential / 5) + x;
       this.maxHp += hpIncrease;
-      this.hp += hpIncrease;
-
-      // 4. 潜能值增加: (6 - X)
       this.potential += 6 - x;
 
-      // 5. 如果潜能值>=5，有几率触发能力提升
       if (this.potential >= 5) {
-        // 5.1 如果有MP，5%概率MP+1
         if (this.maxMp > 0 && Math.random() < 0.05) {
           this.maxMp += 1;
           this.potential -= 5;
-          return; // 每次升级只触发一种能力提升
-        }
-
-        // 5.2 5%概率攻击力+1
-        if (Math.random() < 0.05) {
-          this.attack += 1;
-          this.potential -= 5;
+          this.nextExp = this.calculateNextExp();
           return;
         }
 
-        // 5.3 5%概率防御力+1
+        if (Math.random() < 0.05) {
+          this.attack += 1;
+          this.potential -= 5;
+          this.nextExp = this.calculateNextExp();
+          return;
+        }
+
         if (Math.random() < 0.05) {
           this.defense += 1;
           this.potential -= 5;
+          this.nextExp = this.calculateNextExp();
           return;
         }
       }
 
-      // 6. 设置下一级所需经验值
       this.nextExp = this.calculateNextExp();
     },
 
-    // 计算下一级所需经验值的辅助方法
     calculateNextExp() {
-      // 每级所需经验值增加5
-      return this.nextExp + 5;
+      return this.level * 5;
     },
 
-    // 获得经验值的方法
     gainExp(amount: number) {
       this.exp += amount;
       while (this.exp >= this.nextExp) {
@@ -102,16 +108,190 @@ export const useGameStore = defineStore("game", {
       }
     },
 
-    // 学习技能的方法
     learnSkill(skillId: string) {
       if (!this.learnedSkills.includes(skillId)) {
         this.learnedSkills.push(skillId);
       }
     },
 
-    // 消耗HP上限的方法
+    learnSpell(spellId: string) {
+      if (!this.learnedSpells.includes(spellId)) {
+        this.learnedSpells.push(spellId);
+      }
+    },
+
+    setPlayerName(name: string) {
+      this.playerName = name;
+    },
+
     consumeMaxHp(amount: number) {
-      this.maxHp -= amount;
+      this.maxHp = Math.max(1, this.maxHp - amount);
+      this.hp = Math.min(this.hp, this.maxHp);
+    },
+
+    loseMaxHp(amount: number) {
+      this.maxHp = Math.max(0, this.maxHp - amount);
+    },
+
+    markScarred() {
+      this.scarred = true;
+    },
+
+    restoreHpAndMp() {
+      this.hp = this.maxHp;
+      this.mp = this.maxMp;
+    },
+
+    restoreAll() {
+      this.restoreHpAndMp();
+      this.virtualMp = 0;
+    },
+
+    useMatch() {
+      if (this.items.matches <= 0) {
+        return 0;
+      }
+
+      this.items.matches -= 1;
+      const healed = Math.min(this.maxHp - this.hp, rollMatchRecovery());
+      this.hp += healed;
+      return healed;
+    },
+
+    buyStarMark() {
+      this.starCapacity += 1;
+      this.fuel += 1;
+    },
+
+    useLighter() {
+      if (this.fuel <= 0) {
+        return false;
+      }
+
+      this.fuel -= 1;
+      this.restoreHpAndMp();
+      return true;
+    },
+
+    setSpellBuildRemaining(count: number) {
+      this.spellBuildRemaining = Math.max(0, count);
+    },
+
+    consumeSpellBuildAttempt() {
+      if (this.spellBuildRemaining <= 0) {
+        return 0;
+      }
+
+      this.spellBuildRemaining -= 1;
+      return this.spellBuildRemaining;
+    },
+
+    activateStarDance() {
+      this.starDanceActive = true;
+    },
+
+    clearStarDance() {
+      this.starDanceActive = false;
+    },
+
+    clearVirtualMp() {
+      this.virtualMp = 0;
+    },
+
+    decayVirtualMp() {
+      this.virtualMp = Math.max(0, this.virtualMp - 1);
+    },
+
+    addVirtualMp(amount: number) {
+      const cap = this.maxMp * 10;
+      this.virtualMp = Math.min(cap, this.virtualMp + amount);
+      return this.virtualMp;
+    },
+
+    multiplyVirtualMp(multiplier: number) {
+      const cap = this.maxMp * 10;
+      this.virtualMp = Math.min(cap, this.virtualMp * multiplier);
+      return this.virtualMp;
+    },
+
+    canSpendMp(cost: number, allowVirtual: boolean) {
+      return allowVirtual
+        ? this.mp + this.virtualMp >= cost
+        : this.mp >= cost;
+    },
+
+    spendMp(cost: number, allowVirtual: boolean) {
+      if (!this.canSpendMp(cost, allowVirtual)) {
+        return false;
+      }
+
+      let remaining = cost;
+      if (allowVirtual) {
+        const useVirtual = Math.min(this.virtualMp, remaining);
+        this.virtualMp -= useVirtual;
+        remaining -= useVirtual;
+      }
+
+      this.mp -= remaining;
+      return true;
+    },
+
+    setWeapon(payload: {
+      id: string;
+      name: string;
+      attack: number;
+      virtualAttack?: number;
+    }) {
+      this.weapon = {
+        id: payload.id,
+        name: payload.name,
+        attack: payload.attack,
+      };
+      this.virtualAttack = payload.virtualAttack ?? 0;
+    },
+
+    setArmor(payload: {
+      id: string;
+      name: string;
+      defense: number;
+      virtualDefense?: number;
+    }) {
+      this.armor = {
+        id: payload.id,
+        name: payload.name,
+        defense: payload.defense,
+      };
+      this.virtualDefense = payload.virtualDefense ?? 0;
+    },
+
+    clearWeapon() {
+      this.weapon = {
+        id: null,
+        name: null,
+        attack: 0,
+      };
+      this.virtualAttack = 0;
+    },
+
+    clearArmor() {
+      this.armor = {
+        id: null,
+        name: null,
+        defense: 0,
+      };
+      this.virtualDefense = 0;
+    },
+
+    setBattleEnemy(enemy: BattleEnemy) {
+      this.battle.enemy = enemy;
+    },
+
+    clearBattleEnemy() {
+      this.battle.enemy = createEmptyBattleEnemy();
+    },
+
+    resetGame() {
+      this.$reset();
     },
   },
 });

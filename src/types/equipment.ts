@@ -1,3 +1,6 @@
+// 来源说明：
+// - 装备名称与公开强度表主要来自原版资料页。
+// - 特殊装备成长公式是依据资料页整理写成的现代实现函数。
 export interface EquipmentBase {
   id: string
   name: string

@@ -36,6 +36,7 @@ import { ref, computed } from "vue";
 import { useGameStore } from "../stores/game";
 import { useI18n } from "vue-i18n";
 import { generateControlText } from "../utils/textGenerator";
+import { SPELLS } from "../types/spells";
 import {
   CONTROL_SKILLS,
   calculateControlCost,
@@ -44,6 +45,7 @@ import {
 
 const emit = defineEmits<{
   (e: "close"): void;
+  (e: "action", payload: { action: "spell_build" | "primeval"; cost: number }): void;
 }>();
 
 const gameStore = useGameStore();
@@ -60,6 +62,17 @@ const buttonPositions = ref<Map<string, { x: number; y: number }>>(new Map());
 // 计算可用的制御技能
 const availableSkills = computed(() => {
   return CONTROL_SKILLS.filter((skill) => {
+    if (
+      skill.id === "spell_build" &&
+      gameStore.learnedSpells.length >= SPELLS.length
+    ) {
+      return false;
+    }
+
+    if (skill.id === "primeval" && gameStore.playerName === "ララフレア") {
+      return false;
+    }
+
     // 如果是已学习的技能则不显示
     if (
       skill.type === "skill" &&
@@ -72,6 +85,17 @@ const availableSkills = computed(() => {
     if (
       skill.requirement?.skill &&
       !gameStore.learnedSkills.includes(skill.requirement.skill)
+    ) {
+      return false;
+    }
+
+    if (skill.requirement?.hasBook && !gameStore.items.books) {
+      return false;
+    }
+
+    if (
+      skill.requirement?.stageMin !== undefined &&
+      gameStore.stage < skill.requirement.stageMin
     ) {
       return false;
     }
@@ -142,6 +166,14 @@ const useControlSkill = (skill: ControlSkillType) => {
     maxMp: gameStore.maxMp,
   });
 
+  if (skill.type === "action" && skill.effect.action) {
+    emit("action", {
+      action: skill.effect.action,
+      cost,
+    });
+    return;
+  }
+
   // 消耗MaxHP
   gameStore.consumeMaxHp(cost);
 
@@ -157,6 +189,7 @@ const useControlSkill = (skill: ControlSkillType) => {
   }
   if (skill.effect.maxMpUp) {
     gameStore.maxMp += skill.effect.maxMpUp;
+    gameStore.mp = gameStore.maxMp;
   }
 };
 

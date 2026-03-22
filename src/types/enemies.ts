@@ -1,3 +1,6 @@
+// 来源说明：
+// - 公开敌人与Boss数值主要整理自原版攻略页/资料页。
+// - Another 深层内容与行为字段仍混有实现侧补写，不应视为全部已逆向坐实。
 export interface EnemyType {
   id: string;
   name: string;
@@ -6,6 +9,7 @@ export interface EnemyType {
   attack: number | [number, number];
   defense: number | [number, number];
   exp: number;
+  matchReward?: number;
   isBoss?: boolean;
   stage?: number; // boss专用
   stages?: number[]; // 普通敌人可能出现在多个关卡
@@ -20,6 +24,16 @@ export interface EnemyType {
     mp?: boolean;
     attack?: boolean;
     defense?: boolean;
+  };
+  magic?: {
+    id: "freeze" | "cremate";
+    chance: number; // Web层行为参数，不对应原版内部原始字段
+  };
+  rewardEquipment?: {
+    kind: "weapon" | "armor";
+    id: string;
+    name: string;
+    power: number;
   };
 }
 
@@ -153,6 +167,10 @@ export const ENEMIES: EnemyType[] = [
     sprite: {
       path: "sprite/snowwes3.png",
     },
+    magic: {
+      id: "freeze",
+      chance: 0.5,
+    },
   },
   {
     id: "fearsome_match",
@@ -162,6 +180,7 @@ export const ENEMIES: EnemyType[] = [
     attack: [1, 25],
     defense: 0,
     exp: 3,
+    matchReward: 1,
     stages: [6],
     sprite: {
       path: "sprite/hell2.png",
@@ -238,7 +257,11 @@ export const ENEMIES: EnemyType[] = [
     exp: 50,
     stages: [10],
     sprite: {
-      path: "sprite/engine.png",
+      path: "sprite/nazo00.png",
+    },
+    magic: {
+      id: "cremate",
+      chance: 0.7,
     },
   },
   {
@@ -270,7 +293,8 @@ export const BOSSES: EnemyType[] = [
     mp: 0,
     attack: 2,
     defense: 0,
-    exp: 10,
+    exp: 15,
+    matchReward: 0,
     isBoss: true,
     stage: 0,
     sprite: {
@@ -284,7 +308,8 @@ export const BOSSES: EnemyType[] = [
     mp: 0,
     attack: 4,
     defense: 2,
-    exp: 15,
+    exp: 30,
+    matchReward: 3,
     isBoss: true,
     stage: 1,
     sprite: {
@@ -298,7 +323,8 @@ export const BOSSES: EnemyType[] = [
     mp: 0,
     attack: 6,
     defense: 3,
-    exp: 20,
+    exp: 50,
+    matchReward: 4,
     isBoss: true,
     stage: 2,
     sprite: {
@@ -313,6 +339,7 @@ export const BOSSES: EnemyType[] = [
     attack: 9,
     defense: 3,
     exp: 60,
+    matchReward: 5,
     isBoss: true,
     stage: 3,
     sprite: {
@@ -326,7 +353,8 @@ export const BOSSES: EnemyType[] = [
     mp: 0,
     attack: 9,
     defense: 9,
-    exp: 30,
+    exp: 80,
+    matchReward: 7,
     isBoss: true,
     stage: 4,
     sprite: {
@@ -340,7 +368,8 @@ export const BOSSES: EnemyType[] = [
     mp: 0,
     attack: 12,
     defense: 7,
-    exp: 35,
+    exp: 100,
+    matchReward: 8,
     isBoss: true,
     stage: 5,
     sprite: {
@@ -354,7 +383,8 @@ export const BOSSES: EnemyType[] = [
     mp: 5,
     attack: 15,
     defense: 999,
-    exp: 40,
+    exp: 120,
+    matchReward: 10,
     isBoss: true,
     stage: 6,
     sprite: {
@@ -369,6 +399,7 @@ export const BOSSES: EnemyType[] = [
     attack: 0,
     defense: 0,
     exp: 0,
+    matchReward: 0,
     isBoss: true,
     stage: 7,
     sprite: {
@@ -382,7 +413,8 @@ export const BOSSES: EnemyType[] = [
     mp: 20,
     attack: 20,
     defense: 20,
-    exp: 45,
+    exp: 150,
+    matchReward: 15,
     isBoss: true,
     stage: 8,
     sprite: {
@@ -396,11 +428,31 @@ export const BOSSES: EnemyType[] = [
     mp: 30,
     attack: 30,
     defense: 0,
-    exp: 50,
+    exp: 1000,
+    matchReward: 0,
     isBoss: true,
     stage: 9, // Final
     sprite: {
       path: "sprite/coldecot.png",
+    },
+  },
+  {
+    id: "lucifer",
+    name: "ルシファー",
+    hp: 360,
+    mp: 50,
+    attack: 38,
+    defense: 24,
+    exp: 10000,
+    matchReward: 0,
+    isBoss: true,
+    stage: 10,
+    sprite: {
+      path: "sprite/lucifer.png",
+    },
+    magic: {
+      id: "cremate",
+      chance: 0.8,
     },
   },
 ];
