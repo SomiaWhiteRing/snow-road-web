@@ -99,7 +99,10 @@
         <img :src="useAsset('sprite/self.png')" alt="character" />
       </div>
 
-      <StatusPanel />
+      <StatusPanel
+        :battle-attack-bonus="isInBattle ? battleAttackBonus : 0"
+        :battle-defense-bonus="isInBattle ? battleDefenseBonus : 0"
+      />
 
       <template
         v-if="

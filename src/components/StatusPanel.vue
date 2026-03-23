@@ -19,11 +19,11 @@
         +{{ gameStore.virtualMp }}
       </template>
     </div>
-    <div class="stat-line" v-if="gameStore.attack > 0">
-      {{ t("game.stats.attack") }}: {{ gameStore.totalAttack }}
+    <div class="stat-line" v-if="gameStore.totalAttack > 0">
+      {{ t("game.stats.attack") }}: {{ attackDisplay }}
     </div>
-    <div class="stat-line" v-if="gameStore.defense > 0">
-      {{ t("game.stats.defense") }}: {{ gameStore.totalDefense }}
+    <div class="stat-line" v-if="gameStore.totalDefense > 0">
+      {{ t("game.stats.defense") }}: {{ defenseDisplay }}
     </div>
     <div class="stat-line" v-if="gameStore.weapon.name">
       {{ t("game.stats.weapon") }}: {{ gameStore.weapon.name }}（{{
@@ -52,6 +52,17 @@ import { computed } from "vue";
 import { useGameStore } from "../stores/game";
 import { useI18n } from "vue-i18n";
 
+const props = withDefaults(
+  defineProps<{
+    battleAttackBonus?: number;
+    battleDefenseBonus?: number;
+  }>(),
+  {
+    battleAttackBonus: 0,
+    battleDefenseBonus: 0,
+  }
+);
+
 const gameStore = useGameStore();
 const { t } = useI18n();
 const starMarks = computed(() => {
@@ -59,6 +70,16 @@ const starMarks = computed(() => {
   const unlit = "☆".repeat(Math.max(0, gameStore.starCapacity - gameStore.fuel));
   return `${lit}${unlit}`;
 });
+const attackDisplay = computed(() =>
+  props.battleAttackBonus > 0
+    ? `${gameStore.totalAttack}＋${props.battleAttackBonus}`
+    : `${gameStore.totalAttack}`
+);
+const defenseDisplay = computed(() =>
+  props.battleDefenseBonus > 0
+    ? `${gameStore.totalDefense}＋${props.battleDefenseBonus}`
+    : `${gameStore.totalDefense}`
+);
 </script>
 
 <style lang="scss" scoped>
