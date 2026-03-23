@@ -127,7 +127,7 @@ export class ForwardService {
   }
 
   private rollEquipmentEncounter(): EnemyType {
-    let rank = Math.min(15, this.getStore().stage + 5);
+    let rank = Math.min(15, this.getStore().stage + 1);
     for (let index = 0; index < 4 && rank < 15; index += 1) {
       if (randomInt(2) === 0) {
         rank += 1;

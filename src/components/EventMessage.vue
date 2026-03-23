@@ -23,6 +23,7 @@ const messageLines = computed(() => {
   position: absolute;
   top: 260px;
   left: 25px;
+  z-index: 5;
   color: #fff;
   display: flex;
   flex-direction: column;

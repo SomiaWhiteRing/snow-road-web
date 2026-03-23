@@ -15,32 +15,32 @@ const props = defineProps({
       {
         size: 3,
         count: 100,
-        speedY: [0.4, 0.7],
-        speedX: [0.5, 1.3],
+        speedY: [0.22, 0.4],
+        speedX: [0.28, 0.78],
       },
       {
         size: 4,
         count: 80,
-        speedY: [0.5, 0.9],
-        speedX: [0.6, 1.4],
+        speedY: [0.28, 0.48],
+        speedX: [0.34, 0.84],
       },
       {
         size: 6,
         count: 40,
-        speedY: [0.7, 1.1],
-        speedX: [0.7, 1.5],
+        speedY: [0.38, 0.6],
+        speedX: [0.4, 0.9],
       },
       {
         size: 8,
         count: 20,
-        speedY: [0.9, 1.3],
-        speedX: [0.8, 1.6],
+        speedY: [0.46, 0.72],
+        speedX: [0.46, 0.96],
       },
       {
         size: 10,
         count: 10,
-        speedY: [1.1, 1.5],
-        speedX: [0.9, 1.7],
+        speedY: [0.56, 0.84],
+        speedX: [0.52, 1.02],
       },
     ],
   },
@@ -137,7 +137,7 @@ const initCanvas = () => {
       )
   );
 
-  preRender(snowflakes, 5000);
+  preRender(snowflakes, 9000);
 };
 
 const animate = () => {

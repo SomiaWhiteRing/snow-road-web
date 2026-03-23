@@ -126,7 +126,6 @@ export const useGameStore = defineStore("game", {
 
     consumeMaxHp(amount: number) {
       this.maxHp = Math.max(1, this.maxHp - amount);
-      this.hp = Math.min(this.hp, this.maxHp);
     },
 
     loseMaxHp(amount: number) {
@@ -149,6 +148,10 @@ export const useGameStore = defineStore("game", {
 
     useMatch() {
       if (this.items.matches <= 0) {
+        return 0;
+      }
+
+      if (this.hp >= this.maxHp) {
         return 0;
       }
 

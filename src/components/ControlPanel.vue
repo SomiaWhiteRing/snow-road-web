@@ -36,6 +36,7 @@ import { ref, computed } from "vue";
 import { useGameStore } from "../stores/game";
 import { useI18n } from "vue-i18n";
 import { generateControlText } from "../utils/textGenerator";
+import { soundManager, SOUND } from "../services/soundManager";
 import { SPELLS } from "../types/spells";
 import {
   CONTROL_SKILLS,
@@ -166,6 +167,8 @@ const useControlSkill = (skill: ControlSkillType) => {
     maxMp: gameStore.maxMp,
   });
 
+  void soundManager.playSound(SOUND.HYUUN);
+
   if (skill.type === "action" && skill.effect.action) {
     emit("action", {
       action: skill.effect.action,
@@ -210,6 +213,7 @@ if (texts && texts.length) {
   height: 250px;
   background: #770000;
   overflow: hidden;
+  z-index: 20;
 
   .control-text {
     position: absolute;

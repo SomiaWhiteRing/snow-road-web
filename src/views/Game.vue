@@ -37,21 +37,26 @@
         @action="handleControlAction"
       />
 
-      <div v-if="overlay === 'shop'" class="overlay-panel shop-panel">
-        <div class="panel-title">{{ t("game.shop.title") }}</div>
-        <div class="panel-matches">
-          {{ t("game.shop.matches", { count: gameStore.items.matches }) }}
-        </div>
+      <div v-if="overlay === 'shop'" class="shop-panel">
+        <img
+          class="shop-title-image"
+          :src="useAsset('sprite/welcome.png')"
+          alt="shop title"
+        />
         <button
           v-for="offer in shopOffers"
-          :key="offer.id"
+          :key="offer.slot"
           class="shop-button"
-          :disabled="offer.state !== 'available' || gameStore.items.matches < offer.cost"
+          :class="`shop-button-${offer.slot}`"
+          :disabled="offer.state !== 'available'"
           @click="purchaseShopOffer(offer)"
         >
           {{ getShopOfferLabel(offer) }}
         </button>
-        <button class="panel-exit" @click="overlay = 'none'">
+        <div class="shop-matches">
+          {{ t("game.shop.matches", { count: gameStore.items.matches }) }}
+        </div>
+        <button class="shop-exit-button" @click="overlay = 'none'">
           {{ t("game.magic.exit") }}
         </button>
       </div>
@@ -229,11 +234,11 @@
               {{ t(flipLabelKey) }}
             </button>
           </div>
-          <div class="buttons buttons-3 battle-item-buttons">
-            <button @click="handleUseMatch">
-              {{ t("game.actions.matches", { count: gameStore.items.matches }) }}
-            </button>
-            <button v-if="gameStore.fuel > 0" @click="handleUseStar">
+          <div
+            v-if="gameStore.fuel > 0"
+            class="buttons buttons-3 battle-item-buttons"
+          >
+            <button @click="handleUseStar">
               {{ t("game.actions.lighter", { count: gameStore.fuel }) }}
             </button>
           </div>
@@ -268,9 +273,6 @@
         :class="{ 'gameover-panel': gameOver }"
       >
         <div class="cutscene-text">{{ cutsceneText }}</div>
-        <button v-if="gameOver" class="cutscene-button" @click.stop="handleCutsceneAction">
-          {{ t("game.actions.restart") }}
-        </button>
       </div>
     </div>
 
@@ -310,7 +312,6 @@ import {
   createShopOffers,
   instantiateEnemy,
   normalizeIncantation,
-  rollShopEquipment,
   type BattleEnemy,
   type ShopOffer,
 } from "../services/gameMechanics";
@@ -417,6 +418,9 @@ const SPELL_SOUNDS = [
 const gameStore = useGameStore();
 const i18n = useI18n();
 const { t, te } = i18n;
+const isEnglishLocale = computed(() =>
+  String(i18n.locale.value).toLowerCase().startsWith("en")
+);
 const forwardService = createForwardService(i18n);
 
 const overlay = ref<OverlayType>("none");
@@ -511,7 +515,7 @@ const cutsceneText = computed(() =>
   gameOver.value ? t("game.battle.game_over") : currentStoryFrame.value?.text ?? ""
 );
 const storyPanelVisible = computed(
-  () => gameOver.value || cutsceneText.value.length > 0
+  () => !gameOver.value && cutsceneText.value.length > 0
 );
 const bgmOverrideTrack = computed(() =>
   storyVisible.value ? storyMusicTrack.value : null
@@ -787,12 +791,6 @@ const advanceStory = () => {
 
 const openCurrentStageStory = () =>
   openStory(`story${String(gameStore.stage).padStart(2, "0")}`);
-
-const handleCutsceneAction = () => {
-  if (gameOver.value) {
-    restartGame();
-  }
-};
 
 const handleCutsceneOverlayClick = () => {
   if (gameOver.value || !storyVisible.value) {
@@ -1586,28 +1584,50 @@ const attemptEscape = () => {
 const handleUseMatch = () => {
   if (gameStore.items.matches <= 0) {
     message.value = t("game.items.no_matches");
+    soundManager.playSound(SOUND.BUBBLE);
+    return;
+  }
+
+  if (gameStore.hp >= gameStore.maxHp) {
+    message.value = t("game.items.match_wasted");
+    soundManager.playSound(SOUND.BUBBLE);
     return;
   }
 
   const healed = gameStore.useMatch();
-  soundManager.playSound(SOUND.EAT);
-  const line =
-    healed > 0
-      ? t("game.items.match_healed", { value: healed })
-      : t("game.items.match_wasted");
-
-  message.value = line;
-};
-
-const handleUseStar = () => {
-  if (!gameStore.useLighter()) {
-    message.value = t("game.items.no_lighter");
+  if (healed <= 0) {
+    message.value = t("game.items.match_wasted");
+    soundManager.playSound(SOUND.BUBBLE);
     return;
   }
 
-  soundManager.playSound(SOUND.OPEN);
-  const line = t("game.items.star_restored");
-  message.value = line;
+  currentSprite.value = "sprite/chas1.png";
+  message.value = t("game.items.match_healed", { value: healed });
+  soundManager.playSound(SOUND.SUKA);
+};
+
+const handleUseStar = () => {
+  if (gameStore.fuel <= 0) {
+    message.value = t("game.items.no_lighter");
+    soundManager.playSound(SOUND.BUBBLE);
+    return;
+  }
+
+  if (gameStore.hp >= gameStore.maxHp && gameStore.mp >= gameStore.maxMp) {
+    message.value = t("game.items.lighter_wasted");
+    soundManager.playSound(SOUND.BUBBLE);
+    return;
+  }
+
+  if (!gameStore.useLighter()) {
+    message.value = t("game.items.no_lighter");
+    soundManager.playSound(SOUND.BUBBLE);
+    return;
+  }
+
+  currentSprite.value = "sprite/lighter.png";
+  message.value = t("game.items.star_restored");
+  soundManager.playSound(SOUND.FIRE);
 };
 
 const handleForward = () => {
@@ -1694,26 +1714,56 @@ const handleSave = () => {
 
 const openShop = () => {
   if (shopDistance.value !== gameStore.distance) {
-    shopOffers.value = createShopOffers(gameStore.items.books, gameStore.starCapacity);
+    shopOffers.value = createShopOffers(
+      gameStore.stage,
+      gameStore.items.books,
+      gameStore.starCapacity
+    );
     shopDistance.value = gameStore.distance;
   }
   overlay.value = "shop";
 };
 
+const getShopOfferName = (offer: ShopOffer) => {
+  if (offer.kind === "weapon" || offer.kind === "armor") {
+    return offer.equipmentId ? t(`equipment.${offer.equipmentId}`) : "";
+  }
+
+  if (offer.kind === "book") {
+    return t("game.shop.book");
+  }
+
+  if (offer.kind === "star") {
+    return t("game.shop.star");
+  }
+
+  return "";
+};
+
+const formatShopMatchCost = (cost: number) =>
+  isEnglishLocale.value ? `${cost} matches` : `${cost}本`;
+
 const getShopOfferLabel = (offer: ShopOffer) => {
   if (offer.state === "sold_out") {
-    return `${t(`game.shop.${offer.id}`)} ${t("game.shop.sold_out")}`;
+    return t("game.shop.sold_out");
   }
 
   if (offer.state === "already_read") {
-    return `${t("game.shop.book")} ${t("game.shop.already_read")}`;
+    return t("game.shop.already_read");
   }
 
-  if (offer.state === "maxed") {
-    return `${t("game.shop.star")} ${t("game.shop.maxed")}`;
+  const name = getShopOfferName(offer);
+
+  if (offer.kind === "weapon" || offer.kind === "armor") {
+    const power = offer.power ?? 0;
+    return isEnglishLocale.value
+      ? `${name} (${power}): ${formatShopMatchCost(offer.cost)}`
+      : `${name}（${power}）：${formatShopMatchCost(offer.cost)}`;
   }
 
-  return `${t(`game.shop.${offer.id}`)} (${offer.cost})`;
+  return isEnglishLocale.value
+    ? `${name}: ${formatShopMatchCost(offer.cost)}`
+    : `${name}：${formatShopMatchCost(offer.cost)}`;
 };
 
 const purchaseShopOffer = (offer: ShopOffer) => {
@@ -1722,41 +1772,49 @@ const purchaseShopOffer = (offer: ShopOffer) => {
   }
 
   if (gameStore.items.matches < offer.cost) {
-    message.value = t("game.items.not_enough_matches");
+    soundManager.playSound(SOUND.BUBBLE);
     return;
   }
 
   gameStore.items.matches -= offer.cost;
   offer.state = "sold_out";
-  soundManager.playSound(SOUND.KIN);
+  soundManager.playSound(SOUND.EAT);
 
-  if (offer.id === "weapon") {
-    const weapon = rollShopEquipment("weapon");
-    const name = t(`equipment.${weapon.id}`);
+  if (offer.kind === "weapon" && offer.equipmentId) {
+    const name = t(`equipment.${offer.equipmentId}`);
     gameStore.setWeapon({
-      id: weapon.id,
+      id: offer.equipmentId,
       name,
-      attack: weapon.power,
+      attack: offer.power ?? 0,
     });
-    message.value = t("game.shop.weapon_bought", { name, power: weapon.power });
+    message.value = t("game.shop.weapon_bought", {
+      name,
+      power: offer.power ?? 0,
+    });
     return;
   }
 
-  if (offer.id === "armor") {
-    const armor = rollShopEquipment("armor");
-    const name = t(`equipment.${armor.id}`);
+  if (offer.kind === "armor" && offer.equipmentId) {
+    const name = t(`equipment.${offer.equipmentId}`);
     gameStore.setArmor({
-      id: armor.id,
+      id: offer.equipmentId,
       name,
-      defense: armor.power,
+      defense: offer.power ?? 0,
     });
-    message.value = t("game.shop.armor_bought", { name, power: armor.power });
+    message.value = t("game.shop.armor_bought", {
+      name,
+      power: offer.power ?? 0,
+    });
     return;
   }
 
-  if (offer.id === "book") {
+  if (offer.kind === "book") {
     gameStore.items.books = true;
     message.value = t("game.shop.book_bought");
+    return;
+  }
+
+  if (offer.kind !== "star") {
     return;
   }
 
@@ -2013,6 +2071,71 @@ body {
       .panel-exit {
         margin-top: auto;
         align-self: flex-end;
+      }
+    }
+
+    .shop-panel {
+      position: absolute;
+      top: 25px;
+      left: 25px;
+      width: 250px;
+      height: 250px;
+      background: #ccccff;
+      z-index: 10;
+
+      .shop-title-image {
+        position: absolute;
+        top: 20px;
+        left: 25px;
+        width: 200px;
+        height: 30px;
+        image-rendering: pixelated;
+      }
+
+      .shop-button,
+      .shop-exit-button {
+        position: absolute;
+        text-align: center;
+      }
+
+      .shop-button {
+        left: 30px;
+        width: 190px;
+        height: 21px;
+      }
+
+      .shop-button-0 {
+        top: 80px;
+      }
+
+      .shop-button-1 {
+        top: 110px;
+      }
+
+      .shop-button-2 {
+        top: 140px;
+      }
+
+      .shop-button-3 {
+        top: 170px;
+      }
+
+      .shop-matches {
+        position: absolute;
+        left: 10px;
+        top: 230px;
+        color: #000077;
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1;
+        white-space: nowrap;
+      }
+
+      .shop-exit-button {
+        left: 198px;
+        top: 223px;
+        width: 50px;
+        height: 25px;
       }
     }
 

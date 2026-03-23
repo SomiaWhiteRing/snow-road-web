@@ -43,14 +43,17 @@ export interface BattleEnemy {
   };
 }
 
-export type ShopOfferId = "weapon" | "armor" | "book" | "star";
-export type ShopOfferState = "available" | "sold_out" | "already_read" | "maxed";
+export type ShopOfferKind = "weapon" | "armor" | "book" | "star" | "empty";
+export type ShopOfferState = "available" | "sold_out" | "already_read";
 export type EquipmentKind = "weapon" | "armor";
 
 export interface ShopOffer {
-  id: ShopOfferId;
+  slot: number;
+  kind: ShopOfferKind;
   cost: number;
   state: ShopOfferState;
+  equipmentId?: string;
+  power?: number;
 }
 
 export interface RolledEquipment {
@@ -144,44 +147,77 @@ export const calculatePhysicalDamage = (
 export const rollMatchRecovery = (): number =>
   Math.floor(Math.random() * 2) + 1;
 
+const getStandardEquipmentByRank = (
+  kind: EquipmentKind,
+  rank: number
+): WeaponType | ArmorType => {
+  const pool = kind === "weapon" ? STANDARD_WEAPONS : STANDARD_ARMORS;
+  return pool[rank - 1];
+};
+
 export const createShopOffers = (
+  stage: number,
   hasBook: boolean,
   starCapacity: number
-): ShopOffer[] => [
-  {
-    id: "weapon",
-    cost: 10,
-    state: "available",
-  },
-  {
-    id: "armor",
-    cost: 10,
-    state: "available",
-  },
-  {
-    id: "book",
-    cost: 20,
-    state: hasBook ? "already_read" : "available",
-  },
-  {
-    id: "star",
-    cost: starCapacity === 0 ? 50 : 60,
-    state: starCapacity >= 2 ? "maxed" : "available",
-  },
-];
+): ShopOffer[] =>
+  Array.from({ length: 4 }, (_, slot) => {
+    const variance = rollRandomInt(3) + 1;
+    const cost = stage * 2 + variance * 5;
+    const offerType = rollRandomInt(5);
 
-export const rollShopEquipment = (kind: EquipmentKind): RolledEquipment => {
-  const pool = kind === "weapon" ? STANDARD_WEAPONS : STANDARD_ARMORS;
-  const item = pool[Math.floor(Math.random() * pool.length)];
+    if (offerType === 0) {
+      const rank = stage + variance + 1;
+      const item = getStandardEquipmentByRank("weapon", rank);
 
-  return {
-    kind,
-    id: item.id,
-    name: item.name,
-    power: item.power,
-    virtualBonus: 0,
-  };
-};
+      return {
+        slot,
+        kind: "weapon",
+        cost,
+        state: "available",
+        equipmentId: item.id,
+        power: item.power,
+      } satisfies ShopOffer;
+    }
+
+    if (offerType === 1) {
+      const rank = stage + variance;
+      const item = getStandardEquipmentByRank("armor", rank);
+
+      return {
+        slot,
+        kind: "armor",
+        cost,
+        state: "available",
+        equipmentId: item.id,
+        power: item.power,
+      } satisfies ShopOffer;
+    }
+
+    if (offerType === 2) {
+      return {
+        slot,
+        kind: "book",
+        cost: 20,
+        state: hasBook ? "already_read" : "available",
+      } satisfies ShopOffer;
+    }
+
+    if (offerType === 3) {
+      return {
+        slot,
+        kind: "star",
+        cost: starCapacity * 10 + 50,
+        state: "available",
+      } satisfies ShopOffer;
+    }
+
+    return {
+      slot,
+      kind: "empty",
+      cost: 0,
+      state: "sold_out",
+    } satisfies ShopOffer;
+  });
 
 export const createSpecialEquipment = (
   kind: EquipmentKind,

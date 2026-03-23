@@ -23,7 +23,7 @@ export type EquipmentType = WeaponType | ArmorType
 
 // 武器数据
 export const WEAPONS: WeaponType[] = [
-  { id: 'axe', type: 'weapon', name: '斧', power: 1 },
+  { id: 'axe', type: 'weapon', name: '手斧', power: 1 },
   { id: 'hatchet', type: 'weapon', name: '鉈', power: 2 },
   { id: 'battle_axe', type: 'weapon', name: 'バトルアクス', power: 3 },
   { id: 'silver_axe', type: 'weapon', name: '銀の斧', power: 4 },

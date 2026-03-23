@@ -2,7 +2,7 @@ export const equipmentNames = {
   zh: {
     equipment: {
       // 武器
-      axe: '斧',
+      axe: '手斧',
       hatchet: '柴刀',
       battle_axe: '战斧',
       silver_axe: '银斧',
@@ -41,7 +41,7 @@ export const equipmentNames = {
   ja: {
     equipment: {
       // 武器
-      axe: '斧',
+      axe: '手斧',
       hatchet: '鉈',
       battle_axe: 'バトルアクス',
       silver_axe: '銀の斧',
@@ -80,7 +80,7 @@ export const equipmentNames = {
   en: {
     equipment: {
       // 武器
-      axe: 'Axe',
+      axe: 'Hand Axe',
       hatchet: 'Hatchet',
       battle_axe: 'Battle Axe',
       silver_axe: 'Silver Axe',
