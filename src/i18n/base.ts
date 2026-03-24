@@ -41,7 +41,8 @@ export const base = {
         do_not_equip: '不装备',
         build: '构筑',
         cancel: '取消',
-        restart: '重新开始'
+        restart: '重新开始',
+        settings: '设置'
       },
       items: {
         no_matches: '没有火柴了。',
@@ -62,6 +63,7 @@ export const base = {
       shop: {
         title: '自动贩卖机',
         matches: '火柴 {count}根',
+        match_cost: '{count}根',
         weapon: '武器',
         armor: '防具',
         book: '书',
@@ -143,6 +145,12 @@ export const base = {
         yes: '是',
         no: '否'
       },
+      settings: {
+        title: '设置',
+        language: '语言',
+        system: '系统',
+        load_save: '读取存档'
+      },
       controlText: [
         '第六层。',
         '撕碎千卷书，点燃每一片碎片。',
@@ -222,8 +230,8 @@ export const base = {
       actions: {
         forward: '進む',
         control: '制御',
-        matches: 'マッチ {count}本',
-        lighter: 'ライター {count}個',
+        matches: 'マッチ{count}本',
+        lighter: 'ライター{count}個',
         inn: '泊まる',
         candle: 'セーブ',
         shop: '寄る',
@@ -235,7 +243,8 @@ export const base = {
         do_not_equip: '装備しない',
         build: '構築',
         cancel: '取消',
-        restart: 'やり直す'
+        restart: 'やり直す',
+        settings: '設定'
       },
       items: {
         no_matches: 'マッチが無い。',
@@ -256,6 +265,7 @@ export const base = {
       shop: {
         title: '自動販売機',
         matches: 'マッチ {count}本',
+        match_cost: '{count}本',
         weapon: '武器',
         armor: '防具',
         book: '本',
@@ -336,6 +346,12 @@ export const base = {
         hell_rises: '溶岩から這い出ました。',
         yes: 'はい',
         no: 'いいえ'
+      },
+      settings: {
+        title: '設定',
+        language: '言語',
+        system: 'システム',
+        load_save: 'ロード'
       },
       controlText: [
         '第六の階層。',
@@ -429,7 +445,8 @@ export const base = {
         do_not_equip: 'Leave It',
         build: 'Build',
         cancel: 'Cancel',
-        restart: 'Restart'
+        restart: 'Restart',
+        settings: 'Settings'
       },
       items: {
         no_matches: 'No matches left.',
@@ -450,6 +467,7 @@ export const base = {
       shop: {
         title: 'Vending Machine',
         matches: 'Matches: {count}',
+        match_cost: '{count} matches',
         weapon: 'Weapon',
         armor: 'Armor',
         book: 'Book',
@@ -530,6 +548,12 @@ export const base = {
         hell_rises: 'It crawled out from the lava.',
         yes: 'Yes',
         no: 'No'
+      },
+      settings: {
+        title: 'Settings',
+        language: 'Language',
+        system: 'System',
+        load_save: 'Load'
       },
       controlText: [
         'The Sixth Layer.',

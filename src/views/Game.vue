@@ -79,6 +79,22 @@
         :battle-defense-bonus="isInBattle ? battleDefenseBonus : 0"
       />
 
+      <button
+        v-if="
+          !gameOver &&
+          !gameCompleted &&
+          overlay === 'none' &&
+          !isInBattle &&
+          !storyLoading &&
+          !storyVisible &&
+          !anotherPromptVisible
+        "
+        class="settings-open-button"
+        @click="openSettingsOverlay"
+      >
+        {{ t('game.actions.settings') }}
+      </button>
+
       <template
         v-if="
           !gameOver &&
@@ -265,6 +281,51 @@
         </button>
       </div>
 
+      <div
+        v-if="overlay === 'settings'"
+        class="modal-overlay settings-overlay"
+        @click="closeSettingsOverlay"
+      >
+        <div class="story-panel settings-panel" @click.stop>
+          <div class="panel-title">{{ t("game.settings.title") }}</div>
+          <div class="settings-columns">
+            <section class="settings-section">
+              <div class="settings-section-title">
+                {{ t("game.settings.language") }}
+              </div>
+              <div class="settings-button-group">
+                <button
+                  v-for="option in settingLanguageOptions"
+                  :key="option.code"
+                  :class="{ 'settings-button-active': i18n.locale.value === option.code }"
+                  @click="setGameLocale(option.code)"
+                >
+                  {{ option.label }}
+                </button>
+              </div>
+            </section>
+            <section class="settings-section">
+              <div class="settings-section-title">
+                {{ t("game.settings.system") }}
+              </div>
+              <div class="settings-button-group">
+                <button @click="restartFromSettings">
+                  {{ t("game.actions.restart") }}
+                </button>
+                <button :disabled="!storedSaveAvailable" @click="restoreSavedGame">
+                  {{ t("game.settings.load_save") }}
+                </button>
+              </div>
+            </section>
+          </div>
+          <div class="settings-footer">
+            <button @click="closeSettingsOverlay">
+              {{ t("game.magic.exit") }}
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div v-if="gameCompleted" class="ending-message">
         {{ t(endingMessageKey) }}
       </div>
@@ -378,7 +439,13 @@ import {
 } from "../services/storyService";
 import { soundManager, SOUND } from "../services/soundManager";
 
-type OverlayType = "none" | "control" | "shop" | "magic" | "spellBuild";
+type OverlayType =
+  | "none"
+  | "control"
+  | "shop"
+  | "magic"
+  | "spellBuild"
+  | "settings";
 type FieldEvent =
   | "nothing"
   | "shop"
@@ -507,6 +574,7 @@ const storyMusicTrack = ref<string | null>(null);
 const anotherPromptVisible = ref(false);
 const pendingEquipmentChoice = ref<BattleEnemy["rewardEquipment"] | null>(null);
 const pendingLevelUpResult = ref<BattleLevelUpResult | null>(null);
+const storedSaveAvailable = ref(false);
 const battleState = ref<BattleFlowState>(BATTLE_STATE.idle);
 const battlePlayerPending = ref(false);
 const battleEnemyPending = ref(false);
@@ -567,9 +635,14 @@ const bossBattleMarkerVisible = computed(
   () => isInBattle.value && Boolean(gameStore.battle.enemy.isBoss)
 );
 const bossBattleMarkerStyle = computed(() => ({
-  left: `${200 + bossBattleMarkerOffset.value.x}px`,
-  top: `${100 + bossBattleMarkerOffset.value.y}px`,
+  left: `${80 + bossBattleMarkerOffset.value.x}px`,
+  top: `${180 + bossBattleMarkerOffset.value.y}px`,
 }));
+const settingLanguageOptions = [
+  { code: "zh", label: "中文" },
+  { code: "ja", label: "日本語" },
+  { code: "en", label: "English" },
+] as const;
 const currentStoryFrame = computed(() => storyFrame.value);
 const cutsceneVisible = computed(() => gameOver.value || storyVisible.value);
 const gameOverImagePath = computed(() =>
@@ -680,6 +753,33 @@ const flipLabelKey = computed(() =>
     ? "control.flip_flop"
     : "control.flip"
 );
+
+const syncStoredSaveAvailability = () => {
+  storedSaveAvailable.value = localStorage.getItem(SAVE_KEY) !== null;
+};
+
+const resetRuntimeState = () => {
+  gameStore.resetGame();
+  overlay.value = "none";
+  currentEvent.value = "nothing";
+  currentSprite.value = "";
+  currentExtra.value = {};
+  message.value = "";
+  spellBuildInput.value = "";
+  shopOffers.value = [];
+  shopDistance.value = null;
+  battleAttackBonus.value = 0;
+  battleDefenseBonus.value = 0;
+  gameOver.value = false;
+  gameCompleted.value = false;
+  endingMessageKey.value = "game.battle.final_clear";
+  resetStoryState();
+  storyLoading.value = false;
+  anotherPromptVisible.value = false;
+  pendingEquipmentChoice.value = null;
+  pendingLevelUpResult.value = null;
+  resetBattleFlow();
+};
 
 const loadSave = () => {
   const raw = localStorage.getItem(SAVE_KEY);
@@ -1878,6 +1978,7 @@ const handleSave = () => {
   gameStore.items.matches -= cost;
   currentSprite.value = currentExtra.value.afterSprite ?? currentSprite.value;
   localStorage.setItem(SAVE_KEY, JSON.stringify(gameStore.$state));
+  syncStoredSaveAvailability();
   soundManager.playSound(SOUND.POPON);
   message.value = t("game.system.saved");
 };
@@ -1890,6 +1991,20 @@ const openMagicOverlay = () => {
 const closeMagicOverlay = () => {
   soundManager.playSound(SOUND.THATHATHA);
   overlay.value = "none";
+};
+
+const openSettingsOverlay = () => {
+  soundManager.playSound(SOUND.POPON);
+  overlay.value = "settings";
+};
+
+const closeSettingsOverlay = () => {
+  soundManager.playSound(SOUND.THATHATHA);
+  overlay.value = "none";
+};
+
+const setGameLocale = (localeCode: "zh" | "ja" | "en") => {
+  i18n.locale.value = localeCode;
 };
 
 const openShop = () => {
@@ -1921,7 +2036,7 @@ const getShopOfferName = (offer: ShopOffer) => {
 };
 
 const formatShopMatchCost = (cost: number) =>
-  isEnglishLocale.value ? `${cost} matches` : `${cost}本`;
+  String(t("game.shop.match_cost", { count: cost }));
 
 const getShopOfferLabel = (offer: ShopOffer) => {
   if (offer.state === "sold_out") {
@@ -2019,27 +2134,22 @@ const closeSpellBuilder = () => {
 };
 
 const restartGame = () => {
-  localStorage.removeItem(SAVE_KEY);
-  gameStore.resetGame();
-  overlay.value = "none";
-  currentEvent.value = "nothing";
-  currentSprite.value = "";
-  currentExtra.value = {};
-  message.value = "";
-  spellBuildInput.value = "";
-  shopOffers.value = [];
-  shopDistance.value = null;
-  battleAttackBonus.value = 0;
-  battleDefenseBonus.value = 0;
-  gameOver.value = false;
-  gameCompleted.value = false;
-  endingMessageKey.value = "game.battle.final_clear";
-  resetStoryState();
-  storyLoading.value = false;
-  anotherPromptVisible.value = false;
-  pendingEquipmentChoice.value = null;
-  pendingLevelUpResult.value = null;
-  resetBattleFlow();
+  resetRuntimeState();
+};
+
+const restartFromSettings = () => {
+  closeSettingsOverlay();
+  resetRuntimeState();
+};
+
+const restoreSavedGame = () => {
+  if (!storedSaveAvailable.value) {
+    return;
+  }
+
+  closeSettingsOverlay();
+  resetRuntimeState();
+  loadSave();
 };
 
 const resolveSpellCandidates = (rawInput: string) => {
@@ -2116,6 +2226,7 @@ onUnmounted(() => {
   clearBossBattleMarkerTimer();
 });
 
+syncStoredSaveAvailability();
 loadSave();
 </script>
 
@@ -2221,6 +2332,8 @@ body {
         1px -1px 0 #000,
         -1px -1px 0 #000;
       pointer-events: none;
+      background-color: rgba(0, 0, 0, 0.6);
+      padding: 4px 8px;
     }
 
     :deep(.snow-canvas) {
@@ -2307,6 +2420,16 @@ body {
         width: 100%;
         height: auto;
       }
+    }
+
+    .settings-open-button {
+      position: absolute;
+      top: 0;
+      left: 173px;
+      z-index: 20;
+      width: 50px;
+      min-width: 50px;
+      height: 25px;
     }
 
     .buttons {
@@ -2671,6 +2794,55 @@ body {
       display: flex;
       justify-content: flex-end;
       gap: 8px;
+    }
+  }
+
+  .settings-overlay {
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+
+    .settings-panel {
+      flex: 0 0 auto;
+      width: min(360px, 100%);
+      gap: 16px;
+    }
+
+    .settings-columns {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .settings-section {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .settings-section-title {
+      font-weight: 700;
+    }
+
+    .settings-button-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      button {
+        width: 100%;
+        min-width: 0;
+        height: 25px;
+      }
+    }
+
+    .settings-button-active {
+      background: #dcdcdc;
+    }
+
+    .settings-footer {
+      display: flex;
+      justify-content: flex-end;
     }
   }
 }
