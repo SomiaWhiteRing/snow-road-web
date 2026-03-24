@@ -14,13 +14,13 @@
 
 按上面的“知识条目”口径，当前项目已整理出：
 
-- `逆向结果`：24 条
-- `文档总结`：8 条
-- `推测编纂`：6 条
+- `逆向结果`：26 条
+- `文档总结`：7 条
+- `推测编纂`：5 条
 
 总计 `38` 条。
 
-## 一、逆向结果 24 条
+## 一、逆向结果 26 条
 
 1. `snow.exe` 为 32 位 Delphi Windows GUI 程序，并直接导入 `PlaySoundA` 与 `GuruGuruSMF.dll`。
 2. `FORMMAIN.dfm` 已确认标题页、故事页、主场景页、咒文页、GameOver 页及 `PanelControl / PanelShop / PanelMagic` 结构。
@@ -46,8 +46,10 @@
 22. 战斗胜利后的 `经验 -> 升级链 -> 装备确认 -> 火柴奖励 -> 战斗结束清理` 也是独立的状态链；其中升级不会自动回复当前 HP / MP。
 23. 升级所需 EXP 公式已从 `0x47611C` 坐实为 `当前 LV * 5`。
 24. 当前敌人结构 `+0x110` 就是胜利火柴奖励字段；装备遭遇、普通敌人、BOSS 的具体奖励值已从 `0x476174 / 0x477168 / 0x478D59` 对齐出来。
+25. `setEnemy(0x475174)` 已坐实全部普通敌人与 BOSS 的数值生成式，包括固定值、随机范围、玩家属性拷贝与施法标志。
+26. `encountEnemy / encountBoss / setEnemy` 已坐实敌名到 `dat/*.bmp` 的真实绑定关系，Web 不应再以攻略页或直觉配图代替。
 
-## 二、文档总结 8 条
+## 二、文档总结 7 条
 
 1. 普通物理攻击公式在 `説明書.html` 中有明确说明。
 2. 逃跑成功率“约 80%”来自原版说明文档。
@@ -56,16 +58,14 @@
 5. 咒文名表、MP 消耗表、表面效果说明可由 `spell.html` 汇总。
 6. 虚构 MP 的一般规则，如生成、翻倍、移动归零、战斗内回合衰减、上限等，主要来自说明/攻略页。
 7. `春ノ夢 / 夏ノ空` 的强度成长表与 `LV` 关系来自 `equip.html` 的整理。
-8. 大部分公开敌人与 Boss 的数值表来自 `enemy.html`，但不含 Another 最终隐藏内容。
 
-## 三、推测编纂 6 条
+## 三、推测编纂 5 条
 
 1. 当前 Web 版把原版玩家记录中的“星位总数”和“当前点亮数”映射为 `starCapacity / fuel`，这是基于 `+0x114 / +0x118` 的合理拆分，但还没把所有更新点完全逆全。
 2. 当前 [Game.vue](/c:/Users/旻/Documents/GitHub/snow-road-web/src/views/Game.vue) 用 Vue 事件流重建了原版战斗状态机，这在行为目标上对齐，但不是原状态编号的逐 case 直译。
 3. 当前 [types/enemies.ts](/c:/Users/旻/Documents/GitHub/snow-road-web/src/types/enemies.ts) 中的 `magic.chance` 等字段是 Web 层运行所需抽象，不对应原版数据结构中的原始存储形式。
-4. 当前 [types/enemies.ts](/c:/Users/旻/Documents/GitHub/snow-road-web/src/types/enemies.ts) 中 `ルシファー` 等 Another 深层数据并未全部由逆向坐实，仍应视为暂存实现值。
-5. 当前 [types/spells.ts](/c:/Users/旻/Documents/GitHub/snow-road-web/src/types/spells.ts) 把原版咒文效果整理成统一 schema，这是一层现代实现抽象，不是原版内部结构原样再现。
-6. [forward.txt](/c:/Users/旻/Documents/GitHub/snow-road-web/Reference/forward.txt) 是面向实现的约束摘要，不是原始证据本身；其中每条都应继续回指到 exe 或原版资料来源。
+4. 当前 [types/spells.ts](/c:/Users/旻/Documents/GitHub/snow-road-web/src/types/spells.ts) 把原版咒文效果整理成统一 schema，这是一层现代实现抽象，不是原版内部结构原样再现。
+5. [forward.txt](/c:/Users/旻/Documents/GitHub/snow-road-web/Reference/forward.txt) 是面向实现的约束摘要，不是原始证据本身；其中每条都应继续回指到 exe 或原版资料来源。
 
 ## 四、原始资料层
 

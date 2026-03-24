@@ -1,6 +1,7 @@
 // 来源说明：
-// - 公开敌人与Boss数值主要整理自原版攻略页/资料页。
-// - Another 深层内容与行为字段仍混有实现侧补写，不应视为全部已逆向坐实。
+// - 敌人与 Boss 的名称、BMP 绑定、数值生成式、火柴奖励已由 snow.exe 的
+//   `encountEnemy / encountBoss / setEnemy(0x475174)` 直接坐实。
+// - `magic.chance` 仍是 Web 层运行抽象，不对应原版内部原始字段。
 export interface EnemyType {
   id: string;
   name: string;
@@ -56,7 +57,7 @@ export const ENEMIES: EnemyType[] = [
     name: "アイスフレア",
     hp: [1, 2],
     mp: 0,
-    attack: [1, 4],
+    attack: [2, 4],
     defense: 0,
     exp: 2,
     stages: [0, 1],
@@ -67,14 +68,14 @@ export const ENEMIES: EnemyType[] = [
   {
     id: "yukiko",
     name: "ゆきこ",
-    hp: [2, 4],
+    hp: [3, 4],
     mp: 0,
     attack: [2, 3],
     defense: [1, 2],
     exp: 3,
     stages: [1, 2, 5],
     sprite: {
-      path: "sprite/snowman2.png",
+      path: "sprite/snowwes.png",
     },
   },
   {
@@ -87,7 +88,7 @@ export const ENEMIES: EnemyType[] = [
     exp: 4,
     stages: [2, 3],
     sprite: {
-      path: "sprite/snowwes.png",
+      path: "sprite/nazo00.png",
     },
   },
   {
@@ -108,7 +109,7 @@ export const ENEMIES: EnemyType[] = [
     name: "エピタフ",
     hp: [5, 7],
     mp: 0,
-    attack: [4, 6],
+    attack: [4, 5],
     defense: [7, 8],
     exp: 8,
     stages: [3, 6],
@@ -139,7 +140,7 @@ export const ENEMIES: EnemyType[] = [
     exp: 10,
     stages: [4, 6],
     sprite: {
-      path: "sprite/bearman.png",
+      path: "sprite/whitebear2.png",
     },
   },
   {
@@ -147,25 +148,25 @@ export const ENEMIES: EnemyType[] = [
     name: "ゆきひこ",
     hp: [4, 6],
     mp: 0,
-    attack: [10, 12],
-    defense: [10, 12],
+    attack: [10, 11],
+    defense: [10, 11],
     exp: 9,
     stages: [5],
     sprite: {
-      path: "sprite/snowwes4.png",
+      path: "sprite/snowman.png",
     },
   },
   {
     id: "yukie",
     name: "ゆきえ",
-    hp: [7, 8],
-    mp: [2, 5],
-    attack: [6, 8],
-    defense: [7, 9],
+    hp: [7, 9],
+    mp: [3, 5],
+    attack: [8, 9],
+    defense: [8, 9],
     exp: 11,
     stages: [5],
     sprite: {
-      path: "sprite/snowwes3.png",
+      path: "sprite/snowwes.png",
     },
     magic: {
       id: "freeze",
@@ -177,13 +178,13 @@ export const ENEMIES: EnemyType[] = [
     name: "おそるべきマッチ",
     hp: 1,
     mp: 0,
-    attack: [1, 25],
+    attack: [0, 24],
     defense: 0,
     exp: 3,
     matchReward: 1,
     stages: [6],
     sprite: {
-      path: "sprite/hell2.png",
+      path: "sprite/chas0.png",
     },
   },
   {
@@ -192,11 +193,11 @@ export const ENEMIES: EnemyType[] = [
     hp: [15, 19],
     mp: 0,
     attack: 0,
-    defense: [8, 11],
+    defense: [10, 11],
     exp: 15,
     stages: [8],
     sprite: {
-      path: "sprite/snowwes2.png",
+      path: "sprite/snowman4.png",
     },
     copyPlayerStats: {
       attack: true,
@@ -207,7 +208,7 @@ export const ENEMIES: EnemyType[] = [
     name: "絶対ゆきこ",
     hp: [1, 3],
     mp: 0,
-    attack: [14, 16],
+    attack: [15, 16],
     defense: 0,
     exp: 12,
     stages: [8],
@@ -228,7 +229,7 @@ export const ENEMIES: EnemyType[] = [
     exp: 30,
     stages: [8, 9, 10],
     sprite: {
-      path: "sprite/whitebear2.png",
+      path: "sprite/blackbear.png",
     },
     copyPlayerStats: {
       hp: true,
@@ -244,7 +245,11 @@ export const ENEMIES: EnemyType[] = [
     exp: 25,
     stages: [9],
     sprite: {
-      path: "sprite/coldecot.png",
+      path: "sprite/fish00.png",
+    },
+    magic: {
+      id: "freeze",
+      chance: 0.5,
     },
   },
   {
@@ -261,7 +266,7 @@ export const ENEMIES: EnemyType[] = [
     },
     magic: {
       id: "cremate",
-      chance: 0.7,
+      chance: 0.5,
     },
   },
   {
@@ -274,7 +279,7 @@ export const ENEMIES: EnemyType[] = [
     exp: 0,
     stages: [10],
     sprite: {
-      path: "sprite/self.png",
+      path: "sprite/snowwes4.png",
     },
     copyPlayerStats: {
       hp: true,
@@ -298,7 +303,7 @@ export const BOSSES: EnemyType[] = [
     isBoss: true,
     stage: 0,
     sprite: {
-      path: "sprite/snowman3.png",
+      path: "sprite/snowman2.png",
     },
   },
   {
@@ -313,22 +318,26 @@ export const BOSSES: EnemyType[] = [
     isBoss: true,
     stage: 1,
     sprite: {
-      path: "sprite/snowman4.png",
+      path: "sprite/snowwes2.png",
     },
   },
   {
     id: "snow_doll",
     name: "スノードール",
-    hp: 25,
-    mp: 0,
-    attack: 6,
-    defense: 3,
-    exp: 50,
+    hp: [0, 25],
+    mp: [0, 25],
+    attack: [0, 25],
+    defense: [0, 25],
+    exp: 25,
     matchReward: 4,
     isBoss: true,
     stage: 2,
     sprite: {
       path: "sprite/snowdoll.png",
+    },
+    magic: {
+      id: "freeze",
+      chance: 0.5,
     },
   },
   {
@@ -373,7 +382,7 @@ export const BOSSES: EnemyType[] = [
     isBoss: true,
     stage: 5,
     sprite: {
-      path: "sprite/snowwes.png",
+      path: "sprite/snowman3.png",
     },
   },
   {
@@ -389,6 +398,10 @@ export const BOSSES: EnemyType[] = [
     stage: 6,
     sprite: {
       path: "sprite/epitaph1.png",
+    },
+    magic: {
+      id: "freeze",
+      chance: 0.5,
     },
   },
   {
@@ -424,7 +437,7 @@ export const BOSSES: EnemyType[] = [
   {
     id: "coldecot",
     name: "コルデコット",
-    hp: 250,
+    hp: 255,
     mp: 30,
     attack: 30,
     defense: 0,
@@ -433,16 +446,20 @@ export const BOSSES: EnemyType[] = [
     isBoss: true,
     stage: 9, // Final
     sprite: {
-      path: "sprite/coldecot.png",
+      path: "sprite/coldeco.png",
+    },
+    magic: {
+      id: "freeze",
+      chance: 0.5,
     },
   },
   {
     id: "lucifer",
     name: "ルシファー",
-    hp: 360,
-    mp: 50,
-    attack: 38,
-    defense: 24,
+    hp: 9999,
+    mp: 9999,
+    attack: 99,
+    defense: 99,
     exp: 10000,
     matchReward: 0,
     isBoss: true,
@@ -452,7 +469,7 @@ export const BOSSES: EnemyType[] = [
     },
     magic: {
       id: "cremate",
-      chance: 0.8,
+      chance: 0.5,
     },
   },
 ];
