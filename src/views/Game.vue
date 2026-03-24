@@ -250,13 +250,15 @@
 
       <div v-if="overlay === 'magic'" class="magic-sidebar">
         <button
-          v-for="(spell, index) in availableSpells"
+          v-for="(spell, index) in SPELLS"
           :key="spell.id"
+          v-show="isSpellLearned(spell.id)"
           class="magic-sidebar-button"
           :style="{ top: `${MAGIC_BUTTON_TOPS[index] ?? 10}px` }"
+          :disabled="!canCastSpell(spell)"
           @click="castSpell(spell.id)"
         >
-          {{ getSpellShortLabel(spell) }}
+          {{ getSpellSidebarLabel(spell) }}
         </button>
         <button class="magic-sidebar-exit" @click="closeMagicOverlay">
           {{ t("game.magic.exit") }}
@@ -593,15 +595,23 @@ const bgmSuspended = computed(
     anotherPromptVisible.value ||
     (storyVisible.value && storyMusicMode.value === "stop")
 );
-const availableSpells = computed(() =>
-  SPELLS.filter((spell) => gameStore.learnedSpells.includes(spell.id))
-);
-const getSpellShortLabel = (spell: (typeof SPELLS)[number]) =>
-  te(`spellShort.${spell.id}`) ? t(`spellShort.${spell.id}`) : spell.shortLabel;
-const getSpellLocalizedName = (spell: (typeof SPELLS)[number]) =>
+type SpellEntry = (typeof SPELLS)[number];
+
+const isSpellLearned = (spellId: string) =>
+  gameStore.learnedSpells.includes(spellId);
+const getSpellShortLabel = (spell: SpellEntry) =>
+  te(`spellShort.${spell.id}`) ? String(t(`spellShort.${spell.id}`)) : spell.shortLabel;
+const getSpellLocalizedName = (spell: SpellEntry) =>
   te(`spell.${spell.id}`) ? String(t(`spell.${spell.id}`)) : spell.name;
-const getSpellBuildBracket = (spell: (typeof SPELLS)[number]) =>
+const getSpellBuildBracket = (spell: SpellEntry) =>
   spell.isVirtualMp ? ["(", ")"] : ["[", "]"];
+const canCastSpell = (spell: SpellEntry) =>
+  gameStore.canSpendMp(spell.mpCost, spell.isVirtualMp) &&
+  (isInBattle.value || spell.canUseOutsideBattle);
+const getSpellSidebarLabel = (spell: SpellEntry) => {
+  const [open, close] = getSpellBuildBracket(spell);
+  return `${getSpellShortLabel(spell)}${open}${spell.mpCost}${close}`;
+};
 const allSpellsLearned = computed(
   () => gameStore.learnedSpells.length >= SPELLS.length
 );
@@ -2073,13 +2083,7 @@ const castSpell = (spellId: string) => {
     return;
   }
 
-  if (!isInBattle.value && !spell.canUseOutsideBattle) {
-    message.value = t("game.magic.no_target");
-    return;
-  }
-
-  if (!gameStore.canSpendMp(spell.mpCost, spell.isVirtualMp)) {
-    message.value = t("game.magic.not_enough_mp");
+  if (!canCastSpell(spell)) {
     return;
   }
 
@@ -2440,7 +2444,7 @@ body {
 
     .magic-sidebar {
       position: absolute;
-      top: 40px;
+      top: 0;
       right: 0;
       width: 75px;
       height: 311px;
@@ -2457,8 +2461,8 @@ body {
       }
 
       .magic-sidebar-exit {
-        left: 13px;
-        top: 223px;
+        left: 24px;
+        top: 285px;
         width: 50px;
       }
     }

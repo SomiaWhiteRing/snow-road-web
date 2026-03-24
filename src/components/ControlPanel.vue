@@ -196,7 +196,6 @@ const useControlSkill = (skill: ControlSkillType) => {
   }
   if (skill.effect.maxMpUp) {
     gameStore.maxMp += skill.effect.maxMpUp;
-    gameStore.mp = gameStore.maxMp;
   }
 };
 

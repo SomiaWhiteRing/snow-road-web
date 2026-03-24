@@ -120,6 +120,50 @@ return currentMp + virtualMp >= cost
 - `player[+0x118]`：星位总数
 - `player[+0x114]`：当前点亮中的星位 / 可消耗燃料
 
+## 原版魔法侧栏的显示与禁用
+
+`PanelMagic` 的刷新链已经能从 `0x4742EC` 直接读出来。
+
+- DFM 中固定存在 `BtnSpell0 .. BtnSpell9` 这 10 个按钮。
+- 位置不是动态流式排版，而是固定 10 个槽位：
+  - `Top = 10, 35, 60, 85, 115, 145, 170, 200, 225, 250`
+- 每个槽位都对应同一个 spell index，不会因为前面的咒文未学会而整体上移重排。
+
+其伪代码可写成：
+
+```text
+for spellIndex in 0..9:
+  if learned[spellIndex]:
+    button.Caption = shortLabel + bracket(cost)
+  else:
+    button.Caption = hiddenLabel
+
+  button.Enabled =
+    canPayMp(spellIndex) &&
+    (inBattle || canUseOutsideBattle[spellIndex])
+
+  button.Visible = learned[spellIndex]
+```
+
+这里几个关键点已经能各自落到数据表或调用点：
+
+- `shortLabel` 来自 `0x47E90C`
+- `cost` 来自 `0x47E934`
+- `canUseOutsideBattle` 来自 `0x47E95C`
+- `requiresRealMpOnly` 来自 `0x47E968`
+- learned flag 起点是 `player[+0x62]`
+- `button.Enabled` 的 MP 判定调用的就是 `0x474218`
+
+因此原版魔法栏的行为可以明确成：
+
+- 已学会的咒文会显示成 `短标签(消耗)` 或 `短标签[消耗]`
+  - `( )` 表示可用真实 MP + 虚构 MP
+  - `[ ]` 表示只能用真实 MP
+- MP 不足时，按钮直接灰掉。
+- 不在战斗中且该咒文不允许场外施放时，按钮也直接灰掉。
+- 原版不会走“先点按钮，再提示 MP 不够 / 没有目标”的晚判定流程。
+- 未学会的咒文不是显示为可点击占位文本，而是该固定槽位直接隐藏。
+
 ## 对 Web 复刻的直接约束
 
 按以上逆向结果，Web 端必须满足：
@@ -128,3 +172,5 @@ return currentMp + virtualMp >= cost
 - 学习判定必须走“当前可用 MP”而不是 `maxMp`。
 - `春よりも夏よりもあたたかい日` 不能在场外施放。
 - `己ならざるのぬくもりよ / 春ノ夢 / 夏ノ空` 的学习与施放都只能用当前真实 MP。
+- 魔法侧栏要显示原版的短标签加消耗，并把“MP 不足 / 场外无目标”的情况做成按钮禁用。
+- 魔法按钮应保留原版 10 个固定槽位；未学会时隐藏，不应把已学会咒文重新压缩排列。
