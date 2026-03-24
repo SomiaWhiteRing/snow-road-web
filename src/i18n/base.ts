@@ -55,7 +55,8 @@ export const base = {
         star_restored: '星印闪烁了。HP和MP完全恢复了。'
       },
       system: {
-        saved: '已保存进度。'
+        saved: '已保存进度。',
+        clear_record_cached: '『{file}』已缓存到浏览器中，可在设置中查看。'
       },
       events: {
         inn_free: '免费暖和了一会儿。'
@@ -150,7 +151,8 @@ export const base = {
         language: '语言',
         system: '系统',
         load_save: '读取存档',
-        rotate_screen: '旋转屏幕'
+        rotate_screen: '旋转屏幕',
+        clear_record: '通关记录'
       },
       controlText: [
         '第六层。',
@@ -258,7 +260,8 @@ export const base = {
         star_restored: '星印がまたたいた。HPとMPが全回復した。'
       },
       system: {
-        saved: 'セーブしました。'
+        saved: 'セーブしました。',
+        clear_record_cached: '『{file}』をブラウザに保存しました。設定から確認できます。'
       },
       events: {
         inn_free: '無料でひとときの暖を取れた。'
@@ -353,7 +356,8 @@ export const base = {
         language: '言語',
         system: 'システム',
         load_save: 'ロード',
-        rotate_screen: '画面回転'
+        rotate_screen: '画面回転',
+        clear_record: 'クリア記録'
       },
       controlText: [
         '第六の階層。',
@@ -461,7 +465,8 @@ export const base = {
         star_restored: 'The star mark shimmered. HP and MP were fully restored.'
       },
       system: {
-        saved: 'Progress saved.'
+        saved: 'Progress saved.',
+        clear_record_cached: '"{file}" was cached in the browser. You can read it from Settings.'
       },
       events: {
         inn_free: 'I warmed up for free.'
@@ -556,7 +561,8 @@ export const base = {
         language: 'Language',
         system: 'System',
         load_save: 'Load',
-        rotate_screen: 'Rotate Screen'
+        rotate_screen: 'Rotate Screen',
+        clear_record: 'Clear Record'
       },
       controlText: [
         'The Sixth Layer.',

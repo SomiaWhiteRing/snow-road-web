@@ -1,7 +1,7 @@
 <template>
   <div class="stats">
     <div class="stat-line" v-if="gameStore.stage > 0">
-      {{ t("game.stats.stage", { stage: gameStore.stage }) }}
+      {{ stageLine }}
     </div>
     <div class="stat-line">
       {{ t("game.stats.distance") }}: {{ gameStore.distance }}
@@ -62,6 +62,17 @@ const props = withDefaults(
 
 const gameStore = useGameStore();
 const { t } = useI18n();
+const stageLine = computed(() => {
+  if (gameStore.stage >= 10) {
+    return "- Stage Another -";
+  }
+
+  if (gameStore.stage === 9) {
+    return "- Stage Final -";
+  }
+
+  return t("game.stats.stage", { stage: gameStore.stage });
+});
 const starMarks = computed(() => {
   const lit = "★".repeat(gameStore.fuel);
   const unlit = "☆".repeat(Math.max(0, gameStore.starCapacity - gameStore.fuel));

@@ -23,6 +23,7 @@
         />
         <SnowEffect />
         <EnemyStatus v-if="isInBattle" />
+        <div v-if="anotherFilterVisible" class="another-screen-filter"></div>
         <div
           v-if="bossBattleMarkerVisible"
           class="boss-battle-marker"
@@ -87,7 +88,7 @@
           !isInBattle &&
           !storyLoading &&
           !storyVisible &&
-          !anotherPromptVisible
+          !systemDialogVisible
         "
         class="settings-open-button"
         @click="openSettingsOverlay"
@@ -103,7 +104,7 @@
           !isInBattle &&
           !storyLoading &&
           !storyVisible &&
-          !anotherPromptVisible
+          !systemDialogVisible
         "
       >
         <div
@@ -193,7 +194,7 @@
           isInBattle &&
           !storyLoading &&
           !storyVisible &&
-          !anotherPromptVisible
+          !systemDialogVisible
         "
       >
         <template v-if="battleEquipChoiceVisible">
@@ -321,6 +322,12 @@
                 <button :disabled="!storedSaveAvailable" @click="restoreSavedGame">
                   {{ t("game.settings.load_save") }}
                 </button>
+                <button
+                  :disabled="!clearRecordAvailable"
+                  @click="openClearRecordViewer"
+                >
+                  {{ t("game.settings.clear_record") }}
+                </button>
               </div>
             </section>
           </div>
@@ -395,13 +402,61 @@
       </div>
     </div>
 
-    <div v-if="anotherPromptVisible" class="modal-overlay prompt-overlay">
-      <div class="story-panel prompt-panel">
-        <div class="panel-title">{{ t("game.story.another_title") }}</div>
-        <div class="story-text">{{ t("game.story.another_prompt") }}</div>
-        <div class="prompt-buttons">
-          <button @click="acceptAnother">{{ t("game.story.yes") }}</button>
-          <button @click="declineAnother">{{ t("game.story.no") }}</button>
+    <div
+      v-if="clearRecordViewerVisible"
+      class="modal-overlay clear-record-overlay"
+      @click="closeClearRecordViewer"
+    >
+      <div class="clear-record-panel" @click.stop>
+        <div class="clear-record-title">
+          {{ t("game.settings.clear_record") }}
+        </div>
+        <div
+          v-if="availableClearRecordFiles.length > 1"
+          class="clear-record-tabs"
+        >
+          <button
+            v-for="file in availableClearRecordFiles"
+            :key="file"
+            :class="{ 'clear-record-tab-active': selectedClearRecordFile === file }"
+            @click="selectClearRecordFile(file)"
+          >
+            {{ file }}
+          </button>
+        </div>
+        <div class="clear-record-filename">{{ selectedClearRecordFile }}</div>
+        <div class="clear-record-body">{{ activeClearRecordText }}</div>
+        <div class="clear-record-footer">
+          <button @click="closeClearRecordViewer">
+            {{ t("game.magic.exit") }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="systemDialogVisible" class="modal-overlay system-dialog-overlay">
+      <div class="system-dialog-panel" @click.stop>
+        <div class="system-dialog-titlebar">
+          {{ systemDialog?.title }}
+        </div>
+        <div class="system-dialog-body">
+          <div class="system-dialog-message">{{ systemDialog?.message }}</div>
+        </div>
+        <div class="system-dialog-buttons">
+          <button
+            v-if="systemDialog?.kind === 'alert'"
+            @click="resolveSystemDialog(true)"
+          >
+            OK
+          </button>
+          <template v-else>
+            <button @click="resolveSystemDialog(true)">
+              {{ t("game.story.yes") }}
+            </button>
+            <button @click="resolveSystemDialog(false)">
+              {{ t("game.story.no") }}
+            </button>
+          </template>
         </div>
       </div>
     </div>
@@ -445,6 +500,11 @@ import {
   type StoryFrame,
 } from "../services/storyService";
 import { soundManager, SOUND } from "../services/soundManager";
+import {
+  getOriginalFinishTexts,
+  ORIGINAL_CLEAR_RECORD_FILES,
+  type OriginalClearRecordFile,
+} from "../constants/originalFinish";
 
 type OverlayType =
   | "none"
@@ -469,6 +529,14 @@ interface EventExtra {
   afterSprite?: string;
   getNum?: number;
 }
+
+interface SystemDialogState {
+  kind: "alert" | "confirm";
+  title: string;
+  message: string;
+}
+
+type ClearRecordCache = Partial<Record<OriginalClearRecordFile, boolean>>;
 
 interface StoryOptions {
   suppressStageAdvance?: boolean;
@@ -532,6 +600,7 @@ const BATTLE_STATE = {
 } as const;
 
 const SAVE_KEY = "snow-road-web-save";
+const CLEAR_RECORD_KEY = "snow-road-web-clear-records";
 const BATTLE_EFFECT_TICK_MS = 50;
 const MAGIC_BUTTON_TOPS = [10, 35, 60, 85, 115, 145, 170, 200, 225, 250] as const;
 const SPELL_SOUNDS = [
@@ -579,10 +648,15 @@ const storyVisible = ref(false);
 const storyLoading = ref(false);
 const storyMusicMode = ref<StoryMusicMode>("inherit");
 const storyMusicTrack = ref<string | null>(null);
-const anotherPromptVisible = ref(false);
+const systemDialog = ref<SystemDialogState | null>(null);
 const pendingEquipmentChoice = ref<BattleEnemy["rewardEquipment"] | null>(null);
 const pendingLevelUpResult = ref<BattleLevelUpResult | null>(null);
 const storedSaveAvailable = ref(false);
+const clearRecordViewerVisible = ref(false);
+const clearRecordCache = ref<ClearRecordCache>({});
+const selectedClearRecordFile = ref<OriginalClearRecordFile>(
+  ORIGINAL_CLEAR_RECORD_FILES[0]
+);
 const battleState = ref<BattleFlowState>(BATTLE_STATE.idle);
 const battlePlayerPending = ref(false);
 const battleEnemyPending = ref(false);
@@ -596,6 +670,7 @@ const battleDeathFlashVisible = ref(false);
 let battleEffectTimer: number | null = null;
 const bossBattleMarkerOffset = ref({ x: 0, y: 0 });
 let bossBattleMarkerTimer: number | null = null;
+let systemDialogResolver: ((result: boolean) => void) | null = null;
 
 const useAsset = (path: string) => assetManager.useAsset(path).value;
 
@@ -646,6 +721,17 @@ const bossBattleMarkerStyle = computed(() => ({
   left: `${80 + bossBattleMarkerOffset.value.x}px`,
   top: `${180 + bossBattleMarkerOffset.value.y}px`,
 }));
+const originalFinishTexts = computed(() =>
+  getOriginalFinishTexts(String(i18n.locale.value))
+);
+const systemDialogVisible = computed(() => systemDialog.value !== null);
+const anotherFilterVisible = computed(() => gameStore.stage >= 10);
+const availableClearRecordFiles = computed(() =>
+  ORIGINAL_CLEAR_RECORD_FILES.filter((file) => Boolean(clearRecordCache.value[file]))
+);
+const clearRecordAvailable = computed(
+  () => availableClearRecordFiles.value.length > 0
+);
 const settingLanguageOptions = [
   { code: "zh", label: "中文" },
   { code: "ja", label: "日本語" },
@@ -670,11 +756,11 @@ const bgmOverrideTrack = computed(() =>
     ? storyMusicTrack.value
     : null
 );
+const activeClearRecordText = computed(
+  () => originalFinishTexts.value.clearRecordTexts[selectedClearRecordFile.value] ?? ""
+);
 const bgmSuspended = computed(
-  () =>
-    gameOver.value ||
-    anotherPromptVisible.value ||
-    (storyVisible.value && storyMusicMode.value === "stop")
+  () => gameOver.value || (storyVisible.value && storyMusicMode.value === "stop")
 );
 type SpellEntry = (typeof SPELLS)[number];
 
@@ -766,6 +852,83 @@ const syncStoredSaveAvailability = () => {
   storedSaveAvailable.value = localStorage.getItem(SAVE_KEY) !== null;
 };
 
+const syncSelectedClearRecordFile = () => {
+  if (availableClearRecordFiles.value.length === 0) {
+    selectedClearRecordFile.value = ORIGINAL_CLEAR_RECORD_FILES[0];
+    return;
+  }
+
+  if (availableClearRecordFiles.value.includes(selectedClearRecordFile.value)) {
+    return;
+  }
+
+  selectedClearRecordFile.value =
+    availableClearRecordFiles.value[availableClearRecordFiles.value.length - 1];
+};
+
+const loadClearRecordCache = () => {
+  const raw = localStorage.getItem(CLEAR_RECORD_KEY);
+  if (!raw) {
+    clearRecordCache.value = {};
+    syncSelectedClearRecordFile();
+    return;
+  }
+
+  try {
+    const parsed = JSON.parse(raw);
+    const nextCache: ClearRecordCache = {};
+
+    for (const file of ORIGINAL_CLEAR_RECORD_FILES) {
+      if (parsed?.[file] === true || typeof parsed?.[file] === "string") {
+        nextCache[file] = true;
+      }
+    }
+
+    clearRecordCache.value = nextCache;
+    syncSelectedClearRecordFile();
+  } catch (error) {
+    console.error("Failed to load clear record cache.", error);
+    clearRecordCache.value = {};
+    syncSelectedClearRecordFile();
+  }
+};
+
+const persistClearRecordCache = () => {
+  try {
+    localStorage.setItem(CLEAR_RECORD_KEY, JSON.stringify(clearRecordCache.value));
+  } catch (error) {
+    console.error("Failed to persist clear record cache.", error);
+  }
+};
+
+const cacheClearRecord = (file: OriginalClearRecordFile) => {
+  clearRecordCache.value = {
+    ...clearRecordCache.value,
+    [file]: true,
+  };
+  selectedClearRecordFile.value = file;
+  persistClearRecordCache();
+};
+
+const resolveSystemDialog = (result: boolean) => {
+  const resolver = systemDialogResolver;
+  systemDialogResolver = null;
+  systemDialog.value = null;
+  resolver?.(result);
+};
+
+const showSystemAlert = (title: string, message: string) =>
+  new Promise<void>((resolve) => {
+    systemDialog.value = { kind: "alert", title, message };
+    systemDialogResolver = () => resolve();
+  });
+
+const showSystemConfirm = (title: string, message: string) =>
+  new Promise<boolean>((resolve) => {
+    systemDialog.value = { kind: "confirm", title, message };
+    systemDialogResolver = resolve;
+  });
+
 const resetRuntimeState = () => {
   gameStore.resetGame();
   overlay.value = "none";
@@ -783,9 +946,11 @@ const resetRuntimeState = () => {
   endingMessageKey.value = "game.battle.final_clear";
   resetStoryState();
   storyLoading.value = false;
-  anotherPromptVisible.value = false;
+  systemDialog.value = null;
+  systemDialogResolver = null;
   pendingEquipmentChoice.value = null;
   pendingLevelUpResult.value = null;
+  clearRecordViewerVisible.value = false;
   resetBattleFlow();
 };
 
@@ -898,14 +1063,51 @@ const finishStoryWithEnd = () => {
   message.value = "";
 };
 
-const finishStoryWithFinish = () => {
+const finishStoryWithFinish = async () => {
   soundManager.playSound(SOUND.THATHATHA);
   resetStoryState();
   message.value = "";
+  const finishTexts = originalFinishTexts.value;
+
+  const recordFile: OriginalClearRecordFile =
+    gameStore.stage >= 10 ? "おまけ.txt" : "あとがき.txt";
+
+  await showSystemAlert(
+    finishTexts.clearDialogTitle,
+    gameStore.stage >= 10
+      ? finishTexts.absoluteClearMessage
+      : finishTexts.clearMessage
+  );
+
+  cacheClearRecord(recordFile);
+  await showSystemAlert(
+    finishTexts.clearDialogTitle,
+    finishTexts.getClearOutputMessage(recordFile)
+  );
 
   if (gameStore.stage === 9 && gameStore.distance <= 1000 && !gameStore.scarred) {
-    anotherPromptVisible.value = true;
+    const shouldEnterAnother = await showSystemConfirm(
+      finishTexts.anotherQualificationTitle,
+      finishTexts.anotherQualificationMessage
+    );
+
+    if (shouldEnterAnother) {
+      gameStore.stage += 1;
+      currentEvent.value = "nothing";
+      currentSprite.value = "";
+      currentExtra.value = {};
+      message.value = "";
+
+      for (const hellMessage of finishTexts.hellMessages) {
+        await showSystemAlert(finishTexts.hellTitle, hellMessage);
+      }
+    }
   }
+
+  await showSystemAlert(
+    String(t("game.settings.title")),
+    String(t("game.system.clear_record_cached", { file: recordFile }))
+  );
 };
 
 const calculateScarLoss = (maxHp: number) => Math.trunc((maxHp + 9) / 10);
@@ -1048,7 +1250,7 @@ const advanceStory = () => {
         finishStoryWithEnd();
         return;
       case "finish":
-        finishStoryWithFinish();
+        void finishStoryWithFinish();
         return;
     }
   }
@@ -1065,21 +1267,6 @@ const handleCutsceneOverlayClick = () => {
   }
 
   advanceStory();
-};
-
-const acceptAnother = () => {
-  anotherPromptVisible.value = false;
-  gameStore.stage += 1;
-  currentEvent.value = "nothing";
-  currentSprite.value = "";
-  message.value = [
-    t("game.story.hell_awakens"),
-    t("game.story.hell_rises"),
-  ].join("\n");
-};
-
-const declineAnother = () => {
-  anotherPromptVisible.value = false;
 };
 
 const resetBattleFlow = () => {
@@ -1910,7 +2097,7 @@ const handleForward = () => {
     gameCompleted.value ||
     storyLoading.value ||
     storyVisible.value ||
-    anotherPromptVisible.value
+    systemDialogVisible.value
   ) {
     return;
   }
@@ -2011,7 +2198,31 @@ const openSettingsOverlay = () => {
 
 const closeSettingsOverlay = () => {
   soundManager.playSound(SOUND.THATHATHA);
+  clearRecordViewerVisible.value = false;
   overlay.value = "none";
+};
+
+const openClearRecordViewer = () => {
+  if (!clearRecordAvailable.value) {
+    return;
+  }
+
+  syncSelectedClearRecordFile();
+  soundManager.playSound(SOUND.POPON);
+  clearRecordViewerVisible.value = true;
+};
+
+const closeClearRecordViewer = () => {
+  soundManager.playSound(SOUND.THATHATHA);
+  clearRecordViewerVisible.value = false;
+};
+
+const selectClearRecordFile = (file: OriginalClearRecordFile) => {
+  if (!availableClearRecordFiles.value.includes(file)) {
+    return;
+  }
+
+  selectedClearRecordFile.value = file;
 };
 
 const setGameLocale = (localeCode: "zh" | "ja" | "en") => {
@@ -2243,6 +2454,7 @@ onUnmounted(() => {
 });
 
 syncStoredSaveAvailability();
+loadClearRecordCache();
 loadSave();
 </script>
 
@@ -2293,7 +2505,7 @@ body {
     }
 
     .battle-sprite-flash {
-      z-index: 3;
+      z-index: 4;
       pointer-events: none;
       opacity: 0.88;
     }
@@ -2312,7 +2524,7 @@ body {
     .battle-scene-flash {
       position: absolute;
       inset: 0;
-      z-index: 4;
+      z-index: 5;
       pointer-events: none;
       opacity: 0.78;
       mix-blend-mode: screen;
@@ -2336,7 +2548,7 @@ body {
 
     .boss-battle-marker {
       position: absolute;
-      z-index: 4;
+      z-index: 5;
       color: #ffffff;
       font-size: 28px;
       font-weight: 700;
@@ -2617,6 +2829,16 @@ body {
     }
   }
 
+    .another-screen-filter {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      pointer-events: none;
+      background: rgba(148, 0, 0, 0.22);
+      mix-blend-mode: screen;
+    box-shadow: inset 0 0 120px rgba(255, 0, 0, 0.24);
+  }
+
   .spell-build-screen {
     position: absolute;
     inset: 0;
@@ -2778,7 +3000,6 @@ body {
     position: absolute;
     inset: 0;
     padding: 40px 25px 50px;
-    background: rgba(0, 0, 0, 0.94);
     display: flex;
     z-index: 31;
 
@@ -2800,16 +3021,51 @@ body {
       white-space: pre-wrap;
       line-height: 1.6;
     }
+  }
 
-    .prompt-panel {
-      max-width: 360px;
-      margin: auto;
+  .system-dialog-overlay {
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: transparent;
+    z-index: 32;
+
+    .system-dialog-panel {
+      width: min(340px, 100%);
+      color: #000;
+      background: #d4d0c8;
+      border: 2px solid;
+      border-color: #ffffff #404040 #404040 #ffffff;
+      box-shadow: 2px 2px 0 #000;
     }
 
-    .prompt-buttons {
+    .system-dialog-titlebar {
+      padding: 3px 6px;
+      color: #fff;
+      font-weight: 700;
+      line-height: 1.2;
+      background: linear-gradient(90deg, #000080 0%, #1084d0 100%);
+    }
+
+    .system-dialog-body {
+      padding: 18px 16px 10px;
+    }
+
+    .system-dialog-message {
+      min-height: 48px;
+      white-space: pre-wrap;
+      line-height: 1.5;
+    }
+
+    .system-dialog-buttons {
       display: flex;
-      justify-content: flex-end;
-      gap: 8px;
+      justify-content: center;
+      gap: 12px;
+      padding: 0 16px 14px;
+
+      button {
+        min-width: 72px;
+      }
     }
   }
 
@@ -2817,6 +3073,7 @@ body {
     align-items: center;
     justify-content: center;
     padding: 24px;
+    background: rgba(0, 0, 0, 0.94);
 
     .settings-panel {
       flex: 0 0 auto;
@@ -2857,6 +3114,61 @@ body {
     }
 
     .settings-footer {
+      display: flex;
+      justify-content: flex-end;
+    }
+  }
+
+  .clear-record-overlay {
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(0, 0, 0, 0.94);
+    z-index: 32;
+
+    .clear-record-panel {
+      width: min(520px, 100%);
+      max-height: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 16px;
+      color: #fff;
+      background: rgba(10, 10, 10, 0.92);
+      border: 1px solid #666;
+      min-height: 0;
+    }
+
+    .clear-record-title {
+      font-weight: 700;
+    }
+
+    .clear-record-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .clear-record-tab-active {
+      background: #dcdcdc;
+    }
+
+    .clear-record-filename {
+      color: #aaa;
+      line-height: 1.2;
+    }
+
+    .clear-record-body {
+      flex: 1;
+      overflow: auto;
+      white-space: pre-wrap;
+      line-height: 1.6;
+      padding: 12px;
+      border: 1px solid #666;
+      background: rgba(0, 0, 0, 0.4);
+    }
+
+    .clear-record-footer {
       display: flex;
       justify-content: flex-end;
     }
