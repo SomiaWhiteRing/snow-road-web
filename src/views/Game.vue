@@ -71,7 +71,7 @@
         >
           {{ t(`spell.${spell.id}`) }} ({{ spell.mpCost }})
         </button>
-        <button class="panel-exit" @click="overlay = 'none'">
+        <button class="panel-exit" @click="closeMagicOverlay">
           {{ t("game.magic.exit") }}
         </button>
       </div>
@@ -155,7 +155,7 @@
           <button @click="overlay = 'control'">
             {{ t("game.actions.control") }}
           </button>
-          <button v-if="gameStore.hasMagic" @click="overlay = 'magic'">
+          <button v-if="gameStore.hasMagic" @click="openMagicOverlay">
             {{ t("game.actions.magic") }}
           </button>
         </div>
@@ -207,7 +207,7 @@
             v-if="gameStore.hasMagic"
             class="battle-button-slot battle-button-slot-right-mid"
           >
-            <button @click="overlay = 'magic'">
+            <button @click="openMagicOverlay">
               {{ t("game.actions.magic") }}
             </button>
           </div>
@@ -666,11 +666,13 @@ const playStoryWave = (soundPath: string | null) => {
 };
 
 const finishStoryWithEnd = () => {
+  soundManager.playSound(SOUND.THATHATHA);
   advanceStageFromStory();
   resetStoryState();
 };
 
 const finishStoryWithFinish = () => {
+  soundManager.playSound(SOUND.THATHATHA);
   resetStoryState();
 
   if (gameStore.stage === 9 && gameStore.distance <= 1000 && !gameStore.scarred) {
@@ -862,6 +864,7 @@ const finalizeBattleEscape = () => {
   currentEvent.value = "nothing";
   currentSprite.value = "";
   gameStore.clearBattleEnemy();
+  soundManager.playSound(SOUND.TURN);
   message.value = t("game.battle.escape_success", { enemy: enemy.name });
 };
 
@@ -991,6 +994,7 @@ const performEnemyMagic = (): { line: string; defeated: boolean } => {
   });
 
   if (isMagicImmune() || damage <= 0) {
+    soundManager.playSound(SOUND.KIN);
     return {
       line: t("game.battle.enemy_magic_blocked", {
         enemy: enemy.name,
@@ -1000,7 +1004,7 @@ const performEnemyMagic = (): { line: string; defeated: boolean } => {
     };
   }
 
-  soundManager.playSound(SOUND.FIRE);
+  soundManager.playSound(SOUND.DUTY);
   gameStore.hp = Math.max(0, gameStore.hp - damage);
 
   return {
@@ -1089,6 +1093,7 @@ const applySpellEffect = (
     const power = spell.id === "become_charcoal_max" ? currentTotalMp : spell.power;
     const damage = Math.max(0, power - gameStore.battle.enemy.mp);
     gameStore.battle.enemy.hp = Math.max(0, gameStore.battle.enemy.hp - damage);
+    soundManager.playSound(damage > 0 ? SOUND.FIRE : SOUND.KIN);
 
     return {
       line:
@@ -1108,10 +1113,12 @@ const applySpellEffect = (
   switch (spell.id) {
     case "warmth_of_others":
       gameStore.hp = gameStore.maxHp;
+      soundManager.playSound(SOUND.UP);
       line = t("game.magic.hp_restored");
       break;
     case "light":
       gameStore.addVirtualMp(5);
+      soundManager.playSound(SOUND.HYUUN);
       line = t("game.magic.virtual_mp_added", { value: gameStore.virtualMp });
       break;
     case "sun_in_palm":
@@ -1131,6 +1138,7 @@ const applySpellEffect = (
         attack: weapon.power,
         virtualAttack: weapon.virtualBonus,
       });
+      soundManager.playSound(SOUND.UP);
       line = t("game.magic.weapon_generated", { power: weapon.power });
       break;
     }
@@ -1147,11 +1155,13 @@ const applySpellEffect = (
         defense: armor.power,
         virtualDefense: armor.virtualBonus,
       });
+      soundManager.playSound(SOUND.UP);
       line = t("game.magic.armor_generated", { power: armor.power });
       break;
     }
     case "warmer_than_spring_and_summer":
       gameStore.activateStarDance();
+      soundManager.playSound(SOUND.DAMAGE);
       line = t("game.magic.star_dance_ready");
       break;
     default:
@@ -1186,8 +1196,6 @@ const executePlayerBattleAction = () => {
 
     const currentTotalMp = gameStore.mp + gameStore.virtualMp;
     gameStore.spendMp(spell.mpCost, spell.isVirtualMp);
-    playSpellSound(spell.id);
-
     const result = applySpellEffect(spell.id, currentTotalMp);
     if (result.battleEffect !== "none") {
       beginBattlePulseEffect({ sprite: result.battleEffect });
@@ -1675,12 +1683,14 @@ const handleForward = () => {
 const handleInn = () => {
   const cost = currentExtra.value.cost ?? 0;
   if (gameStore.items.matches < cost) {
+    soundManager.playSound(SOUND.BUBBLE);
     message.value = t("game.items.not_enough_matches");
     return;
   }
 
   gameStore.items.matches -= cost;
   gameStore.restoreAll();
+  soundManager.playSound(SOUND.UP);
   message.value = currentExtra.value.afterMessage ?? t("events.inn.after");
 };
 
@@ -1698,13 +1708,17 @@ const handleInnSecret = () => {
     ...currentExtra.value,
     afterMessage,
   };
-  soundManager.playSound(SOUND.DUTY);
+  soundManager.playSound(SOUND.TURN);
+  window.setTimeout(() => {
+    soundManager.playSound(SOUND.DUTY);
+  }, 180);
   message.value = afterMessage;
 };
 
 const handleSave = () => {
   const cost = currentExtra.value.cost ?? 0;
   if (gameStore.items.matches < cost) {
+    soundManager.playSound(SOUND.BUBBLE);
     message.value = t("game.items.not_enough_matches");
     return;
   }
@@ -1712,7 +1726,18 @@ const handleSave = () => {
   gameStore.items.matches -= cost;
   currentSprite.value = currentExtra.value.afterSprite ?? currentSprite.value;
   localStorage.setItem(SAVE_KEY, JSON.stringify(gameStore.$state));
+  soundManager.playSound(SOUND.POPON);
   message.value = t("game.system.saved");
+};
+
+const openMagicOverlay = () => {
+  soundManager.playSound(SOUND.POPON);
+  overlay.value = "magic";
+};
+
+const closeMagicOverlay = () => {
+  soundManager.playSound(SOUND.THATHATHA);
+  overlay.value = "none";
 };
 
 const openShop = () => {
@@ -1914,10 +1939,7 @@ const buildSpell = () => {
   }
 
   gameStore.learnSpell(spell.id);
-  const spellSound = SPELL_SOUNDS[SPELLS.indexOf(spell)];
-  if (spellSound) {
-    soundManager.playSound(spellSound);
-  }
+  playSpellSound(spell.id);
 
   spellBuildFeedback.value = t("game.magic.learned", {
     name: t(`spell.${spell.id}`),
@@ -1948,7 +1970,6 @@ const castSpell = (spellId: string) => {
 
   const currentTotalMp = gameStore.mp + gameStore.virtualMp;
   gameStore.spendMp(spell.mpCost, spell.isVirtualMp);
-  playSpellSound(spell.id);
   message.value = applySpellEffect(spell.id, currentTotalMp).line;
 };
 
