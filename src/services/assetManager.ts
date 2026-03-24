@@ -2,6 +2,8 @@ import { shallowRef } from 'vue';
 import { openDB, IDBPDatabase } from 'idb';
 import router from '../router';
 
+const ASSET_DB_NAME = 'game-assets';
+const ASSET_DB_VERSION = 2;
 const STORY_FILES = [
   "story00.txt",
   "story01.txt",
@@ -90,8 +92,11 @@ class AssetManager {
   }
 
   async init() {
-    this.db = await openDB<AssetDB>('game-assets', 1, {
+    this.db = await openDB<AssetDB>(ASSET_DB_NAME, ASSET_DB_VERSION, {
       upgrade(db) {
+        if (db.objectStoreNames.contains('assets')) {
+          db.deleteObjectStore('assets');
+        }
         db.createObjectStore('assets', { keyPath: 'key' });
       },
     });
@@ -119,16 +124,8 @@ class AssetManager {
           const key = `${type}/${file}`;
           const existing = await this.db!.get('assets', key);
           if (!existing) {
-            const assetPath = `/assets/${type}/${file}`;
-            const response = await fetch(assetPath);
-            if (!response.ok) {
-              throw new Error(`Failed to load ${key}`);
-            }
-            const blob = await response.blob();
-            await this.db!.put('assets', {
-              key,
-              value: blob
-            });
+            const blob = await this.fetchAssetBlob(type, file);
+            await this.db!.put('assets', { key, value: blob });
           }
 
           this.loadedAssets++;
@@ -149,6 +146,39 @@ class AssetManager {
       throw new Error(`Asset not found: ${path}`);
     }
     return asset.value;
+  }
+
+  async refreshAsset(path: string): Promise<Blob> {
+    await this.ensureDB();
+    const [type, ...rest] = path.split('/');
+    if (!type || rest.length === 0) {
+      throw new Error(`Invalid asset path: ${path}`);
+    }
+
+    const file = rest.join('/');
+    const blob = await this.fetchAssetBlob(type, file);
+    await this.db!.put('assets', { key: path, value: blob });
+    this.clearAssetUrl(path);
+    return blob;
+  }
+
+  private async fetchAssetBlob(type: string, file: string): Promise<Blob> {
+    const assetPath = `/assets/${type}/${file}`;
+    const response = await fetch(assetPath, { cache: 'no-store' });
+    if (!response.ok) {
+      throw new Error(`Failed to load ${type}/${file}`);
+    }
+
+    const blob = await response.blob();
+    if (type === 'story') {
+      const text = await blob.text();
+      if (/^\s*<!doctype html/i.test(text) || /^\s*<html/i.test(text)) {
+        throw new Error(`Story asset resolved to HTML: ${type}/${file}`);
+      }
+      return new Blob([text], { type: blob.type || 'text/plain' });
+    }
+
+    return blob;
   }
 
   /**

@@ -2,12 +2,12 @@
 某扇门
 
 #cg dark01.bmp
-缓缓地，发出声响
+缓缓地　发着声
 
 #cg dark02.bmp
 关上了……
 
 #cg black.bmp
-巴塔姆
+砰咚
 
 #end

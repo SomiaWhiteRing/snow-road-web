@@ -90,12 +90,26 @@ const pushTextAction = (
 const getStoryAssetPath = (storyId: string, locale: SupportedLocale) =>
   locale === "ja" ? `story/${storyId}.txt` : `story/${locale}/${storyId}.txt`;
 
+const isHtmlDocument = (content: string) =>
+  /^\s*<!doctype html/i.test(content) || /^\s*<html/i.test(content);
+
 export const loadStoryScript = async (
   storyId: string,
   locale: SupportedLocale = "ja"
 ): Promise<StoryScript> => {
-  const blob = await assetManager.getAsset(getStoryAssetPath(storyId, locale));
-  const content = await blob.text();
+  const assetPath = getStoryAssetPath(storyId, locale);
+  let blob = await assetManager.getAsset(assetPath);
+  let content = await blob.text();
+
+  if (isHtmlDocument(content)) {
+    blob = await assetManager.refreshAsset(assetPath);
+    content = await blob.text();
+  }
+
+  if (isHtmlDocument(content)) {
+    throw new Error(`Story asset is HTML instead of script: ${assetPath}`);
+  }
+
   const lines = content.replace(/\r/g, "").split("\n");
 
   const actions: StoryAction[] = [];
