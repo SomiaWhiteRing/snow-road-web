@@ -1,0 +1,47 @@
+#cg scene_white.bmp
+
+In the frozen sea, there was a girl.
+
+The girl was sealed inside the ice,
+unable to move.
+
+#cg scene_fish.bmp
+And yet, as though she were playing with
+the fish frozen beside her,
+
+the girl's face was smiling.
+
+As if this very moment were heaven itself,
+that was the scene before me.
+
+Surely the girl
+
+had known she would freeze.
+
+Surely
+
+it was what she herself had wished for.
+
+Even now,
+
+she must still be receiving
+that blissful moment in her body.
+
+The whole sea
+froze in a single instant.
+
+And that within it there had been
+
+more lives than even God could count,
+
+the girl, too,
+
+must surely have known.
+
+……
+
+…………
+
+…………―― See you next stage.
+
+#end

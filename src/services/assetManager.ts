@@ -2,6 +2,21 @@ import { shallowRef } from 'vue';
 import { openDB, IDBPDatabase } from 'idb';
 import router from '../router';
 
+const STORY_FILES = [
+  "story00.txt",
+  "story01.txt",
+  "story02.txt",
+  "story03.txt",
+  "story04.txt",
+  "story05.txt",
+  "story06.txt",
+  "story07.txt",
+  "story08.txt",
+  "story09.txt",
+  "story10.txt",
+  "story_close.txt",
+];
+
 interface AssetDB {
   assets: {
     key: string;
@@ -50,9 +65,10 @@ const ASSET_LIST = {
     'up.wav', 'weak.wav', 'zurl.wav', 'step.wav'
   ],
   story: [
-    'story00.txt', 'story01.txt', 'story02.txt', 'story03.txt',
-    'story04.txt', 'story05.txt', 'story06.txt', 'story07.txt',
-    'story08.txt', 'story09.txt', 'story10.txt', 'story_close.txt'
+    ...STORY_FILES,
+    ...["zh", "en"].flatMap((locale) =>
+      STORY_FILES.map((file) => `${locale}/${file}`)
+    ),
   ]
 };
 

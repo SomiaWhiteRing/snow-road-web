@@ -6,6 +6,11 @@ export const PLAYER_NAME_IDS = {
 const RAW_PLAYER_NAME_MAP: Record<string, string> = {
   ララアクス: PLAYER_NAME_IDS.LARA_AXES,
   ララフレア: PLAYER_NAME_IDS.LARA_FLARE,
+  "Lara Axes": PLAYER_NAME_IDS.LARA_AXES,
+  "Lara Flare": PLAYER_NAME_IDS.LARA_FLARE,
+  拉拉斧: PLAYER_NAME_IDS.LARA_AXES,
+  拉拉阿库斯: PLAYER_NAME_IDS.LARA_AXES,
+  拉拉芙蕾亚: PLAYER_NAME_IDS.LARA_FLARE,
 };
 
 export const normalizePlayerName = (name: string): string => {

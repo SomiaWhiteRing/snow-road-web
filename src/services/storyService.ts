@@ -1,5 +1,6 @@
 import { assetManager } from "./assetManager";
 import { normalizePlayerName } from "../utils/playerName";
+import type { SupportedLocale } from "../utils/preferences";
 
 export interface StoryFrame {
   imagePath: string;
@@ -86,8 +87,14 @@ const pushTextAction = (
   });
 };
 
-export const loadStoryScript = async (storyId: string): Promise<StoryScript> => {
-  const blob = await assetManager.getAsset(`story/${storyId}.txt`);
+const getStoryAssetPath = (storyId: string, locale: SupportedLocale) =>
+  locale === "ja" ? `story/${storyId}.txt` : `story/${locale}/${storyId}.txt`;
+
+export const loadStoryScript = async (
+  storyId: string,
+  locale: SupportedLocale = "ja"
+): Promise<StoryScript> => {
+  const blob = await assetManager.getAsset(getStoryAssetPath(storyId, locale));
   const content = await blob.text();
   const lines = content.replace(/\r/g, "").split("\n");
 

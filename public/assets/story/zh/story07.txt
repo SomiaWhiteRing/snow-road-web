@@ -1,0 +1,23 @@
+#cg scene_colde00.bmp
+#midi coldecot.mid
+「在那里的是谁？」
+
+#cg scene_self00.bmp
+
+#cg scene_colde00.bmp
+「是使者？是现象？
+
+「还是说，只是孤独呢？
+
+「快点过来吧……
+
+#cg scene_colde01.bmp
+「我会把你冻得彻底」
+
+……
+
+…………
+
+…………―― See you next stage.
+
+#end

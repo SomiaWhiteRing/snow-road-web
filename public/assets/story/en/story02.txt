@@ -1,0 +1,103 @@
+#cg scene_self03.bmp
+One step,
+then another
+
+I tread down
+and go on
+
+single-mindedly
+
+I go on
+
+Because there is nowhere
+I can return to
+
+#cg scene_self00.bmp
+The snow road is endless,
+
+and no matter how far I go,
+
+there is only
+
+white
+
+That is why
+
+single-mindedly,
+
+stubbornly,
+
+#cg scene_fire.bmp
+so that the last little flame
+still left inside my heart
+
+will not be blown out,
+
+I tell myself
+that I am merely something
+that moves slowly,
+like time, like a turtle.
+
+#cg scene_white.bmp
+I go on,
+
+single-mindedly...
+
+#cg scene_house00.bmp
+
+I go on...
+
+Hm?
+
+#cg scene_house01.bmp
+
+Ah.
+
+That is
+
+a hut!
+
+#cg scene_self03.bmp
+It really is a hut.
+
+There is a hut.
+
+I'll go and see...
+
+#cg scene_house02.bmp
+
+Knock, knock, knock.
+
+Excuse me.
+
+#cg scene_house03.bmp
+
+"...
+
+"Who's there?"
+
+Just a passerby.
+
+I'm sorry, but...
+
+would you let me stay
+
+for just one night?
+
+Please,
+
+just for one night.
+
+"One night, hm...
+
+"Come in."
+
+#notext
+
+……
+
+…………
+
+…………―― See you next stage.
+
+#end

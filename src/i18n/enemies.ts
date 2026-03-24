@@ -29,7 +29,7 @@ export const enemyNames = {
       yukimichi: '雪路',
       fearsome_epitaph: '可怕的墓志铭',
       nobody: '无人',
-      kudou: '工藤',
+      kudou: '库多',
       coldecot: '柯德科特',
       lucifer: '路西法'
     }

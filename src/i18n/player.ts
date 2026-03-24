@@ -1,7 +1,7 @@
 export const playerNames = {
   zh: {
     player: {
-      lara_axes: "拉拉斧",
+      lara_axes: "拉拉阿库斯",
       lara_flare: "拉拉芙蕾亚",
     },
   },

@@ -1,0 +1,10 @@
+#incStage
+#cg scene_colde01.bmp
+
+……
+
+…………
+
+…………―― See you next stage.
+
+#end

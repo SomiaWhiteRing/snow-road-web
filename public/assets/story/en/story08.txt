@@ -1,0 +1,137 @@
+#cg scene_kudou02.bmp
+Kudou "Heh heh...
+
+"You're amazing,
+
+"you know.
+
+"I,
+
+"you,
+
+"from the moment
+
+"I first laid eyes on you,
+
+"how should I put it...
+
+"it was that.
+
+"I thought
+
+"you'd feel good.
+
+"Yeah,
+
+"I thought you'd feel good.
+
+"That's right.
+
+"In fact, it did feel good.
+
+"It felt good.
+
+"But...
+
+"you were hot.
+
+"You really
+
+"burn hot...
+
+"Still, I don't mind...
+
+"See you...
+
+#GetName ララアクス
+"Lara Axes"
+
+#notext
+
+#midi
+#cg scene_white.bmp
+
+#incStage
+#cg scene_colde01.bmp
+
+343 years ago...
+
+there was a girl.
+
+When she was young,
+she suffered terrible burns over her entire body.
+
+It was an unforeseen accident.
+
+It was pure chance.
+
+It was no one's malice.
+
+She could not hate other people,
+nor her parents,
+nor her friends.
+
+She could only hate
+the fire,
+the heat itself,
+that had wounded her.
+
+Her hatred was fierce and baleful.
+If the mind could be made visible,
+it would have looked like flame itself, and yet --
+
+never noticing that contradiction,
+she shut her savage anger away
+inside an unwitting box.
+
+Eventually she learned magic
+and mastered the control of water and cold.
+
+She learned greedily.
+
+She learned without limit.
+
+She looked well upon
+what people did not wish to see,
+
+and even upon
+what people ought not to see...
+
+And at the very end,
+that ugly body marked by burns,
+
+she sealed it
+inside a crystal of ice.
+
+By means of that ritual,
+she cast away the flesh,
+
+sublimated into cold itself,
+
+rose into the sky
+and became a tornado of snow,
+
+danced in frenzy,
+
+and then
+
+covered this star.
+
+Unending cold
+and a pure white darkness
+came over the world.
+
+At length...
+
+the sea froze.
+
+While still swallowing
+the lives that had seemed never to diminish...
+
+……
+
+…………
+
+…………―― See you next stage.
+
+#end

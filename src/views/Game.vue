@@ -1003,7 +1003,10 @@ const holdBattleDeathFlash = () => {
 const openStory = async (storyId: string, options: StoryOptions = {}) => {
   storyLoading.value = true;
   try {
-    const script = await loadStoryScript(storyId);
+    const script = await loadStoryScript(
+      storyId,
+      i18n.locale.value as "zh" | "ja" | "en"
+    );
     resetStoryState();
     storyActions.value = script.actions;
     storySuppressStageAdvance.value = Boolean(options.suppressStageAdvance);
