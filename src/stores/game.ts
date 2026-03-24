@@ -59,7 +59,7 @@ export const useGameStore = defineStore("game", {
   getters: {
     totalAttack: (state) => state.attack + (state.weapon.attack ?? 0),
     totalDefense: (state) => state.defense + (state.armor.defense ?? 0),
-    hasMagic: (state) => state.learnedSpells.length > 0,
+    hasMagic: (state) => state.items.books,
   },
   actions: {
     levelUp() {

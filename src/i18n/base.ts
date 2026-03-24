@@ -68,19 +68,11 @@ export const base = {
         star: '星印',
         sold_out: '（售罄）',
         already_read: '（已读）',
-        maxed: '（已满）',
-        weapon_bought: '买到了{name}（{power}）。并立刻装备。',
-        armor_bought: '买到了{name}（{power}）。并立刻装备。',
-        book_bought: '买下了书。现在可以构筑咒文了。',
-        star_bought: '得到了第{count}个星印。'
+        maxed: '（已满）'
       },
       magic: {
         title: '魔法',
         exit: 'EXIT',
-        build_title: '咒文构筑（{cost}）',
-        build_placeholder: '输入咒文',
-        build_failed: '什么也没有发生。',
-        learned: '习得了『{name}』。',
         not_enough_mp: 'MP不够。',
         no_target: '这里没有施法对象。',
         no_effect: '『{name}』没有效果。',
@@ -270,19 +262,11 @@ export const base = {
         star: '星印',
         sold_out: '（品切れ）',
         already_read: '（既読）',
-        maxed: '（上限）',
-        weapon_bought: '{name}（{power}）を手に入れて装備した！',
-        armor_bought: '{name}（{power}）を手に入れて装備した！',
-        book_bought: '本を買った。呪文構築ができるようになった。',
-        star_bought: '星印を{count}個持つことになった。'
+        maxed: '（上限）'
       },
       magic: {
         title: '魔法',
         exit: 'EXIT',
-        build_title: '呪文構築（{cost}）',
-        build_placeholder: '呪文を入力',
-        build_failed: '何も起こらなかった。',
-        learned: '『{name}』を習得した。',
         not_enough_mp: 'MPが足りない。',
         no_target: 'ここでは攻撃魔法を使えない。',
         no_effect: '『{name}』は効かなかった。',
@@ -472,19 +456,11 @@ export const base = {
         star: 'Star Mark',
         sold_out: '(Sold Out)',
         already_read: '(Read)',
-        maxed: '(Max)',
-        weapon_bought: 'Bought {name} ({power}) and equipped it.',
-        armor_bought: 'Bought {name} ({power}) and equipped it.',
-        book_bought: 'Bought a book. Spell building is now available.',
-        star_bought: 'Now carrying {count} star mark(s).'
+        maxed: '(Max)'
       },
       magic: {
         title: 'Magic',
         exit: 'EXIT',
-        build_title: 'Spell Build ({cost})',
-        build_placeholder: 'Enter incantation',
-        build_failed: 'Nothing happened.',
-        learned: 'Learned "{name}".',
         not_enough_mp: 'Not enough MP.',
         no_target: 'There is no target for attack magic here.',
         no_effect: '"{name}" had no effect.',

@@ -13,6 +13,18 @@ export const spellNames = {
       summer_sky: "夏之空",
       warmer_than_spring_and_summer: "比春天和夏天都要温暖的日子",
     },
+    spellShort: {
+      burn: "燃烧",
+      become_charcoal: "化烬",
+      explode: "爆裂",
+      become_charcoal_max: "化烬",
+      warmth_of_others: "温暖",
+      light: "微光",
+      sun_in_palm: "太阳",
+      spring_dream: "春梦",
+      summer_sky: "夏空",
+      warmer_than_spring_and_summer: "故乡",
+    },
   },
   ja: {
     spell: {
@@ -27,6 +39,18 @@ export const spellNames = {
       summer_sky: "夏ノ空",
       warmer_than_spring_and_summer: "春よりも夏よりもあたたかい日",
     },
+    spellShort: {
+      burn: "焦げ",
+      become_charcoal: "消炭",
+      explode: "爆ぜ",
+      become_charcoal_max: "消炭",
+      warmth_of_others: "ぬく",
+      light: "灯せ",
+      sun_in_palm: "太陽",
+      spring_dream: "春夢",
+      summer_sky: "夏空",
+      warmer_than_spring_and_summer: "故郷",
+    },
   },
   en: {
     spell: {
@@ -40,6 +64,18 @@ export const spellNames = {
       spring_dream: "Spring Dream",
       summer_sky: "Summer Sky",
       warmer_than_spring_and_summer: "Day Warmer Than Spring and Summer",
+    },
+    spellShort: {
+      burn: "Burn",
+      become_charcoal: "Coal",
+      explode: "Boom",
+      become_charcoal_max: "Coal",
+      warmth_of_others: "Warm",
+      light: "Light",
+      sun_in_palm: "Sun",
+      spring_dream: "Spring",
+      summer_sky: "Summer",
+      warmer_than_spring_and_summer: "Home",
     },
   },
 };

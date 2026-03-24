@@ -24,6 +24,13 @@
         <SnowEffect />
         <EnemyStatus v-if="isInBattle" />
         <div
+          v-if="bossBattleMarkerVisible"
+          class="boss-battle-marker"
+          :style="bossBattleMarkerStyle"
+        >
+          ＢＯＳＳ
+        </div>
+        <div
           v-if="battleAreaFlashVisible"
           class="battle-scene-flash"
           :class="battleAreaFlashClass"
@@ -60,38 +67,6 @@
           {{ t("game.magic.exit") }}
         </button>
       </div>
-
-      <div v-if="overlay === 'magic'" class="overlay-panel magic-panel">
-        <div class="panel-title">{{ t("game.magic.title") }}</div>
-        <button
-          v-for="spell in availableSpells"
-          :key="spell.id"
-          class="magic-button"
-          @click="castSpell(spell.id)"
-        >
-          {{ t(`spell.${spell.id}`) }} ({{ spell.mpCost }})
-        </button>
-        <button class="panel-exit" @click="closeMagicOverlay">
-          {{ t("game.magic.exit") }}
-        </button>
-      </div>
-
-      <div v-if="overlay === 'spellBuild'" class="overlay-panel spell-build-panel">
-        <div class="panel-title">{{ t("game.magic.build_title", { cost: spellBuildCost }) }}</div>
-        <input
-          v-model="spellBuildInput"
-          class="spell-input"
-          :placeholder="t('game.magic.build_placeholder')"
-          :disabled="spellBuildClosed"
-          @keydown.enter.prevent="buildSpell"
-        />
-        <div v-if="spellBuildFeedback" class="panel-matches">
-          {{ spellBuildFeedback }}
-        </div>
-        <div class="spell-build-actions">
-          <button @click="buildSpell">{{ spellBuildButtonLabel }}</button>
-        </div>
-      </div>
     </div>
 
     <div class="status-area">
@@ -115,56 +90,81 @@
           !anotherPromptVisible
         "
       >
-        <div class="buttons buttons-1">
+        <div
+          v-if="currentEvent === 'inn' && message !== currentExtra.afterMessage"
+          class="field-button-slot field-button-slot-left-top"
+        >
           <button
-            v-if="currentEvent === 'inn' && message !== currentExtra.afterMessage"
             :disabled="gameStore.items.matches < (currentExtra.cost ?? 0)"
             @click="handleInn"
           >
             {{ t("game.actions.inn") }}
           </button>
+        </div>
 
-          <button
-            v-if="
-              currentEvent === 'inn' &&
-              message !== currentExtra.afterMessage &&
-              gameStore.learnedSkills.includes('secret')
-            "
-            @click="handleInnSecret"
-          >
+        <div
+          v-if="
+            currentEvent === 'inn' &&
+            message !== currentExtra.afterMessage &&
+            gameStore.learnedSkills.includes('secret')
+          "
+          class="field-button-slot field-button-slot-left-mid"
+        >
+          <button @click="handleInnSecret">
             {{ t("control.secret") }}
           </button>
+        </div>
 
+        <div
+          v-if="currentEvent === 'save' && message !== currentExtra.afterMessage"
+          class="field-button-slot field-button-slot-left-top"
+        >
           <button
-            v-if="currentEvent === 'save' && message !== currentExtra.afterMessage"
             :disabled="gameStore.items.matches < (currentExtra.cost ?? 0)"
             @click="handleSave"
           >
             {{ t("game.actions.candle") }}
           </button>
+        </div>
 
-          <button v-if="currentEvent === 'shop'" @click="openShop">
+        <div
+          v-if="currentEvent === 'shop'"
+          class="field-button-slot field-button-slot-left-top"
+        >
+          <button @click="openShop">
             {{ t("game.actions.shop") }}
           </button>
+        </div>
 
+        <div class="field-button-slot field-button-slot-right-top">
           <button @click="handleForward">
             {{ t("game.actions.forward") }}
           </button>
         </div>
-        <div class="buttons buttons-2">
-          <button @click="overlay = 'control'">
-            {{ t("game.actions.control") }}
-          </button>
-          <button v-if="gameStore.hasMagic" @click="openMagicOverlay">
+        <div
+          v-if="gameStore.hasMagic"
+          class="field-button-slot field-button-slot-right-mid"
+        >
+          <button @click="openMagicOverlay">
             {{ t("game.actions.magic") }}
           </button>
         </div>
-        <div class="buttons buttons-3">
+        <div class="field-button-slot field-button-slot-right-bottom">
+          <button @click="overlay = 'control'">
+            {{ t("game.actions.control") }}
+          </button>
+        </div>
+        <div
+          v-if="gameStore.fuel > 0"
+          class="field-button-slot field-button-slot-wide-top"
+        >
+          <button @click="handleUseStar">
+            {{ t("game.actions.lighter", { count: gameStore.fuel }) }}
+          </button>
+        </div>
+        <div class="field-button-slot field-button-slot-wide-bottom">
           <button @click="handleUseMatch">
             {{ t("game.actions.matches", { count: gameStore.items.matches }) }}
-          </button>
-          <button v-if="gameStore.fuel > 0" @click="handleUseStar">
-            {{ t("game.actions.lighter", { count: gameStore.fuel }) }}
           </button>
         </div>
       </template>
@@ -248,12 +248,59 @@
         </template>
       </template>
 
+      <div v-if="overlay === 'magic'" class="magic-sidebar">
+        <button
+          v-for="(spell, index) in availableSpells"
+          :key="spell.id"
+          class="magic-sidebar-button"
+          :style="{ top: `${MAGIC_BUTTON_TOPS[index] ?? 10}px` }"
+          @click="castSpell(spell.id)"
+        >
+          {{ getSpellShortLabel(spell) }}
+        </button>
+        <button class="magic-sidebar-exit" @click="closeMagicOverlay">
+          {{ t("game.magic.exit") }}
+        </button>
+      </div>
+
       <div v-if="gameCompleted" class="ending-message">
         {{ t(endingMessageKey) }}
       </div>
       <div v-if="gameCompleted" class="buttons buttons-3">
         <button @click="restartGame">
           {{ t("game.actions.restart") }}
+        </button>
+      </div>
+    </div>
+
+    <div v-if="overlay === 'spellBuild'" class="spell-build-screen">
+      <div class="spell-build-page">
+        <img
+          class="spell-build-background"
+          :src="useAsset('sprite/selfclosed.png')"
+          alt="spell build"
+        />
+        <div
+          class="spell-build-list"
+          :class="{ 'spell-build-list-compact': spellBuildUsesCompactFont }"
+        >
+          {{ spellBuildListText }}
+        </div>
+        <div v-if="spellBuildMpLabel" class="spell-build-mp">
+          {{ spellBuildMpLabel }}
+        </div>
+        <input
+          v-if="spellBuildInputVisible"
+          ref="spellBuildInputEl"
+          v-model="spellBuildInput"
+          class="spell-build-input"
+          autocomplete="off"
+          autocapitalize="off"
+          spellcheck="false"
+          @keydown.enter.prevent="buildSpell"
+        />
+        <button class="spell-build-button" @click="buildSpell">
+          {{ spellBuildButtonLabel }}
         </button>
       </div>
     </div>
@@ -295,7 +342,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onUnmounted, ref } from "vue";
+import { computed, nextTick, onUnmounted, ref, watch } from "vue";
 import { useGameStore } from "../stores/game";
 import SnowEffect from "../components/SnowEffect.vue";
 import ControlPanel from "../components/ControlPanel.vue";
@@ -314,10 +361,14 @@ import {
   createSpecialEquipment,
   createShopOffers,
   instantiateEnemy,
-  normalizeIncantation,
   type BattleEnemy,
   type ShopOffer,
 } from "../services/gameMechanics";
+import {
+  isPlayerName,
+  normalizePlayerName,
+  PLAYER_NAME_IDS,
+} from "../utils/playerName";
 import {
   loadStoryScript,
   type StoryAction,
@@ -354,6 +405,7 @@ interface BattleLevelUpResult {
   defenseIncreased: boolean;
 }
 
+type StoryMusicMode = "inherit" | "stop" | "track";
 type BattleCommand = "attack" | "magic" | null;
 type BattleAreaFlashKind = "none" | "white" | "ice" | "fire";
 type BattleSpriteFlashKind = "none" | "hit" | "strong";
@@ -405,6 +457,7 @@ const BATTLE_STATE = {
 
 const SAVE_KEY = "snow-road-web-save";
 const BATTLE_EFFECT_TICK_MS = 50;
+const MAGIC_BUTTON_TOPS = [10, 35, 60, 85, 115, 145, 170, 200, 225, 250] as const;
 const SPELL_SOUNDS = [
   SOUND.SPELL_0,
   SOUND.SPELL_1,
@@ -432,8 +485,7 @@ const currentSprite = ref("");
 const currentExtra = ref<EventExtra>({});
 const message = ref("");
 const spellBuildInput = ref("");
-const spellBuildFeedback = ref("");
-const spellBuildCost = ref(3);
+const spellBuildInputEl = ref<HTMLInputElement | null>(null);
 const shopOffers = ref<ShopOffer[]>([]);
 const shopDistance = ref<number | null>(null);
 const battleAttackBonus = ref(0);
@@ -448,6 +500,7 @@ const storyStageAdvanced = ref(false);
 const storySuppressStageAdvance = ref(false);
 const storyVisible = ref(false);
 const storyLoading = ref(false);
+const storyMusicMode = ref<StoryMusicMode>("inherit");
 const storyMusicTrack = ref<string | null>(null);
 const anotherPromptVisible = ref(false);
 const pendingEquipmentChoice = ref<BattleEnemy["rewardEquipment"] | null>(null);
@@ -463,6 +516,8 @@ const battleSpriteFlashKind = ref<BattleSpriteFlashKind>("none");
 const battleEffectTicks = ref(0);
 const battleDeathFlashVisible = ref(false);
 let battleEffectTimer: number | null = null;
+const bossBattleMarkerOffset = ref({ x: 0, y: 0 });
+let bossBattleMarkerTimer: number | null = null;
 
 const useAsset = (path: string) => assetManager.useAsset(path).value;
 
@@ -506,6 +561,13 @@ const battleSpriteFlashClass = computed(() =>
     ? "battle-sprite-flash-strong"
     : "battle-sprite-flash-hit"
 );
+const bossBattleMarkerVisible = computed(
+  () => isInBattle.value && Boolean(gameStore.battle.enemy.isBoss)
+);
+const bossBattleMarkerStyle = computed(() => ({
+  left: `${200 + bossBattleMarkerOffset.value.x}px`,
+  top: `${100 + bossBattleMarkerOffset.value.y}px`,
+}));
 const currentStoryFrame = computed(() => storyFrame.value);
 const cutsceneVisible = computed(() => gameOver.value || storyVisible.value);
 const gameOverImagePath = computed(() =>
@@ -521,23 +583,55 @@ const storyPanelVisible = computed(
   () => !gameOver.value && cutsceneText.value.length > 0
 );
 const bgmOverrideTrack = computed(() =>
-  storyVisible.value ? storyMusicTrack.value : null
+  storyVisible.value && storyMusicMode.value === "track"
+    ? storyMusicTrack.value
+    : null
 );
 const bgmSuspended = computed(
   () =>
     gameOver.value ||
     anotherPromptVisible.value ||
-    (storyVisible.value && !storyMusicTrack.value)
+    (storyVisible.value && storyMusicMode.value === "stop")
 );
 const availableSpells = computed(() =>
   SPELLS.filter((spell) => gameStore.learnedSpells.includes(spell.id))
 );
+const getSpellShortLabel = (spell: (typeof SPELLS)[number]) =>
+  te(`spellShort.${spell.id}`) ? t(`spellShort.${spell.id}`) : spell.shortLabel;
+const getSpellLocalizedName = (spell: (typeof SPELLS)[number]) =>
+  te(`spell.${spell.id}`) ? String(t(`spell.${spell.id}`)) : spell.name;
+const getSpellBuildBracket = (spell: (typeof SPELLS)[number]) =>
+  spell.isVirtualMp ? ["(", ")"] : ["[", "]"];
 const allSpellsLearned = computed(
   () => gameStore.learnedSpells.length >= SPELLS.length
 );
 const spellBuildClosed = computed(
   () => allSpellsLearned.value || gameStore.spellBuildRemaining <= 0
 );
+const spellBuildInputVisible = computed(() => !spellBuildClosed.value);
+const spellBuildUsesCompactFont = computed(
+  () => !String(i18n.locale.value).toLowerCase().startsWith("ja")
+);
+const spellBuildListText = computed(() =>
+  SPELLS.map((spell) => {
+    const [open, close] = getSpellBuildBracket(spell);
+    const label = gameStore.learnedSpells.includes(spell.id)
+      ? getSpellLocalizedName(spell)
+      : "Hidden";
+    return `- ${label}${open}${spell.mpCost}${close} -`;
+  }).join("\n")
+);
+const spellBuildMpLabel = computed(() => {
+  if (gameStore.maxMp <= 0) {
+    return "";
+  }
+
+  if (gameStore.virtualMp > 0) {
+    return `ＭＰ：${gameStore.mp}＋${gameStore.virtualMp}／${gameStore.maxMp}`;
+  }
+
+  return `ＭＰ：${gameStore.mp}／${gameStore.maxMp}`;
+});
 const spellBuildButtonLabel = computed(() => {
   if (allSpellsLearned.value) {
     return t("game.magic.built_out");
@@ -601,7 +695,9 @@ const loadSave = () => {
       parsed.learnedSkills.includes("primeval") &&
       !gameStore.playerName
     ) {
-      gameStore.setPlayerName("ララフレア");
+      gameStore.setPlayerName(PLAYER_NAME_IDS.LARA_FLARE);
+    } else if (gameStore.playerName) {
+      gameStore.setPlayerName(normalizePlayerName(gameStore.playerName));
     }
 
     if (
@@ -644,6 +740,7 @@ const resetStoryState = () => {
   storyStageAdvanced.value = false;
   storySuppressStageAdvance.value = false;
   storyVisible.value = false;
+  storyMusicMode.value = "inherit";
   storyMusicTrack.value = null;
 };
 
@@ -665,15 +762,28 @@ const playStoryWave = (soundPath: string | null) => {
   void soundManager.playSound(filename);
 };
 
+const applyStoryMidiAction = (track: string | null) => {
+  if (track) {
+    storyMusicMode.value = "track";
+    storyMusicTrack.value = track;
+    return;
+  }
+
+  storyMusicMode.value = "stop";
+  storyMusicTrack.value = null;
+};
+
 const finishStoryWithEnd = () => {
   soundManager.playSound(SOUND.THATHATHA);
   advanceStageFromStory();
   resetStoryState();
+  message.value = "";
 };
 
 const finishStoryWithFinish = () => {
   soundManager.playSound(SOUND.THATHATHA);
   resetStoryState();
+  message.value = "";
 
   if (gameStore.stage === 9 && gameStore.distance <= 1000 && !gameStore.scarred) {
     anotherPromptVisible.value = true;
@@ -711,6 +821,37 @@ const advanceBattleEffectTick = () => {
   }
 
   clearBattlePulseEffect();
+};
+
+const clearBossBattleMarkerTimer = () => {
+  if (bossBattleMarkerTimer === null) {
+    return;
+  }
+
+  window.clearInterval(bossBattleMarkerTimer);
+  bossBattleMarkerTimer = null;
+};
+
+const updateBossBattleMarkerOffset = () => {
+  bossBattleMarkerOffset.value = {
+    x: Math.floor(Math.random() * 10),
+    y: Math.floor(Math.random() * 10),
+  };
+};
+
+const syncBossBattleMarker = () => {
+  clearBossBattleMarkerTimer();
+
+  if (!bossBattleMarkerVisible.value) {
+    bossBattleMarkerOffset.value = { x: 0, y: 0 };
+    return;
+  }
+
+  updateBossBattleMarkerOffset();
+  bossBattleMarkerTimer = window.setInterval(
+    updateBossBattleMarkerOffset,
+    BATTLE_EFFECT_TICK_MS
+  );
 };
 
 const beginBattlePulseEffect = ({
@@ -765,7 +906,7 @@ const advanceStory = () => {
       case "cg":
         continue;
       case "midi":
-        storyMusicTrack.value = action.track;
+        applyStoryMidiAction(action.track);
         continue;
       case "wave":
         playStoryWave(action.sound);
@@ -975,7 +1116,8 @@ const beginBattleLevelUp = () => {
   return true;
 };
 
-const isMagicImmune = () => gameStore.playerName === "ララフレア";
+const isMagicImmune = () =>
+  isPlayerName(gameStore.playerName, PLAYER_NAME_IDS.LARA_FLARE);
 
 const performEnemyMagic = (): { line: string; defeated: boolean } => {
   const enemy = gameStore.battle.enemy;
@@ -1815,10 +1957,6 @@ const purchaseShopOffer = (offer: ShopOffer) => {
       name,
       attack: offer.power ?? 0,
     });
-    message.value = t("game.shop.weapon_bought", {
-      name,
-      power: offer.power ?? 0,
-    });
     return;
   }
 
@@ -1829,16 +1967,11 @@ const purchaseShopOffer = (offer: ShopOffer) => {
       name,
       defense: offer.power ?? 0,
     });
-    message.value = t("game.shop.armor_bought", {
-      name,
-      power: offer.power ?? 0,
-    });
     return;
   }
 
   if (offer.kind === "book") {
     gameStore.items.books = true;
-    message.value = t("game.shop.book_bought");
     return;
   }
 
@@ -1847,7 +1980,6 @@ const purchaseShopOffer = (offer: ShopOffer) => {
   }
 
   gameStore.buyStarMark();
-  message.value = t("game.shop.star_bought", { count: gameStore.starCapacity });
 };
 
 const handleControlAction = (payload: {
@@ -1856,7 +1988,7 @@ const handleControlAction = (payload: {
 }) => {
   if (payload.action === "primeval") {
     gameStore.consumeMaxHp(payload.cost);
-    gameStore.setPlayerName("ララフレア");
+    gameStore.setPlayerName(PLAYER_NAME_IDS.LARA_FLARE);
     return;
   }
 
@@ -1864,9 +1996,7 @@ const handleControlAction = (payload: {
     return;
   }
 
-  spellBuildCost.value = payload.cost;
   spellBuildInput.value = "";
-  spellBuildFeedback.value = "";
   gameStore.consumeMaxHp(payload.cost);
   gameStore.setSpellBuildRemaining(3);
   overlay.value = "spellBuild";
@@ -1874,7 +2004,6 @@ const handleControlAction = (payload: {
 
 const closeSpellBuilder = () => {
   spellBuildInput.value = "";
-  spellBuildFeedback.value = "";
   gameStore.setSpellBuildRemaining(0);
   overlay.value = "none";
 };
@@ -1888,7 +2017,6 @@ const restartGame = () => {
   currentExtra.value = {};
   message.value = "";
   spellBuildInput.value = "";
-  spellBuildFeedback.value = "";
   shopOffers.value = [];
   shopDistance.value = null;
   battleAttackBonus.value = 0;
@@ -1905,16 +2033,14 @@ const restartGame = () => {
 };
 
 const resolveSpellCandidates = (rawInput: string) => {
-  const normalized = normalizeIncantation(rawInput);
-  if (!normalized) {
+  const input = rawInput.trim();
+  if (!input) {
     return [];
   }
 
   return SPELLS.filter((spell) => {
-    const candidates = [spell.name, t(`spell.${spell.id}`)];
-    return candidates.some(
-      (candidate) => normalizeIncantation(candidate) === normalized
-    );
+    const localizedName = getSpellLocalizedName(spell);
+    return input === spell.name || input === localizedName;
   });
 };
 
@@ -1927,24 +2053,18 @@ const buildSpell = () => {
   gameStore.consumeSpellBuildAttempt();
   const spell = resolveSpellCandidates(spellBuildInput.value).find(
     (entry) =>
-      !gameStore.learnedSpells.includes(entry.id) && gameStore.maxMp >= entry.mpCost
+      !gameStore.learnedSpells.includes(entry.id) &&
+      gameStore.canSpendMp(entry.mpCost, entry.isVirtualMp)
   );
   spellBuildInput.value = "";
 
   if (!spell) {
     soundManager.playSound(SOUND.BUBBLE);
-    spellBuildFeedback.value = t("game.magic.build_failed");
-    message.value = spellBuildFeedback.value;
     return;
   }
 
   gameStore.learnSpell(spell.id);
   playSpellSound(spell.id);
-
-  spellBuildFeedback.value = t("game.magic.learned", {
-    name: t(`spell.${spell.id}`),
-  });
-  message.value = spellBuildFeedback.value;
 };
 
 const castSpell = (spellId: string) => {
@@ -1953,7 +2073,7 @@ const castSpell = (spellId: string) => {
     return;
   }
 
-  if (spell.power !== undefined && !isInBattle.value) {
+  if (!isInBattle.value && !spell.canUseOutsideBattle) {
     message.value = t("game.magic.no_target");
     return;
   }
@@ -1973,8 +2093,23 @@ const castSpell = (spellId: string) => {
   message.value = applySpellEffect(spell.id, currentTotalMp).line;
 };
 
+watch(bossBattleMarkerVisible, syncBossBattleMarker, { immediate: true });
+watch(
+  [overlay, spellBuildInputVisible],
+  async ([currentOverlay, inputVisible]) => {
+    if (currentOverlay !== "spellBuild" || !inputVisible) {
+      return;
+    }
+
+    await nextTick();
+    spellBuildInputEl.value?.focus();
+  },
+  { immediate: true }
+);
+
 onUnmounted(() => {
   resetBattleSceneEffects();
+  clearBossBattleMarkerTimer();
 });
 
 loadSave();
@@ -2068,34 +2203,24 @@ body {
       opacity: 1;
     }
 
-    :deep(.snow-canvas) {
-      z-index: 2;
+    .boss-battle-marker {
+      position: absolute;
+      z-index: 4;
+      color: #ffffff;
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: 1px;
+      text-shadow:
+        1px 1px 0 #000,
+        -1px 1px 0 #000,
+        1px -1px 0 #000,
+        -1px -1px 0 #000;
+      pointer-events: none;
     }
 
-    .overlay-panel {
-      position: absolute;
-      top: 25px;
-      left: 25px;
-      width: 250px;
-      min-height: 220px;
-      padding: 10px;
-      background: rgba(0, 0, 0, 0.92);
-      border: 1px solid #666;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      z-index: 10;
-
-      .panel-title,
-      .panel-matches {
-        color: #fff;
-        line-height: 1.2;
-      }
-
-      .panel-exit {
-        margin-top: auto;
-        align-self: flex-end;
-      }
+    :deep(.snow-canvas) {
+      z-index: 2;
     }
 
     .shop-panel {
@@ -2162,24 +2287,11 @@ body {
         height: 25px;
       }
     }
-
-    .spell-input {
-      width: 100%;
-      background: #111;
-      color: #f55;
-      border: 1px solid #555;
-      padding: 6px;
-    }
-
-    .spell-build-actions {
-      display: flex;
-      justify-content: space-between;
-    }
   }
 
-    .status-area {
-      width: 100%;
-      position: relative;
+  .status-area {
+    width: 100%;
+    position: relative;
 
     .character {
       position: absolute;
@@ -2205,11 +2317,68 @@ body {
       }
 
       &.buttons-2 {
-        bottom: 65px;
+        bottom: 60px;
       }
 
       &.buttons-3 {
         bottom: 0;
+      }
+    }
+
+    .field-button-slot {
+      position: absolute;
+      display: flex;
+      justify-content: flex-end;
+
+      button {
+        width: 50px;
+        min-width: 50px;
+        height: 25px;
+      }
+
+      &.field-button-slot-right-top {
+        bottom: 110px;
+        right: 0;
+      }
+
+      &.field-button-slot-right-mid {
+        bottom: 85px;
+        right: 0;
+      }
+
+      &.field-button-slot-right-bottom {
+        bottom: 60px;
+        right: 0;
+      }
+
+      &.field-button-slot-left-top {
+        bottom: 110px;
+        right: 50px;
+      }
+
+      &.field-button-slot-left-mid {
+        bottom: 85px;
+        right: 50px;
+      }
+
+      &.field-button-slot-wide-top {
+        bottom: 25px;
+        right: 0;
+
+        button {
+          width: 75px;
+          min-width: 75px;
+        }
+      }
+
+      &.field-button-slot-wide-bottom {
+        bottom: 0;
+        right: 0;
+
+        button {
+          width: 75px;
+          min-width: 75px;
+        }
       }
     }
 
@@ -2235,7 +2404,7 @@ body {
       }
 
       &.battle-button-slot-right-bottom {
-        bottom: 65px;
+        bottom: 60px;
         right: 0;
       }
 
@@ -2269,6 +2438,31 @@ body {
       bottom: 0;
     }
 
+    .magic-sidebar {
+      position: absolute;
+      top: 40px;
+      right: 0;
+      width: 75px;
+      height: 311px;
+      background: #000;
+      z-index: 12;
+
+      .magic-sidebar-button,
+      .magic-sidebar-exit {
+        position: absolute;
+        left: 0;
+        width: 75px;
+        height: 25px;
+        padding: 0;
+      }
+
+      .magic-sidebar-exit {
+        left: 13px;
+        top: 223px;
+        width: 50px;
+      }
+    }
+
     .ending-message {
       position: absolute;
       right: 0;
@@ -2278,6 +2472,105 @@ body {
       padding: 4px 6px;
       line-height: 1.2;
     }
+  }
+
+  .spell-build-screen {
+    position: absolute;
+    inset: 0;
+    z-index: 25;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    box-sizing: border-box;
+    background: #000;
+  }
+
+  .spell-build-page {
+    position: relative;
+    width: 600px;
+    height: 400px;
+    flex-shrink: 0;
+    background: #808080;
+    overflow: hidden;
+  }
+
+  .spell-build-background {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    image-rendering: pixelated;
+  }
+
+  .spell-build-list,
+  .spell-build-mp {
+    position: absolute;
+    z-index: 1;
+    color: #00ffff;
+    font-style: italic;
+    font-weight: 700;
+    text-shadow: 3px 3px 0 #000;
+  }
+
+  .spell-build-list {
+    left: 20px;
+    top: 30px;
+    width: 281px;
+    height: 311px;
+    overflow: hidden;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font-size: 19px;
+    line-height: 1.12;
+  }
+
+  .spell-build-list-compact {
+    font-size: 16px;
+    line-height: 1.14;
+  }
+
+  .spell-build-mp {
+    left: 290px;
+    top: 180px;
+    width: 271px;
+    height: 71px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 19px;
+    line-height: 1.2;
+  }
+
+  .spell-build-input {
+    position: absolute;
+    z-index: 2;
+    left: 300px;
+    top: 30px;
+    width: 281px;
+    height: 27px;
+    box-sizing: border-box;
+    padding: 0 6px;
+    color: #ff0000;
+    background: #770000;
+    border: 2px inset #d4d0c8;
+    font-size: 19px;
+    font-weight: 700;
+    line-height: 1;
+    outline: none;
+  }
+
+  .spell-build-button {
+    position: absolute;
+    z-index: 2;
+    left: 390px;
+    top: 70px;
+    width: 191px;
+    height: 31px;
+    padding: 0;
+    font-size: 16px;
+    font-weight: 700;
   }
 
   button {

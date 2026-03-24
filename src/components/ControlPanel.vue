@@ -38,6 +38,7 @@ import { useI18n } from "vue-i18n";
 import { generateControlText } from "../utils/textGenerator";
 import { soundManager, SOUND } from "../services/soundManager";
 import { SPELLS } from "../types/spells";
+import { isPlayerName, PLAYER_NAME_IDS } from "../utils/playerName";
 import {
   CONTROL_SKILLS,
   calculateControlCost,
@@ -70,7 +71,10 @@ const availableSkills = computed(() => {
       return false;
     }
 
-    if (skill.id === "primeval" && gameStore.playerName === "ララフレア") {
+    if (
+      skill.id === "primeval" &&
+      isPlayerName(gameStore.playerName, PLAYER_NAME_IDS.LARA_FLARE)
+    ) {
       return false;
     }
 

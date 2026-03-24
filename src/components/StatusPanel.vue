@@ -35,9 +35,6 @@
         gameStore.armor.defense
       }}）
     </div>
-    <div class="stat-line" v-if="gameStore.items.books">
-      {{ t("game.stats.book") }}
-    </div>
     <div class="stat-line" v-if="gameStore.starCapacity > 0">
       {{ t("game.stats.stars") }}: {{ starMarks }}
     </div>

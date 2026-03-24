@@ -1,4 +1,5 @@
 import { assetManager } from "./assetManager";
+import { normalizePlayerName } from "../utils/playerName";
 
 export interface StoryFrame {
   imagePath: string;
@@ -131,7 +132,7 @@ export const loadStoryScript = async (storyId: string): Promise<StoryScript> => 
     if (lowerLine === "#getname" || lowerLine.startsWith("#getname ")) {
       actions.push({
         type: "getName",
-        name: line.slice("#GetName ".length).trim(),
+        name: normalizePlayerName(line.slice("#GetName ".length)),
       });
       continue;
     }
