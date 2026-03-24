@@ -297,7 +297,7 @@
                 <button
                   v-for="option in settingLanguageOptions"
                   :key="option.code"
-                  :class="{ 'settings-button-active': i18n.locale.value === option.code }"
+                  :class="{ 'settings-button-active': settingsStore.effectiveLocale === option.code }"
                   @click="setGameLocale(option.code)"
                 >
                   {{ option.label }}
@@ -309,6 +309,12 @@
                 {{ t("game.settings.system") }}
               </div>
               <div class="settings-button-group">
+                <button
+                  :class="{ 'settings-button-active': settingsStore.effectiveRotateScreen }"
+                  @click="toggleScreenRotation"
+                >
+                  {{ t("game.settings.rotate_screen") }}
+                </button>
                 <button @click="restartFromSettings">
                   {{ t("game.actions.restart") }}
                 </button>
@@ -407,6 +413,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onUnmounted, ref, watch } from "vue";
 import { useGameStore } from "../stores/game";
+import { useSettingsStore } from "../stores/settings";
 import SnowEffect from "../components/SnowEffect.vue";
 import ControlPanel from "../components/ControlPanel.vue";
 import StatusPanel from "../components/StatusPanel.vue";
@@ -541,6 +548,7 @@ const SPELL_SOUNDS = [
 ] as const;
 
 const gameStore = useGameStore();
+const settingsStore = useSettingsStore();
 const i18n = useI18n();
 const { t, te } = i18n;
 const isEnglishLocale = computed(() =>
@@ -2004,7 +2012,12 @@ const closeSettingsOverlay = () => {
 };
 
 const setGameLocale = (localeCode: "zh" | "ja" | "en") => {
-  i18n.locale.value = localeCode;
+  settingsStore.setLocalePreference(localeCode);
+  i18n.locale.value = settingsStore.effectiveLocale;
+};
+
+const toggleScreenRotation = () => {
+  settingsStore.toggleRotateScreen();
 };
 
 const openShop = () => {

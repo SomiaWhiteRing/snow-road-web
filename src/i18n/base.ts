@@ -149,7 +149,8 @@ export const base = {
         title: '设置',
         language: '语言',
         system: '系统',
-        load_save: '读取存档'
+        load_save: '读取存档',
+        rotate_screen: '旋转屏幕'
       },
       controlText: [
         '第六层。',
@@ -351,7 +352,8 @@ export const base = {
         title: '設定',
         language: '言語',
         system: 'システム',
-        load_save: 'ロード'
+        load_save: 'ロード',
+        rotate_screen: '画面回転'
       },
       controlText: [
         '第六の階層。',
@@ -553,7 +555,8 @@ export const base = {
         title: 'Settings',
         language: 'Language',
         system: 'System',
-        load_save: 'Load'
+        load_save: 'Load',
+        rotate_screen: 'Rotate Screen'
       },
       controlText: [
         'The Sixth Layer.',

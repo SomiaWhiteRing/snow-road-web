@@ -1,7 +1,12 @@
 <template>
   <div class="app-container" :lang="currentLang">
-    <div class="game-container" :style="containerStyle">
-      <router-view></router-view>
+    <div class="game-frame" :style="frameStyle">
+      <div
+        class="game-container"
+        :class="{ 'game-container-rotated': settingsStore.effectiveRotateScreen }"
+      >
+        <router-view></router-view>
+      </div>
     </div>
   </div>
 </template>
@@ -10,10 +15,13 @@
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { assetManager } from "./services/assetManager";
 import { useI18n } from "vue-i18n";
+import { useSettingsStore } from "./stores/settings";
 
 // 游戏窗口基础尺寸
 const BASE_WIDTH = 600;
 const BASE_HEIGHT = 400;
+const ROTATED_WIDTH = BASE_HEIGHT;
+const ROTATED_HEIGHT = BASE_WIDTH;
 
 const windowSize = ref({
   width: window.innerWidth,
@@ -37,22 +45,30 @@ onUnmounted(() => {
   assetManager.clearAssets();
 });
 
-// 计算容器样式,保持600*400的比例
-const containerStyle = computed(() => {
+const settingsStore = useSettingsStore();
+const frameWidth = computed(() =>
+  settingsStore.effectiveRotateScreen ? ROTATED_WIDTH : BASE_WIDTH
+);
+const frameHeight = computed(() =>
+  settingsStore.effectiveRotateScreen ? ROTATED_HEIGHT : BASE_HEIGHT
+);
+
+// 计算容器样式,保持原始游戏画面的比例
+const frameStyle = computed(() => {
   const { width: windowWidth, height: windowHeight } = windowSize.value;
 
-  // 计算缩放比例
-  const scaleX = windowWidth / BASE_WIDTH;
-  const scaleY = windowHeight / BASE_HEIGHT;
+  const scaleX = windowWidth / frameWidth.value;
+  const scaleY = windowHeight / frameHeight.value;
   const scale = Math.min(scaleX, scaleY);
 
-  // 计算居中位置
-  const scaledWidth = BASE_WIDTH * scale;
-  const scaledHeight = BASE_HEIGHT * scale;
+  const scaledWidth = frameWidth.value * scale;
+  const scaledHeight = frameHeight.value * scale;
   const left = (windowWidth - scaledWidth) / 2;
   const top = (windowHeight - scaledHeight) / 2;
 
   return {
+    width: `${frameWidth.value}px`,
+    height: `${frameHeight.value}px`,
     transform: `scale(${scale})`,
     transformOrigin: "top left",
     left: `${left}px`,
@@ -85,12 +101,25 @@ body,
   position: relative;
 }
 
+.game-frame {
+  position: absolute;
+  background: #000;
+  overflow: hidden;
+}
+
 .game-container {
   width: 600px;
   height: 400px;
   position: absolute;
+  top: 0;
+  left: 0;
   background: #000;
   overflow: hidden;
+}
+
+.game-container-rotated {
+  transform: translateX(400px) rotate(90deg);
+  transform-origin: top left;
 }
 
 // 像素图片渲染设置

@@ -6,6 +6,7 @@ import { equipmentNames } from './equipment';
 import { controlNames } from './control';
 import { eventMessages } from './events';
 import { playerNames } from './player';
+import { getInitialLocale } from '../utils/preferences';
 
 // 合并所有翻译
 const mergedMessages = {
@@ -40,7 +41,7 @@ const mergedMessages = {
 
 export const i18n = createI18n({
   legacy: false,
-  locale: 'zh',
+  locale: getInitialLocale(),
   fallbackLocale: 'ja',
   messages: mergedMessages
 }); 
