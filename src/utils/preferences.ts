@@ -111,8 +111,12 @@ export const detectAutoRotateScreen = () => {
     return true;
   }
 
-  if (isAndroid || navigator.maxTouchPoints > 0) {
-    return shortSide < 768;
+  if (isAndroid) {
+    return false;
+  }
+
+  if (navigator.maxTouchPoints > 0) {
+    return shortSide < 480;
   }
 
   return false;
