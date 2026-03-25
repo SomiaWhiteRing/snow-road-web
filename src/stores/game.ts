@@ -141,9 +141,10 @@ export const useGameStore = defineStore("game", {
       this.mp = this.maxMp;
     },
 
-    restoreAll() {
+    restoreAtInn() {
       this.restoreHpAndMp();
       this.virtualMp = 0;
+      this.fuel = this.starCapacity;
     },
 
     useMatch() {
@@ -163,7 +164,6 @@ export const useGameStore = defineStore("game", {
 
     buyStarMark() {
       this.starCapacity += 1;
-      this.fuel += 1;
     },
 
     useLighter() {

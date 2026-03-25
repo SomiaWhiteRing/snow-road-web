@@ -127,7 +127,7 @@
         "
       >
         <div
-          v-if="currentEvent === 'inn' && message !== currentExtra.afterMessage"
+          v-if="currentEvent === 'inn' && !fieldActionConsumed"
           class="field-button-slot field-button-slot-left-top"
         >
           <button
@@ -141,7 +141,7 @@
         <div
           v-if="
             currentEvent === 'inn' &&
-            message !== currentExtra.afterMessage &&
+            !fieldActionConsumed &&
             gameStore.learnedSkills.includes('secret')
           "
           class="field-button-slot field-button-slot-left-mid"
@@ -152,7 +152,7 @@
         </div>
 
         <div
-          v-if="currentEvent === 'save' && message !== currentExtra.afterMessage"
+          v-if="currentEvent === 'save' && !fieldActionConsumed"
           class="field-button-slot field-button-slot-left-top"
         >
           <button
@@ -648,6 +648,7 @@ const overlay = ref<OverlayType>("none");
 const currentEvent = ref<FieldEvent>("nothing");
 const currentSprite = ref("");
 const currentExtra = ref<EventExtra>({});
+const fieldActionConsumed = ref(false);
 const message = ref("");
 const spellBuildInput = ref("");
 const spellBuildInputEl = ref<HTMLInputElement | null>(null);
@@ -1142,6 +1143,7 @@ const resetRuntimeState = () => {
   currentEvent.value = "nothing";
   currentSprite.value = "";
   currentExtra.value = {};
+  fieldActionConsumed.value = false;
   message.value = "";
   spellBuildInput.value = "";
   shopOffers.value = [];
@@ -1343,6 +1345,7 @@ const finishStoryWithFinish = async () => {
       currentEvent.value = "nothing";
       currentSprite.value = "";
       currentExtra.value = {};
+      fieldActionConsumed.value = false;
       message.value = "";
 
       for (const hellMessage of finishTexts.hellMessages) {
@@ -2364,6 +2367,7 @@ const handleForward = () => {
     currentEvent.value = "nothing";
     currentSprite.value = "";
     currentExtra.value = {};
+    fieldActionConsumed.value = false;
     void openStory("story_close", { suppressStageAdvance: true });
     return;
   }
@@ -2372,6 +2376,7 @@ const handleForward = () => {
   currentEvent.value = event.type as FieldEvent;
   currentSprite.value = event.sprite ?? "";
   currentExtra.value = event.extra ?? {};
+  fieldActionConsumed.value = false;
   message.value = event.message ?? "";
 
   if (event.type === "matches" && event.extra?.getNum) {
@@ -2392,7 +2397,8 @@ const handleInn = () => {
   }
 
   gameStore.items.matches -= cost;
-  gameStore.restoreAll();
+  gameStore.restoreAtInn();
+  fieldActionConsumed.value = true;
   soundManager.playSound(SOUND.UP);
   message.value = currentExtra.value.afterMessage ?? t("events.inn.after");
 };
@@ -2404,13 +2410,14 @@ const handleInnSecret = () => {
     t("game.battle.secret_lost_hp", { value: maxHpLoss }),
   ].join("\n");
 
-  gameStore.restoreAll();
+  gameStore.restoreAtInn();
   gameStore.loseMaxHp(maxHpLoss);
   gameStore.markScarred();
   currentExtra.value = {
     ...currentExtra.value,
     afterMessage,
   };
+  fieldActionConsumed.value = true;
   soundManager.playSound(SOUND.TURN);
   window.setTimeout(() => {
     soundManager.playSound(SOUND.DUTY);
@@ -2428,6 +2435,7 @@ const handleSave = () => {
 
   gameStore.items.matches -= cost;
   currentSprite.value = currentExtra.value.afterSprite ?? currentSprite.value;
+  fieldActionConsumed.value = true;
   localStorage.setItem(SAVE_KEY, JSON.stringify(createSaveData()));
   syncStoredSaveAvailability();
   soundManager.playSound(SOUND.POPON);
