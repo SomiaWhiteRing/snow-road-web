@@ -53,7 +53,10 @@ export const base = {
         not_enough_matches: '火柴不够。',
         match_healed: '回复了{value}点HP。',
         match_wasted: '现在用火柴太浪费了。',
-        star_restored: '星印闪烁了。HP和MP完全恢复了。'
+        star_restored: '星印闪烁了。HP和MP完全恢复了。',
+        matches_counter: '火柴{count}根',
+        star_counter: '★ {lit}/{total}',
+        star_button: '★'
       },
       system: {
         saved: '已保存进度。',
@@ -263,7 +266,10 @@ export const base = {
         not_enough_matches: 'マッチが足りない。',
         match_healed: 'HPが{value}点回復した。',
         match_wasted: 'マッチがもったいない。',
-        star_restored: '星印がまたたいた。HPとMPが全回復した。'
+        star_restored: '星印がまたたいた。HPとMPが全回復した。',
+        matches_counter: 'マッチ{count}本',
+        star_counter: '★ {lit}/{total}',
+        star_button: '★'
       },
       system: {
         saved: 'セーブしました。',
@@ -473,7 +479,10 @@ export const base = {
         not_enough_matches: 'Not enough matches.',
         match_healed: 'Recovered {value} HP.',
         match_wasted: 'Using a match now would be wasteful.',
-        star_restored: 'The star mark shimmered. HP and MP were fully restored.'
+        star_restored: 'The star mark shimmered. HP and MP were fully restored.',
+        matches_counter: 'Matches {count}',
+        star_counter: '★ {lit}/{total}',
+        star_button: '★'
       },
       system: {
         saved: 'Progress saved.',

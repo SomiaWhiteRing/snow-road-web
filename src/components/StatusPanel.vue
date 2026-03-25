@@ -41,9 +41,6 @@
         gameStore.armor.defense
       }}）
     </div>
-    <div class="stat-line" v-if="gameStore.starCapacity > 0">
-      {{ t("game.stats.stars") }}: {{ starMarks }}
-    </div>
   </div>
 </template>
 
@@ -83,11 +80,6 @@ const playerNameDisplay = computed(() => {
 
   const playerKey = `player.${gameStore.playerName}`;
   return te(playerKey) ? String(t(playerKey)) : gameStore.playerName;
-});
-const starMarks = computed(() => {
-  const lit = "★".repeat(gameStore.fuel);
-  const unlit = "☆".repeat(Math.max(0, gameStore.starCapacity - gameStore.fuel));
-  return `${lit}${unlit}`;
 });
 const attackDisplay = computed(() =>
   props.battleAttackBonus > 0

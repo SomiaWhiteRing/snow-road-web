@@ -191,16 +191,16 @@
           </button>
         </div>
         <div
-          v-if="gameStore.fuel > 0"
+          v-if="gameStore.starCapacity > 0"
           class="field-button-slot field-button-slot-wide-top"
         >
           <button @click="handleUseStar">
-            {{ t("game.actions.lighter", { count: gameStore.fuel }) }}
+            {{ lighterCounterLabel }}
           </button>
         </div>
         <div class="field-button-slot field-button-slot-wide-bottom">
           <button @click="handleUseMatch">
-            {{ t("game.actions.matches", { count: gameStore.items.matches }) }}
+            {{ matchesCounterLabel }}
           </button>
         </div>
       </template>
@@ -278,7 +278,7 @@
             class="buttons buttons-3 battle-item-buttons"
           >
             <button @click="handleUseStar">
-              {{ t("game.actions.lighter", { count: gameStore.fuel }) }}
+              {{ battleLighterLabel }}
             </button>
           </div>
         </template>
@@ -354,13 +354,8 @@
         </div>
       </div>
 
-      <div v-if="gameCompleted" class="ending-message">
+      <div v-if="gameCompleted && !storyVisible" class="ending-message">
         {{ t(endingMessageKey) }}
-      </div>
-      <div v-if="gameCompleted" class="buttons buttons-3">
-        <button @click="restartGame">
-          {{ t("game.actions.restart") }}
-        </button>
       </div>
     </div>
 
@@ -664,6 +659,7 @@ const storyCursor = ref(0);
 const storyFrame = ref<StoryFrame | null>(null);
 const storyStageAdvanced = ref(false);
 const storySuppressStageAdvance = ref(false);
+const storyTerminalLocked = ref(false);
 const storyVisible = ref(false);
 const storyLoading = ref(false);
 const storyMusicMode = ref<StoryMusicMode>("inherit");
@@ -807,6 +803,16 @@ const activeClearRecordText = computed(
 const bgmSuspended = computed(
   () => gameOver.value || (storyVisible.value && storyMusicMode.value === "stop")
 );
+const matchesCounterLabel = computed(() =>
+  t("game.items.matches_counter", { count: gameStore.items.matches })
+);
+const lighterCounterLabel = computed(() =>
+  t("game.items.star_counter", {
+    lit: gameStore.fuel,
+    total: gameStore.starCapacity,
+  })
+);
+const battleLighterLabel = computed(() => t("game.items.star_button"));
 type SpellEntry = (typeof SPELLS)[number];
 
 const isSpellLearned = (spellId: string) =>
@@ -1264,6 +1270,7 @@ const resetStoryState = () => {
   storyFrame.value = null;
   storyStageAdvanced.value = false;
   storySuppressStageAdvance.value = false;
+  storyTerminalLocked.value = false;
   storyVisible.value = false;
   storyMusicMode.value = "inherit";
   storyMusicTrack.value = null;
@@ -1307,11 +1314,14 @@ const finishStoryWithEnd = () => {
 
 const finishStoryWithFinish = async () => {
   soundManager.playSound(SOUND.THATHATHA);
-  resetStoryState();
-  message.value = "";
   const finishTexts = originalFinishTexts.value;
   const absoluteCleared = gameStore.stage >= 10;
   const reportState = createOriginalReportState(absoluteCleared);
+
+  if (!absoluteCleared) {
+    resetStoryState();
+    message.value = "";
+  }
 
   const recordFile: OriginalClearRecordFile =
     absoluteCleared ? "おまけ.txt" : "あとがき.txt";
@@ -1333,6 +1343,13 @@ const finishStoryWithFinish = async () => {
     finishTexts.getClearOutputMessage(recordFile)
   );
   selectedClearRecordFile.value = "レポート.txt";
+
+  if (absoluteCleared) {
+    storyTerminalLocked.value = true;
+    gameCompleted.value = true;
+    endingMessageKey.value = "game.battle.final_clear";
+    return;
+  }
 
   if (gameStore.stage === 9 && gameStore.distance <= 1000 && !gameStore.scarred) {
     const shouldEnterAnother = await showSystemConfirm(
@@ -1507,7 +1524,7 @@ const openCurrentStageStory = () =>
   openStory(`story${String(gameStore.stage).padStart(2, "0")}`);
 
 const handleCutsceneOverlayClick = () => {
-  if (gameOver.value || !storyVisible.value) {
+  if (gameOver.value || !storyVisible.value || storyTerminalLocked.value) {
     return;
   }
 
@@ -3139,6 +3156,7 @@ body {
       padding: 4px 6px;
       line-height: 1.2;
     }
+
   }
 
   .spell-build-screen {
