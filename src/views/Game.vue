@@ -1,29 +1,48 @@
 <template>
   <div class="game-view">
+    <svg class="scene-filter-defs" aria-hidden="true" focusable="false">
+      <defs>
+        <filter id="another-sprite-soft-red" color-interpolation-filters="sRGB">
+          <feColorMatrix
+            type="matrix"
+            values="
+              1 0 0 0 0
+              0 0.5 0 0 0
+              0 0 0.5 0 0
+              0 0 0 1 0
+            "
+          />
+        </filter>
+      </defs>
+    </svg>
     <div class="scene-area">
       <div class="scene-canvas">
-        <img
-          class="scene-base"
-          :src="useAsset(`sprite/snow${gameStore.distance % 3}.png`)"
-          alt="scene"
-        />
-        <img
-          v-if="currentSprite"
-          class="sub-event"
-          :class="{ 'battle-sprite': isInBattle }"
-          :src="useAsset(currentSprite)"
-          alt="sub-event"
-        />
-        <img
-          v-if="battleSpriteFlashVisible && currentSprite"
-          class="sub-event battle-sprite-flash"
-          :class="battleSpriteFlashClass"
-          :src="useAsset(currentSprite)"
-          alt="battle-flash"
-        />
-        <SnowEffect />
+        <div
+          class="scene-visual-layer"
+          :class="{ 'scene-visual-layer-another': anotherSceneActive }"
+        >
+          <img
+            class="scene-base"
+            :src="useAsset(sceneBaseAssetPath)"
+            alt="scene"
+          />
+          <img
+            v-if="currentSprite"
+            class="sub-event"
+            :class="{ 'battle-sprite': isInBattle }"
+            :src="useAsset(currentSprite)"
+            alt="sub-event"
+          />
+          <img
+            v-if="battleSpriteFlashVisible && currentSprite"
+            class="sub-event battle-sprite-flash"
+            :class="battleSpriteFlashClass"
+            :src="useAsset(currentSprite)"
+            alt="battle-flash"
+          />
+          <SnowEffect :color="sceneSnowColor" />
+        </div>
         <EnemyStatus v-if="isInBattle" />
-        <div v-if="anotherFilterVisible" class="another-screen-filter"></div>
         <div
           v-if="bossBattleMarkerVisible"
           class="boss-battle-marker"
@@ -714,6 +733,14 @@ const battleSpriteFlashClass = computed(() =>
     ? "battle-sprite-flash-strong"
     : "battle-sprite-flash-hit"
 );
+const anotherSceneActive = computed(() => gameStore.stage >= 10);
+const sceneBaseIndex = computed(() => ((gameStore.distance % 3) + 3) % 3);
+const sceneBaseAssetPath = computed(
+  () => `sprite/${anotherSceneActive.value ? "hell" : "snow"}${sceneBaseIndex.value}.png`
+);
+const sceneSnowColor = computed(() =>
+  anotherSceneActive.value ? "#FF0000" : "#FFFFFF"
+);
 const bossBattleMarkerVisible = computed(
   () => isInBattle.value && Boolean(gameStore.battle.enemy.isBoss)
 );
@@ -725,7 +752,6 @@ const originalFinishTexts = computed(() =>
   getOriginalFinishTexts(String(i18n.locale.value))
 );
 const systemDialogVisible = computed(() => systemDialog.value !== null);
-const anotherFilterVisible = computed(() => gameStore.stage >= 10);
 const availableClearRecordFiles = computed(() =>
   ORIGINAL_CLEAR_RECORD_FILES.filter((file) => Boolean(clearRecordCache.value[file]))
 );
@@ -2684,6 +2710,14 @@ body {
   image-rendering: pixelated;
   gap: 25px;
 
+  .scene-filter-defs {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
   button {
     white-space: nowrap;
     display: inline-flex;
@@ -2703,6 +2737,36 @@ body {
       overflow: hidden;
       background: #000;
       image-rendering: pixelated;
+    }
+
+    .scene-visual-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
+
+    .scene-visual-layer-another .sub-event {
+      filter: url(#another-sprite-soft-red);
+    }
+
+    .scene-visual-layer-another .battle-sprite-flash-hit {
+      filter:
+        url(#another-sprite-soft-red)
+        sepia(1)
+        saturate(8)
+        hue-rotate(-18deg)
+        brightness(1.2)
+        contrast(1.2);
+    }
+
+    .scene-visual-layer-another .battle-sprite-flash-strong {
+      filter:
+        url(#another-sprite-soft-red)
+        sepia(1)
+        saturate(10)
+        hue-rotate(-14deg)
+        brightness(1.45)
+        contrast(1.3);
     }
 
     .scene-base,
@@ -3044,15 +3108,6 @@ body {
       padding: 4px 6px;
       line-height: 1.2;
     }
-  }
-
-  .another-screen-filter {
-    position: absolute;
-    inset: 0;
-    z-index: 3;
-    pointer-events: none;
-    background: rgba(135, 0, 0, 0.88);
-    mix-blend-mode: multiply;
   }
 
   .spell-build-screen {

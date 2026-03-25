@@ -13,6 +13,7 @@ export const base = {
       stats: {
         stage: '- Stage {stage} -',
         distance: '前进距离',
+        name: '名字',
         level: 'LV',
         exp: 'EXP',
         hp: 'HP',
@@ -218,6 +219,7 @@ export const base = {
       stats: {
         stage: '- Stage {stage} -',
         distance: '進んだ距離',
+        name: 'なまえ',
         level: 'LV',
         exp: 'EXP',
         hp: 'HP',
@@ -423,6 +425,7 @@ export const base = {
       stats: {
         stage: '- Stage {stage} -',
         distance: 'Distance',
+        name: 'Name',
         level: 'LV',
         exp: 'EXP',
         hp: 'HP',

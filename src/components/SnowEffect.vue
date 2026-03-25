@@ -3,7 +3,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted, watch } from "vue";
 
 const BASE_WIDTH = 600;
 
@@ -170,6 +170,21 @@ onMounted(() => {
 
   animate();
 });
+
+watch(
+  () => props.color,
+  () => {
+    initCanvas();
+  }
+);
+
+watch(
+  () => props.flakes,
+  () => {
+    initCanvas();
+  },
+  { deep: true }
+);
 
 onUnmounted(() => {
   if (animationFrame) {

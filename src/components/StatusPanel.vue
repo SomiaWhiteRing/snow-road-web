@@ -6,6 +6,9 @@
     <div class="stat-line">
       {{ t("game.stats.distance") }}: {{ gameStore.distance }}
     </div>
+    <div class="stat-line" v-if="playerNameDisplay">
+      {{ t("game.stats.name") }}: {{ playerNameDisplay }}
+    </div>
     <div class="stat-line">
       {{ t("game.stats.level") }} {{ gameStore.level }}
       {{ t("game.stats.exp") }}:{{ gameStore.exp }}/{{ gameStore.nextExp }}
@@ -18,6 +21,9 @@
       <template v-if="gameStore.virtualMp > 0">
         +{{ gameStore.virtualMp }}
       </template>
+    </div>
+    <div class="stat-line" v-if="gameStore.starDanceActive">
+      {{ t("game.stats.star_dance") }}
     </div>
     <div class="stat-line" v-if="gameStore.totalAttack > 0">
       {{ t("game.stats.attack") }}: {{ attackDisplay }}
@@ -37,9 +43,6 @@
     </div>
     <div class="stat-line" v-if="gameStore.starCapacity > 0">
       {{ t("game.stats.stars") }}: {{ starMarks }}
-    </div>
-    <div class="stat-line" v-if="gameStore.starDanceActive">
-      {{ t("game.stats.star_dance") }}
     </div>
   </div>
 </template>
@@ -61,7 +64,7 @@ const props = withDefaults(
 );
 
 const gameStore = useGameStore();
-const { t } = useI18n();
+const { t, te } = useI18n();
 const stageLine = computed(() => {
   if (gameStore.stage >= 10) {
     return "- Stage Another -";
@@ -72,6 +75,14 @@ const stageLine = computed(() => {
   }
 
   return t("game.stats.stage", { stage: gameStore.stage });
+});
+const playerNameDisplay = computed(() => {
+  if (!gameStore.playerName) {
+    return "";
+  }
+
+  const playerKey = `player.${gameStore.playerName}`;
+  return te(playerKey) ? String(t(playerKey)) : gameStore.playerName;
 });
 const starMarks = computed(() => {
   const lit = "★".repeat(gameStore.fuel);
