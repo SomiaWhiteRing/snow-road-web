@@ -115,11 +115,23 @@ body,
   left: 0;
   background: #000;
   overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .game-container-rotated {
   transform: translateX(400px) rotate(90deg);
   transform-origin: top left;
+}
+
+.game-container img,
+.game-container svg,
+.game-container canvas {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-drag: none;
+  user-drag: none;
 }
 
 // 像素图片渲染设置

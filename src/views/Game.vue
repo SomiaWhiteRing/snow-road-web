@@ -434,6 +434,9 @@
         <div class="clear-record-filename">{{ selectedClearRecordFile }}</div>
         <div class="clear-record-body">{{ activeClearRecordText }}</div>
         <div class="clear-record-footer">
+          <button v-if="isReportClearRecordSelected" @click="copyActiveClearRecord">
+            {{ t("game.settings.copy_report") }}
+          </button>
           <button @click="closeClearRecordViewer">
             {{ t("game.magic.exit") }}
           </button>
@@ -799,6 +802,9 @@ const activeClearRecordText = computed(
 
     return originalFinishTexts.value.clearRecordTexts[file] ?? "";
   }
+);
+const isReportClearRecordSelected = computed(
+  () => selectedClearRecordFile.value === "レポート.txt"
 );
 const bgmSuspended = computed(
   () => gameOver.value || (storyVisible.value && storyMusicMode.value === "stop")
@@ -2503,6 +2509,44 @@ const selectClearRecordFile = (file: OriginalClearRecordFile) => {
   selectedClearRecordFile.value = file;
 };
 
+const copyTextToClipboard = async (text: string) => {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    return true;
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.top = "0";
+  textarea.style.left = "0";
+  textarea.style.opacity = "0";
+  document.body.appendChild(textarea);
+  textarea.select();
+  textarea.setSelectionRange(0, textarea.value.length);
+
+  try {
+    return document.execCommand("copy");
+  } finally {
+    document.body.removeChild(textarea);
+  }
+};
+
+const copyActiveClearRecord = async () => {
+  if (!isReportClearRecordSelected.value) {
+    return;
+  }
+
+  try {
+    const copied = await copyTextToClipboard(activeClearRecordText.value);
+    soundManager.playSound(copied ? SOUND.POPON : SOUND.BUBBLE);
+  } catch (error) {
+    soundManager.playSound(SOUND.BUBBLE);
+    console.error("Failed to copy clear record.", error);
+  }
+};
+
 const setGameLocale = (localeCode: "zh" | "ja" | "en") => {
   settingsStore.setLocalePreference(localeCode);
   i18n.locale.value = settingsStore.effectiveLocale;
@@ -3487,6 +3531,7 @@ body {
     .clear-record-footer {
       display: flex;
       justify-content: flex-end;
+      gap: 8px;
     }
   }
 }

@@ -160,7 +160,8 @@ export const base = {
         system: '系统',
         load_save: '读取存档',
         rotate_screen: '旋转屏幕',
-        clear_record: '通关记录'
+        clear_record: '通关记录',
+        copy_report: '复制'
       },
       controlText: [
         '第六层。',
@@ -373,7 +374,8 @@ export const base = {
         system: 'システム',
         load_save: 'ロード',
         rotate_screen: '画面回転',
-        clear_record: '記録'
+        clear_record: '記録',
+        copy_report: 'コピー'
       },
       controlText: [
         '第六の階層。',
@@ -586,7 +588,8 @@ export const base = {
         system: 'System',
         load_save: 'Load',
         rotate_screen: 'Rotate',
-        clear_record: 'Record'
+        clear_record: 'Record',
+        copy_report: 'Copy'
       },
       controlText: [
         'The Sixth Layer.',
