@@ -814,6 +814,17 @@ const getSpellShortLabel = (spell: SpellEntry) =>
   te(`spellShort.${spell.id}`) ? String(t(`spellShort.${spell.id}`)) : spell.shortLabel;
 const getSpellLocalizedName = (spell: SpellEntry) =>
   te(`spell.${spell.id}`) ? String(t(`spell.${spell.id}`)) : spell.name;
+const joinMessageLines = (...lines: Array<string | null | undefined>) =>
+  lines.filter((line): line is string => Boolean(line)).join("\n");
+const formatPlayerSpellMessage = (spell: SpellEntry, detailLine: string) =>
+  joinMessageLines(
+    `${t("game.magic.cast_prefix")}${getSpellLocalizedName(spell)}`,
+    `${t("game.magic.result_prefix")}${detailLine}`
+  );
+const formatEnemyMagicMessage = (magicName: string, detailLine: string) =>
+  joinMessageLines(magicName, detailLine);
+const formatStarDanceMessage = (detailLine: string) =>
+  joinMessageLines(String(t("game.battle.star_dance_intro")), detailLine);
 const getSpellBuildBracket = (spell: SpellEntry) =>
   spell.isVirtualMp ? ["(", ")"] : ["[", "]"];
 const canCastSpell = (spell: SpellEntry) =>
@@ -1677,10 +1688,10 @@ const performEnemyMagic = (): { line: string; defeated: boolean } => {
   if (isMagicImmune() || damage <= 0) {
     soundManager.playSound(SOUND.KIN);
     return {
-      line: t("game.battle.enemy_magic_blocked", {
-        enemy: enemy.name,
-        magic: magicName,
-      }),
+      line: formatEnemyMagicMessage(
+        String(magicName),
+        String(t("game.battle.enemy_magic_blocked", { enemy: enemy.name }))
+      ),
       defeated: false,
     };
   }
@@ -1689,11 +1700,10 @@ const performEnemyMagic = (): { line: string; defeated: boolean } => {
   gameStore.hp -= damage;
 
   return {
-    line: t("game.battle.enemy_magic_hit", {
-      enemy: enemy.name,
-      magic: magicName,
-      damage,
-    }),
+    line: formatEnemyMagicMessage(
+      String(magicName),
+      String(t("game.battle.damage_taken", { enemy: enemy.name, damage }))
+    ),
     defeated: gameStore.hp <= 0,
   };
 };
@@ -1771,19 +1781,19 @@ const applySpellEffect = (
   }
 
   if (spell.power !== undefined) {
+    const enemyName = gameStore.battle.enemy.name;
     const power = spell.id === "become_charcoal_max" ? currentTotalMp : spell.power;
     const damage = Math.max(0, power - gameStore.battle.enemy.mp);
     gameStore.battle.enemy.hp -= damage;
     soundManager.playSound(damage > 0 ? SOUND.FIRE : SOUND.KIN);
 
     return {
-      line:
+      line: formatPlayerSpellMessage(
+        spell,
         damage > 0
-          ? t("game.magic.damage_dealt", {
-              name: t(`spell.${spell.id}`),
-              damage,
-            })
-          : t("game.magic.no_effect", { name: t(`spell.${spell.id}`) }),
+          ? String(t("game.battle.damage_dealt", { enemy: enemyName, damage }))
+          : String(t("game.battle.player_magic_no_effect", { enemy: enemyName }))
+      ),
       enemyDefeated: gameStore.battle.enemy.hp <= 0,
       battleEffect: damage > 0 ? "strong" : "none",
     };
@@ -1795,17 +1805,29 @@ const applySpellEffect = (
     case "warmth_of_others":
       gameStore.hp = gameStore.maxHp;
       soundManager.playSound(SOUND.UP);
-      line = t("game.magic.hp_restored");
+      line = String(t("game.magic.hp_restored"));
       break;
-    case "light":
+    case "light": {
+      const previousVirtualMp = gameStore.virtualMp;
       gameStore.addVirtualMp(5);
       soundManager.playSound(SOUND.HYUUN);
-      line = t("game.magic.virtual_mp_added", { value: gameStore.virtualMp });
+      line = String(
+        t("game.magic.virtual_mp_added", {
+          value: gameStore.virtualMp - previousVirtualMp,
+        })
+      );
       break;
-    case "sun_in_palm":
+    }
+    case "sun_in_palm": {
+      const previousVirtualMp = gameStore.virtualMp;
       gameStore.multiplyVirtualMp(2);
-      line = t("game.magic.virtual_mp_multiplied", { value: gameStore.virtualMp });
+      line = String(
+        t("game.magic.virtual_mp_multiplied", {
+          value: gameStore.virtualMp - previousVirtualMp,
+        })
+      );
       break;
+    }
     case "spring_dream": {
       const weapon = createSpecialEquipment(
         "weapon",
@@ -1820,7 +1842,7 @@ const applySpellEffect = (
         virtualAttack: weapon.virtualBonus,
       });
       soundManager.playSound(SOUND.UP);
-      line = t("game.magic.weapon_generated", { power: weapon.power });
+      line = String(t("game.magic.weapon_generated", { power: weapon.power }));
       break;
     }
     case "summer_sky": {
@@ -1837,21 +1859,21 @@ const applySpellEffect = (
         virtualDefense: armor.virtualBonus,
       });
       soundManager.playSound(SOUND.UP);
-      line = t("game.magic.armor_generated", { power: armor.power });
+      line = String(t("game.magic.armor_generated", { power: armor.power }));
       break;
     }
     case "warmer_than_spring_and_summer":
       gameStore.activateStarDance();
       soundManager.playSound(SOUND.DAMAGE);
-      line = t("game.magic.star_dance_ready");
+      line = String(t("game.magic.star_dance_ready"));
       break;
     default:
-      line = t("game.magic.no_effect", { name: t(`spell.${spell.id}`) });
+      line = String(t("game.magic.no_effect", { name: t(`spell.${spell.id}`) }));
       break;
   }
 
   return {
-    line,
+    line: formatPlayerSpellMessage(spell, line),
     enemyDefeated: gameStore.battle.enemy.hp <= 0,
     battleEffect: "none",
   };
@@ -1937,10 +1959,11 @@ const executeStarDanceStep = () => {
   if (damage > 0) {
     beginBattlePulseEffect({ sprite: "hit" });
   }
-  message.value =
+  message.value = formatStarDanceMessage(
     damage > 0
-      ? t("game.battle.damage_dealt", { enemy: enemy.name, damage })
-      : t("game.battle.player_missed", { enemy: enemy.name });
+      ? String(t("game.battle.damage_dealt", { enemy: enemy.name, damage }))
+      : String(t("game.battle.player_missed", { enemy: enemy.name }))
+  );
 
   if (battleStarDanceCounter.value >= gameStore.fuel || enemy.hp <= 0) {
     battlePlayerPending.value = false;

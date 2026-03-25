@@ -195,7 +195,10 @@ export class ForwardService {
       type: "battle",
       enemy,
       sprite: enemy.sprite.path,
-      message: this.translateMessage("events.battle", { enemy: enemy.name }),
+      message: this.translateMessage(
+        enemy.isBoss ? "events.battle_boss" : "events.battle",
+        { enemy: enemy.name }
+      ),
     };
   }
 
@@ -211,7 +214,7 @@ export class ForwardService {
           type: "battle",
           enemy: boss,
           sprite: boss.sprite.path,
-          message: this.translateMessage("events.battle", { enemy: boss.name }),
+          message: this.translateMessage("events.battle_boss", { enemy: boss.name }),
         };
       }
     }

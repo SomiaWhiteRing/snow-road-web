@@ -21,6 +21,7 @@ export const eventMessages = {
         extra: '太好了，是火柴盒！\n获得了10根火柴。'
       },
       battle: '{enemy}出现了！',
+      battle_boss: '{enemy}在这里。',
       note: '有张便条。\n『{name}』'
     }
   },
@@ -46,6 +47,7 @@ export const eventMessages = {
         extra: 'やったあ、マッチ箱だ！\nマッチを10本手に入れた。'
       },
       battle: '{enemy}があらわれた！',
+      battle_boss: '{enemy}がいる。',
       note: 'メモがある。\n『{name}』'
     }
   },
@@ -71,6 +73,7 @@ export const eventMessages = {
         extra: 'Yes! A matchbox!\nGot 10 matches.'
       },
       battle: 'A {enemy} appeared!',
+      battle_boss: '{enemy} is here.',
       note: 'There\'s a note.\n"{name}"'
     }
   }
