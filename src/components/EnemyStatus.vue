@@ -27,7 +27,7 @@ const enemy = computed(() => gameStore.battle.enemy);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  z-index: 2;
+  z-index: 4;
 
   span {
     display: inline;

@@ -31,7 +31,7 @@ export const controlNames = {
     control: {
       flip: 'Flip',
       drive: 'Drive',
-      secret: 'Secret Art',
+      secret: 'Secret',
       flip_flop: 'Flip Flop',
       overdrive: 'Overdrive',
       primeval: 'To the Origin',

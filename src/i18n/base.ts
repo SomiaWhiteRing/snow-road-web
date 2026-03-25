@@ -357,7 +357,7 @@ export const base = {
         system: 'システム',
         load_save: 'ロード',
         rotate_screen: '画面回転',
-        clear_record: 'クリア記録'
+        clear_record: '記録'
       },
       controlText: [
         '第六の階層。',
@@ -561,8 +561,8 @@ export const base = {
         language: 'Language',
         system: 'System',
         load_save: 'Load',
-        rotate_screen: 'Rotate Screen',
-        clear_record: 'Clear Record'
+        rotate_screen: 'Rotate',
+        clear_record: 'Record'
       },
       controlText: [
         'The Sixth Layer.',

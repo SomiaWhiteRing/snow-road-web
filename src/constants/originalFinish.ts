@@ -1,6 +1,9 @@
+import { getLocalizedEquipmentName } from "../utils/equipmentLocalization";
+
 export const ORIGINAL_CLEAR_RECORD_FILES = [
   "あとがき.txt",
   "おまけ.txt",
+  "レポート.txt",
 ] as const;
 
 export type OriginalClearRecordFile =
@@ -18,6 +21,33 @@ interface OriginalFinishTexts {
   hellMessages: readonly string[];
   clearRecordTexts: Record<OriginalClearRecordFile, string>;
   getClearOutputMessage: (filename: OriginalClearRecordFile) => string;
+}
+
+export interface OriginalReportState {
+  level: number;
+  potential: number;
+  hp: number;
+  maxHp: number;
+  maxMp: number;
+  mp: number;
+  baseAttack: number;
+  baseDefense: number;
+  hasMagic: boolean;
+  learnedSpellStates: boolean[];
+  scarred: boolean;
+  cleared: boolean;
+  absoluteCleared: boolean;
+  weaponId?: string;
+  weaponName?: string;
+  weaponPower: number;
+  armorId?: string;
+  armorName?: string;
+  armorPower: number;
+  matches: number;
+  litStars: number;
+  totalStars: number;
+  distance: number;
+  stage: number;
 }
 
 const ORIGINAL_FINISH_TEXTS: Record<OriginalFinishLocale, OriginalFinishTexts> = {
@@ -40,7 +70,7 @@ const ORIGINAL_FINISH_TEXTS: Record<OriginalFinishLocale, OriginalFinishTexts> =
 
 　本作能够被你玩到最后，实在非常感谢。
 
-2005/11/08　波恩`,
+2005/11/08　ポーン`,
       "おまけ.txt": `辛苦了。未必是什么读来有趣的东西，不过还是把附加资料刊在下面。
 
 【关于游戏系统的想法】
@@ -55,12 +85,12 @@ const ORIGINAL_FINISH_TEXTS: Record<OriginalFinishLocale, OriginalFinishTexts> =
 
 ・“失去一种有益之物，再得到另一种有益之物”的系统
 　・支付基础ＨＰ来获得某种能力
-　・支付基础ＨＰ来发动奥の手
+　・支付基础ＨＰ来发动秘技
 　・支付武器攻击力来发动驱动、过载驱动
 　・支付防具防御力来发动翻转、超越翻转
 　・消耗ＭＰ（＝魔法防御）来发动魔法
 　・消耗星舞次数（＝星印的数量）来完全恢复
-　・支付マッチ（回复手段）来购买商品
+　・支付火柴（回复手段）来购买商品
 
 　⇒要求玩家进行思考与价值判断
 
@@ -152,6 +182,7 @@ const ORIGINAL_FINISH_TEXTS: Record<OriginalFinishLocale, OriginalFinishTexts> =
       setMainText('防御力が1点上がった！');
       updateSpec(Player);
     end;`,
+      "レポート.txt": "",
     },
     getClearOutputMessage: (filename) =>
       `辛苦了。\r\n已在文件夹中输出『${filename}』。`,
@@ -287,6 +318,7 @@ const ORIGINAL_FINISH_TEXTS: Record<OriginalFinishLocale, OriginalFinishTexts> =
       setMainText('防御力が1点上がった！');
       updateSpec(Player);
     end;`,
+      "レポート.txt": "",
     },
     getClearOutputMessage: (filename) =>
       `お疲れ様でした。\r\nフォルダに『${filename}』を出力しました。`,
@@ -313,7 +345,7 @@ const ORIGINAL_FINISH_TEXTS: Record<OriginalFinishLocale, OriginalFinishTexts> =
 
 　Thank you very much for playing this work all the way to the end.
 
-2005/11/08  Pohn`,
+2005/11/08  Porn`,
       "おまけ.txt": `Thank you. This may not be especially entertaining to read, but I have included the bonus materials below.
 
 【Thoughts on the Game System】
@@ -425,6 +457,7 @@ const ORIGINAL_FINISH_TEXTS: Record<OriginalFinishLocale, OriginalFinishTexts> =
       setMainText('防御力が1点上がった！');
       updateSpec(Player);
     end;`,
+      "レポート.txt": "",
     },
     getClearOutputMessage: (filename) =>
       `Thank you.\r\n"${filename}" was written to the folder.`,
@@ -447,3 +480,193 @@ const normalizeOriginalFinishLocale = (locale: string): OriginalFinishLocale => 
 
 export const getOriginalFinishTexts = (locale: string): OriginalFinishTexts =>
   ORIGINAL_FINISH_TEXTS[normalizeOriginalFinishLocale(locale)];
+
+const buildOriginalStageLine = (
+  locale: OriginalFinishLocale,
+  stage: number
+): string => {
+  if (stage <= 0) {
+    return "";
+  }
+
+  if (stage === 9) {
+    return locale === "zh"
+      ? "位于 Stage Final。"
+      : locale === "en"
+        ? "At Stage Final."
+        : "Stage Finalにいる。";
+  }
+
+  if (stage >= 10) {
+    return locale === "zh"
+      ? "位于 Stage Another。"
+      : locale === "en"
+        ? "At Stage Another."
+        : "Stage Anotherにいる。";
+  }
+
+  return locale === "zh"
+    ? `位于 Stage ${stage}。`
+    : locale === "en"
+      ? `At Stage ${stage}.`
+      : `Stage ${stage}にいる。`;
+};
+
+const buildOriginalSpellLine = (state: OriginalReportState) =>
+  Array.from({ length: 10 }, (_, index) =>
+    state.learnedSpellStates[index] ? "らら" : "るー"
+  ).join("");
+
+const resolveOriginalReportEquipmentName = (
+  locale: string,
+  equipmentId: string | undefined,
+  legacyName: string | undefined
+) => {
+  const localizedName = getLocalizedEquipmentName(equipmentId, locale);
+  return localizedName || legacyName || "";
+};
+
+export const buildOriginalReportText = (
+  locale: string,
+  state: OriginalReportState
+) => {
+  const normalizedLocale = normalizeOriginalFinishLocale(locale);
+  const weaponName = resolveOriginalReportEquipmentName(
+    normalizedLocale,
+    state.weaponId,
+    state.weaponName
+  );
+  const armorName = resolveOriginalReportEquipmentName(
+    normalizedLocale,
+    state.armorId,
+    state.armorName
+  );
+  const lines: string[] = [];
+
+  if (normalizedLocale === "zh") {
+    lines.push("- 雪道的足迹 -");
+    lines.push("");
+    lines.push(`等级：${state.level}`);
+    lines.push(`潜力：${state.potential}`);
+    lines.push(`ＨＰ：${state.hp}／${state.maxHp}`);
+    if (state.maxMp > 0) {
+      lines.push(`ＭＰ：${state.mp}／${state.maxMp}`);
+    }
+    lines.push(`基础攻击力：${state.baseAttack}`);
+    lines.push(`基础防御力：${state.baseDefense}`);
+    if (state.hasMagic) {
+      lines.push(buildOriginalSpellLine(state));
+    }
+    if (state.scarred) {
+      lines.push("傷アリ");
+    }
+    if (state.cleared) {
+      lines.push("【通关】");
+    }
+    if (state.absoluteCleared) {
+      lines.push("【埋葬了难以想象之物】");
+    }
+    lines.push("");
+    if (weaponName) {
+      lines.push(`武器：${weaponName}（${state.weaponPower}）`);
+    }
+    if (armorName) {
+      lines.push(`防具：${armorName}（${state.armorPower}）`);
+    }
+    lines.push(`火柴${state.matches}根`);
+    if (state.totalStars > 0) {
+      lines.push("★".repeat(state.litStars) + "☆".repeat(state.totalStars - state.litStars));
+    }
+    lines.push("");
+    lines.push(`${state.distance}步目`);
+    const stageLine = buildOriginalStageLine(normalizedLocale, state.stage);
+    if (stageLine) {
+      lines.push(stageLine);
+    }
+    return lines.join("\n");
+  }
+
+  if (normalizedLocale === "en") {
+    lines.push("- Footprints on Snow Path -");
+    lines.push("");
+    lines.push(`Level: ${state.level}`);
+    lines.push(`Potential: ${state.potential}`);
+    lines.push(`HP: ${state.hp}/${state.maxHp}`);
+    if (state.maxMp > 0) {
+      lines.push(`MP: ${state.mp}/${state.maxMp}`);
+    }
+    lines.push(`Base Attack: ${state.baseAttack}`);
+    lines.push(`Base Defense: ${state.baseDefense}`);
+    if (state.hasMagic) {
+      lines.push(buildOriginalSpellLine(state));
+    }
+    if (state.scarred) {
+      lines.push("Scarred");
+    }
+    if (state.cleared) {
+      lines.push("[CLEAR]");
+    }
+    if (state.absoluteCleared) {
+      lines.push("[LAID AN UNFATHOMABLE THING TO REST]");
+    }
+    lines.push("");
+    if (weaponName) {
+      lines.push(`Weapon: ${weaponName} (${state.weaponPower})`);
+    }
+    if (armorName) {
+      lines.push(`Armor: ${armorName} (${state.armorPower})`);
+    }
+    lines.push(`Matches: ${state.matches}`);
+    if (state.totalStars > 0) {
+      lines.push("★".repeat(state.litStars) + "☆".repeat(state.totalStars - state.litStars));
+    }
+    lines.push("");
+    lines.push(`Step ${state.distance}`);
+    const stageLine = buildOriginalStageLine(normalizedLocale, state.stage);
+    if (stageLine) {
+      lines.push(stageLine);
+    }
+    return lines.join("\n");
+  }
+
+  lines.push("- 雪道の足跡 -");
+  lines.push("");
+  lines.push(`レベル：${state.level}`);
+  lines.push(`ポテンシャル：${state.potential}`);
+  lines.push(`ＨＰ：${state.hp}／${state.maxHp}`);
+  if (state.maxMp > 0) {
+    lines.push(`ＭＰ：${state.mp}／${state.maxMp}`);
+  }
+  lines.push(`基礎攻撃力：${state.baseAttack}`);
+  lines.push(`基礎防御力：${state.baseDefense}`);
+  if (state.hasMagic) {
+    lines.push(buildOriginalSpellLine(state));
+  }
+  if (state.scarred) {
+    lines.push("傷アリ");
+  }
+  if (state.cleared) {
+    lines.push("【クリア】");
+  }
+  if (state.absoluteCleared) {
+    lines.push("【とてつもないものを葬った】");
+  }
+  lines.push("");
+  if (weaponName) {
+    lines.push(`武器：${weaponName}（${state.weaponPower}）`);
+  }
+  if (armorName) {
+    lines.push(`防具：${armorName}（${state.armorPower}）`);
+  }
+  lines.push(`マッチ${state.matches}本`);
+  if (state.totalStars > 0) {
+    lines.push("★".repeat(state.litStars) + "☆".repeat(state.totalStars - state.litStars));
+  }
+  lines.push("");
+  lines.push(`${state.distance}歩目`);
+  const stageLine = buildOriginalStageLine(normalizedLocale, state.stage);
+  if (stageLine) {
+    lines.push(stageLine);
+  }
+  return lines.join("\n");
+};

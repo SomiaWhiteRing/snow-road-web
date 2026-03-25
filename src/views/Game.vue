@@ -288,7 +288,6 @@
         @click="closeSettingsOverlay"
       >
         <div class="story-panel settings-panel" @click.stop>
-          <div class="panel-title">{{ t("game.settings.title") }}</div>
           <div class="settings-columns">
             <section class="settings-section">
               <div class="settings-section-title">
@@ -322,10 +321,7 @@
                 <button :disabled="!storedSaveAvailable" @click="restoreSavedGame">
                   {{ t("game.settings.load_save") }}
                 </button>
-                <button
-                  :disabled="!clearRecordAvailable"
-                  @click="openClearRecordViewer"
-                >
+                <button v-if="clearRecordAvailable" @click="openClearRecordViewer">
                   {{ t("game.settings.clear_record") }}
                 </button>
               </div>
@@ -408,9 +404,6 @@
       @click="closeClearRecordViewer"
     >
       <div class="clear-record-panel" @click.stop>
-        <div class="clear-record-title">
-          {{ t("game.settings.clear_record") }}
-        </div>
         <div
           v-if="availableClearRecordFiles.length > 1"
           class="clear-record-tabs"
@@ -501,10 +494,16 @@ import {
 } from "../services/storyService";
 import { soundManager, SOUND } from "../services/soundManager";
 import {
+  buildOriginalReportText,
   getOriginalFinishTexts,
   ORIGINAL_CLEAR_RECORD_FILES,
   type OriginalClearRecordFile,
+  type OriginalReportState,
 } from "../constants/originalFinish";
+import {
+  getLocalizedEquipmentName,
+  resolveEquipmentId,
+} from "../utils/equipmentLocalization";
 
 type OverlayType =
   | "none"
@@ -536,7 +535,8 @@ interface SystemDialogState {
   message: string;
 }
 
-type ClearRecordCache = Partial<Record<OriginalClearRecordFile, boolean>>;
+type ClearRecordCacheEntry = boolean | string | { reportState: OriginalReportState };
+type ClearRecordCache = Partial<Record<OriginalClearRecordFile, ClearRecordCacheEntry>>;
 
 interface StoryOptions {
   suppressStageAdvance?: boolean;
@@ -757,7 +757,25 @@ const bgmOverrideTrack = computed(() =>
     : null
 );
 const activeClearRecordText = computed(
-  () => originalFinishTexts.value.clearRecordTexts[selectedClearRecordFile.value] ?? ""
+  () => {
+    const file = selectedClearRecordFile.value;
+    const cachedEntry = clearRecordCache.value[file];
+
+    if (typeof cachedEntry === "string") {
+      return cachedEntry;
+    }
+
+    if (
+      file === "レポート.txt" &&
+      cachedEntry &&
+      typeof cachedEntry === "object" &&
+      "reportState" in cachedEntry
+    ) {
+      return buildOriginalReportText(String(i18n.locale.value), cachedEntry.reportState);
+    }
+
+    return originalFinishTexts.value.clearRecordTexts[file] ?? "";
+  }
 );
 const bgmSuspended = computed(
   () => gameOver.value || (storyVisible.value && storyMusicMode.value === "stop")
@@ -866,6 +884,133 @@ const syncSelectedClearRecordFile = () => {
     availableClearRecordFiles.value[availableClearRecordFiles.value.length - 1];
 };
 
+const readCachedNumber = (value: unknown, fallback = 0) =>
+  typeof value === "number" && Number.isFinite(value) ? value : fallback;
+
+const getCurrentEquipmentName = (equipmentId: string | null | undefined) =>
+  getLocalizedEquipmentName(equipmentId, String(i18n.locale.value));
+
+const syncLocalizedEquipmentNames = () => {
+  gameStore.weapon.name = gameStore.weapon.id
+    ? getCurrentEquipmentName(gameStore.weapon.id)
+    : null;
+  gameStore.armor.name = gameStore.armor.id
+    ? getCurrentEquipmentName(gameStore.armor.id)
+    : null;
+
+  if (gameStore.battle.enemy.rewardEquipment?.id) {
+    gameStore.battle.enemy.rewardEquipment.name = getCurrentEquipmentName(
+      gameStore.battle.enemy.rewardEquipment.id
+    );
+  }
+
+  if (pendingEquipmentChoice.value?.id) {
+    pendingEquipmentChoice.value = {
+      ...pendingEquipmentChoice.value,
+      name: getCurrentEquipmentName(pendingEquipmentChoice.value.id),
+    };
+  }
+};
+
+const normalizePersistedEquipmentState = (
+  value: unknown,
+  kind: "weapon" | "armor"
+) => {
+  const source =
+    value && typeof value === "object"
+      ? (value as Record<string, unknown>)
+      : {};
+  const id = resolveEquipmentId(source.id ?? source.name);
+  const power = readCachedNumber(
+    kind === "weapon" ? source.attack : source.defense
+  );
+
+  if (kind === "weapon") {
+    return {
+      id,
+      name: id ? getCurrentEquipmentName(id) : null,
+      attack: power,
+    };
+  }
+
+  return {
+    id,
+    name: id ? getCurrentEquipmentName(id) : null,
+    defense: power,
+  };
+};
+
+const normalizeSaveData = (value: unknown) => {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const source = value as Record<string, unknown>;
+
+  return {
+    ...source,
+    weapon: normalizePersistedEquipmentState(source.weapon, "weapon"),
+    armor: normalizePersistedEquipmentState(source.armor, "armor"),
+  };
+};
+
+const createSaveData = () => ({
+  ...gameStore.$state,
+  weapon: {
+    id: gameStore.weapon.id,
+    attack: gameStore.weapon.attack ?? 0,
+  },
+  armor: {
+    id: gameStore.armor.id,
+    defense: gameStore.armor.defense ?? 0,
+  },
+});
+
+const normalizeCachedReportState = (
+  value: unknown
+): OriginalReportState | null => {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const source = value as Partial<Record<keyof OriginalReportState, unknown>>;
+  const learnedSpellStates = Array.isArray(source.learnedSpellStates)
+    ? source.learnedSpellStates
+    : [];
+
+  return {
+    level: readCachedNumber(source.level, 1),
+    potential: readCachedNumber(source.potential),
+    hp: readCachedNumber(source.hp),
+    maxHp: readCachedNumber(source.maxHp),
+    maxMp: readCachedNumber(source.maxMp),
+    mp: readCachedNumber(source.mp),
+    baseAttack: readCachedNumber(source.baseAttack),
+    baseDefense: readCachedNumber(source.baseDefense),
+    hasMagic: Boolean(source.hasMagic),
+    learnedSpellStates: Array.from(
+      { length: SPELLS.length },
+      (_, index) => Boolean(learnedSpellStates[index])
+    ),
+    scarred: Boolean(source.scarred),
+    cleared: Boolean(source.cleared),
+    absoluteCleared: Boolean(source.absoluteCleared),
+    weaponId: resolveEquipmentId(source.weaponId ?? source.weaponName) ?? undefined,
+    weaponName:
+      typeof source.weaponName === "string" ? source.weaponName : undefined,
+    weaponPower: readCachedNumber(source.weaponPower),
+    armorId: resolveEquipmentId(source.armorId ?? source.armorName) ?? undefined,
+    armorName:
+      typeof source.armorName === "string" ? source.armorName : undefined,
+    armorPower: readCachedNumber(source.armorPower),
+    matches: readCachedNumber(source.matches),
+    litStars: readCachedNumber(source.litStars),
+    totalStars: readCachedNumber(source.totalStars),
+    distance: readCachedNumber(source.distance),
+    stage: readCachedNumber(source.stage),
+  };
+};
+
 const loadClearRecordCache = () => {
   const raw = localStorage.getItem(CLEAR_RECORD_KEY);
   if (!raw) {
@@ -879,8 +1024,30 @@ const loadClearRecordCache = () => {
     const nextCache: ClearRecordCache = {};
 
     for (const file of ORIGINAL_CLEAR_RECORD_FILES) {
-      if (parsed?.[file] === true || typeof parsed?.[file] === "string") {
+      const cachedEntry = parsed?.[file];
+
+      if (cachedEntry === true) {
         nextCache[file] = true;
+        continue;
+      }
+
+      if (typeof cachedEntry === "string") {
+        nextCache[file] = cachedEntry;
+        continue;
+      }
+
+      if (
+        file === "レポート.txt" &&
+        cachedEntry &&
+        typeof cachedEntry === "object"
+      ) {
+        const reportState = normalizeCachedReportState(
+          (cachedEntry as { reportState?: unknown }).reportState
+        );
+
+        if (reportState) {
+          nextCache[file] = { reportState };
+        }
       }
     }
 
@@ -901,10 +1068,13 @@ const persistClearRecordCache = () => {
   }
 };
 
-const cacheClearRecord = (file: OriginalClearRecordFile) => {
+const cacheClearRecord = (
+  file: OriginalClearRecordFile,
+  entry: ClearRecordCacheEntry = true
+) => {
   clearRecordCache.value = {
     ...clearRecordCache.value,
-    [file]: true,
+    [file]: entry,
   };
   selectedClearRecordFile.value = file;
   persistClearRecordCache();
@@ -962,7 +1132,13 @@ const loadSave = () => {
 
   try {
     const parsed = JSON.parse(raw);
-    gameStore.$patch(parsed);
+    const normalizedSave = normalizeSaveData(parsed);
+    if (!normalizedSave) {
+      return false;
+    }
+
+    gameStore.$patch(normalizedSave);
+    syncLocalizedEquipmentNames();
 
     if (
       typeof parsed?.items?.stars === "number" &&
@@ -1014,6 +1190,33 @@ const createPlayerSnapshot = () => ({
   defense: gameStore.defense,
   totalAttack: gameStore.totalAttack,
   totalDefense: gameStore.totalDefense,
+});
+
+const createOriginalReportState = (absoluteCleared: boolean): OriginalReportState => ({
+  level: gameStore.level,
+  potential: gameStore.potential,
+  hp: gameStore.hp,
+  maxHp: gameStore.maxHp,
+  maxMp: gameStore.maxMp,
+  mp: gameStore.mp,
+  baseAttack: gameStore.attack,
+  baseDefense: gameStore.defense,
+  hasMagic: gameStore.hasMagic,
+  learnedSpellStates: SPELLS.map((spell) =>
+    gameStore.learnedSpells.includes(spell.id)
+  ),
+  scarred: gameStore.scarred,
+  cleared: true,
+  absoluteCleared,
+  weaponId: gameStore.weapon.id ?? undefined,
+  weaponPower: gameStore.weapon.attack ?? 0,
+  armorId: gameStore.armor.id ?? undefined,
+  armorPower: gameStore.armor.defense ?? 0,
+  matches: gameStore.items.matches,
+  litStars: gameStore.fuel,
+  totalStars: gameStore.starCapacity,
+  distance: gameStore.distance,
+  stage: gameStore.stage,
 });
 
 const resetStoryState = () => {
@@ -1068,15 +1271,21 @@ const finishStoryWithFinish = async () => {
   resetStoryState();
   message.value = "";
   const finishTexts = originalFinishTexts.value;
+  const absoluteCleared = gameStore.stage >= 10;
+  const reportState = createOriginalReportState(absoluteCleared);
 
   const recordFile: OriginalClearRecordFile =
-    gameStore.stage >= 10 ? "おまけ.txt" : "あとがき.txt";
+    absoluteCleared ? "おまけ.txt" : "あとがき.txt";
 
   await showSystemAlert(
     finishTexts.clearDialogTitle,
-    gameStore.stage >= 10
-      ? finishTexts.absoluteClearMessage
-      : finishTexts.clearMessage
+    absoluteCleared ? finishTexts.absoluteClearMessage : finishTexts.clearMessage
+  );
+
+  cacheClearRecord("レポート.txt", { reportState });
+  await showSystemAlert(
+    finishTexts.clearDialogTitle,
+    finishTexts.getClearOutputMessage("レポート.txt")
   );
 
   cacheClearRecord(recordFile);
@@ -1084,6 +1293,7 @@ const finishStoryWithFinish = async () => {
     finishTexts.clearDialogTitle,
     finishTexts.getClearOutputMessage(recordFile)
   );
+  selectedClearRecordFile.value = "レポート.txt";
 
   if (gameStore.stage === 9 && gameStore.distance <= 1000 && !gameStore.scarred) {
     const shouldEnterAnother = await showSystemConfirm(
@@ -1103,11 +1313,6 @@ const finishStoryWithFinish = async () => {
       }
     }
   }
-
-  await showSystemAlert(
-    String(t("game.settings.title")),
-    String(t("game.system.clear_record_cached", { file: recordFile }))
-  );
 };
 
 const calculateScarLoss = (maxHp: number) => Math.trunc((maxHp + 9) / 10);
@@ -1455,7 +1660,7 @@ const performEnemyMagic = (): { line: string; defeated: boolean } => {
   }
 
   soundManager.playSound(SOUND.DUTY);
-  gameStore.hp = Math.max(0, gameStore.hp - damage);
+  gameStore.hp -= damage;
 
   return {
     line: t("game.battle.enemy_magic_hit", {
@@ -1489,7 +1694,7 @@ const performEnemyAttack = (): { line: string; defeated: boolean } => {
 
   soundManager.playSound(SOUND.ZURL);
   beginBattlePulseEffect({ area: "white" });
-  gameStore.hp = Math.max(0, gameStore.hp - damage);
+  gameStore.hp -= damage;
 
   if (gameStore.hp <= 0) {
     return {
@@ -1542,7 +1747,7 @@ const applySpellEffect = (
   if (spell.power !== undefined) {
     const power = spell.id === "become_charcoal_max" ? currentTotalMp : spell.power;
     const damage = Math.max(0, power - gameStore.battle.enemy.mp);
-    gameStore.battle.enemy.hp = Math.max(0, gameStore.battle.enemy.hp - damage);
+    gameStore.battle.enemy.hp -= damage;
     soundManager.playSound(damage > 0 ? SOUND.FIRE : SOUND.KIN);
 
     return {
@@ -1662,7 +1867,7 @@ const executePlayerBattleAction = () => {
     enemy.defense
   );
 
-  enemy.hp = Math.max(0, enemy.hp - damage);
+  enemy.hp -= damage;
   soundManager.playSound(damage > 0 ? SOUND.DUN : SOUND.KIN);
   if (damage > 0) {
     beginBattlePulseEffect({ sprite: "hit" });
@@ -1700,7 +1905,7 @@ const executeStarDanceStep = () => {
     enemy.defense
   );
 
-  enemy.hp = Math.max(0, enemy.hp - damage);
+  enemy.hp -= damage;
   battleStarDanceCounter.value += 1;
   soundManager.playSound(damage > 0 ? SOUND.DUN : SOUND.KIN);
   if (damage > 0) {
@@ -1749,6 +1954,7 @@ const advanceBattleState = () => {
 
         if (gameStore.battle.enemy.hp <= 0) {
           soundManager.playSound(SOUND.BREAK);
+          currentSprite.value = "";
           message.value = t("game.battle.enemy_defeated", {
             enemy: gameStore.battle.enemy.name,
           });
@@ -1793,7 +1999,7 @@ const advanceBattleState = () => {
         return;
       case BATTLE_STATE.secretHit: {
         const damage = gameStore.maxHp;
-        gameStore.battle.enemy.hp = Math.max(0, gameStore.battle.enemy.hp - damage);
+        gameStore.battle.enemy.hp -= damage;
         soundManager.playSound(SOUND.DUN);
         beginBattlePulseEffect({ sprite: "hit" });
         message.value = t("game.battle.secret_damage", {
@@ -1962,7 +2168,6 @@ const useDrive = () => {
 
   if ((gameStore.weapon.attack ?? 0) <= 0) {
     gameStore.clearWeapon();
-    battleAttackBonus.value = 0;
     message.value = [
       t("game.battle.drive_ready", { name: weaponName }),
       t("game.battle.drive_broken", { name: weaponName }),
@@ -1990,7 +2195,6 @@ const useFlip = () => {
 
   if ((gameStore.armor.defense ?? 0) <= 0) {
     gameStore.clearArmor();
-    battleDefenseBonus.value = 0;
     message.value = [
       t("game.battle.flip_ready", { name: armorName }),
       t("game.battle.flip_broken", { name: armorName }),
@@ -2175,7 +2379,7 @@ const handleSave = () => {
 
   gameStore.items.matches -= cost;
   currentSprite.value = currentExtra.value.afterSprite ?? currentSprite.value;
-  localStorage.setItem(SAVE_KEY, JSON.stringify(gameStore.$state));
+  localStorage.setItem(SAVE_KEY, JSON.stringify(createSaveData()));
   syncStoredSaveAvailability();
   soundManager.playSound(SOUND.POPON);
   message.value = t("game.system.saved");
@@ -2436,6 +2640,12 @@ const castSpell = (spellId: string) => {
 
 watch(bossBattleMarkerVisible, syncBossBattleMarker, { immediate: true });
 watch(
+  () => i18n.locale.value,
+  () => {
+    syncLocalizedEquipmentNames();
+  }
+);
+watch(
   [overlay, spellBuildInputVisible],
   async ([currentOverlay, inputVisible]) => {
     if (currentOverlay !== "spellBuild" || !inputVisible) {
@@ -2473,6 +2683,13 @@ body {
   font-size: 12px;
   image-rendering: pixelated;
   gap: 25px;
+
+  button {
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
 
   .scene-area {
     width: 300px;
@@ -2829,14 +3046,13 @@ body {
     }
   }
 
-    .another-screen-filter {
-      position: absolute;
-      inset: 0;
-      z-index: 3;
-      pointer-events: none;
-      background: rgba(148, 0, 0, 0.22);
-      mix-blend-mode: screen;
-    box-shadow: inset 0 0 120px rgba(255, 0, 0, 0.24);
+  .another-screen-filter {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+    background: rgba(135, 0, 0, 0.88);
+    mix-blend-mode: multiply;
   }
 
   .spell-build-screen {
@@ -2936,10 +3152,6 @@ body {
     padding: 0;
     font-size: 16px;
     font-weight: 700;
-  }
-
-  button {
-    white-space: nowrap;
   }
 
   .cutscene-overlay {
