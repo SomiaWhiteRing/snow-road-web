@@ -324,20 +324,16 @@ export const BOSSES: EnemyType[] = [
   {
     id: "snow_doll",
     name: "スノードール",
-    hp: [0, 25],
-    mp: [0, 25],
-    attack: [0, 25],
-    defense: [0, 25],
+    hp: 25,
+    mp: 0,
+    attack: 6,
+    defense: 3,
     exp: 25,
     matchReward: 4,
     isBoss: true,
     stage: 2,
     sprite: {
       path: "sprite/snowdoll.png",
-    },
-    magic: {
-      id: "freeze",
-      chance: 0.5,
     },
   },
   {
