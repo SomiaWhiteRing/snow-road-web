@@ -60,6 +60,7 @@ export const base = {
       },
       system: {
         saved: '已保存进度。',
+        save_history_append_failed: '写入存档历史失败。',
         clear_record_cached: '『{file}』已缓存到浏览器中，可在设置中查看。'
       },
       events: {
@@ -159,6 +160,16 @@ export const base = {
         language: '语言',
         system: '系统',
         load_save: '读取存档',
+        save_history_title: '存档历史',
+        save_history_loading: '正在读取存档历史...',
+        save_history_empty: '还没有历史存档。',
+        save_history_summary: 'LV {level} / Stage {stage} / 前进距离 {distance} / 火柴{matches}根',
+        save_history_summary_invalid: '存档数据已损坏。',
+        save_history_delete: '删除',
+        save_history_load_confirm: '确定要读取这条历史存档吗？',
+        save_history_delete_confirm: '确定要删除这条历史记录吗？',
+        save_history_load_failed: '读取历史存档失败。',
+        save_history_delete_failed: '删除历史记录失败。',
         rotate_screen: '旋转屏幕',
         clear_record: '通关记录',
         copy_report: '复制'
@@ -274,6 +285,7 @@ export const base = {
       },
       system: {
         saved: 'セーブしました。',
+        save_history_append_failed: 'セーブ履歴の保存に失敗しました。',
         clear_record_cached: '『{file}』をブラウザに保存しました。設定から確認できます。'
       },
       events: {
@@ -373,6 +385,16 @@ export const base = {
         language: '言語',
         system: 'システム',
         load_save: 'ロード',
+        save_history_title: 'セーブ履歴',
+        save_history_loading: 'セーブ履歴を読み込み中...',
+        save_history_empty: 'セーブ履歴がありません。',
+        save_history_summary: 'LV {level} / Stage {stage} / 進んだ距離 {distance} / マッチ{matches}本',
+        save_history_summary_invalid: 'セーブデータが壊れています。',
+        save_history_delete: '削除',
+        save_history_load_confirm: 'この履歴をロードしますか？',
+        save_history_delete_confirm: 'この履歴を削除しますか？',
+        save_history_load_failed: '履歴セーブの読み込みに失敗しました。',
+        save_history_delete_failed: '履歴セーブの削除に失敗しました。',
         rotate_screen: '画面回転',
         clear_record: '記録',
         copy_report: 'コピー'
@@ -488,6 +510,7 @@ export const base = {
       },
       system: {
         saved: 'Progress saved.',
+        save_history_append_failed: 'Failed to write save history.',
         clear_record_cached: '"{file}" was cached in the browser. You can read it from Settings.'
       },
       events: {
@@ -587,6 +610,16 @@ export const base = {
         language: 'Language',
         system: 'System',
         load_save: 'Load',
+        save_history_title: 'Save History',
+        save_history_loading: 'Loading save history...',
+        save_history_empty: 'No save history yet.',
+        save_history_summary: 'LV {level} / Stage {stage} / Distance {distance} / Matches {matches}',
+        save_history_summary_invalid: 'This save data is corrupted.',
+        save_history_delete: 'Delete',
+        save_history_load_confirm: 'Load this historical save?',
+        save_history_delete_confirm: 'Delete this save history entry?',
+        save_history_load_failed: 'Failed to load the historical save.',
+        save_history_delete_failed: 'Failed to delete the save history entry.',
         rotate_screen: 'Rotate',
         clear_record: 'Record',
         copy_report: 'Copy'

@@ -337,7 +337,7 @@
                 <button @click="restartFromSettings">
                   {{ t("game.actions.restart") }}
                 </button>
-                <button :disabled="!storedSaveAvailable" @click="restoreSavedGame">
+                <button :disabled="!saveHistoryAvailable" @click="openSaveHistoryViewer">
                   {{ t("game.settings.load_save") }}
                 </button>
                 <button v-if="clearRecordAvailable" @click="openClearRecordViewer">
@@ -409,6 +409,49 @@
         :class="{ 'gameover-panel': gameOver }"
       >
         <div class="cutscene-text">{{ cutsceneText }}</div>
+      </div>
+    </div>
+
+    <div
+      v-if="saveHistoryViewerVisible"
+      class="modal-overlay save-history-overlay"
+      @click="closeSaveHistoryViewer"
+    >
+      <div class="save-history-panel" @click.stop>
+        <div v-if="saveHistoryLoading && !saveHistoryAvailable" class="save-history-empty">
+          {{ t("game.settings.save_history_loading") }}
+        </div>
+        <div v-else-if="!saveHistoryAvailable" class="save-history-empty">
+          {{ t("game.settings.save_history_empty") }}
+        </div>
+        <div v-else class="save-history-list">
+          <div
+            v-for="entry in saveHistoryListItems"
+            :key="entry.id"
+            class="save-history-row"
+          >
+            <button
+              class="save-history-load-button"
+              :disabled="saveHistoryLoading"
+              @click="confirmLoadSaveHistory(entry)"
+            >
+              <div class="save-history-time">{{ entry.formattedTime }}</div>
+              <div class="save-history-summary">{{ entry.summary }}</div>
+            </button>
+            <button
+              class="save-history-delete-button"
+              :disabled="saveHistoryLoading"
+              @click.stop="confirmDeleteSaveHistory(entry)"
+            >
+              {{ t("game.settings.save_history_delete") }}
+            </button>
+          </div>
+        </div>
+        <div class="save-history-footer">
+          <button @click="closeSaveHistoryViewer">
+            {{ t("game.magic.exit") }}
+          </button>
+        </div>
       </div>
     </div>
 
@@ -518,6 +561,12 @@ import {
   type OriginalReportState,
 } from "../constants/originalFinish";
 import {
+  appendSaveHistory,
+  deleteSaveHistory,
+  listSaveHistory,
+  type SaveHistoryEntry,
+} from "../services/saveHistory";
+import {
   getLocalizedEquipmentName,
   resolveEquipmentId,
 } from "../utils/equipmentLocalization";
@@ -564,6 +613,11 @@ interface BattleLevelUpResult {
   mpIncreased: boolean;
   attackIncreased: boolean;
   defenseIncreased: boolean;
+}
+
+interface SaveHistoryListItem extends SaveHistoryEntry {
+  formattedTime: string;
+  summary: string;
 }
 
 type StoryMusicMode = "inherit" | "stop" | "track";
@@ -670,7 +724,9 @@ const storyMusicTrack = ref<string | null>(null);
 const systemDialog = ref<SystemDialogState | null>(null);
 const pendingEquipmentChoice = ref<BattleEnemy["rewardEquipment"] | null>(null);
 const pendingLevelUpResult = ref<BattleLevelUpResult | null>(null);
-const storedSaveAvailable = ref(false);
+const saveHistoryEntries = ref<SaveHistoryEntry[]>([]);
+const saveHistoryViewerVisible = ref(false);
+const saveHistoryLoading = ref(false);
 const clearRecordViewerVisible = ref(false);
 const clearRecordCache = ref<ClearRecordCache>({});
 const selectedClearRecordFile = ref<OriginalClearRecordFile>(
@@ -915,10 +971,25 @@ const flipLabelKey = computed(() =>
     ? "control.flip_flop"
     : "control.flip"
 );
-
-const syncStoredSaveAvailability = () => {
-  storedSaveAvailable.value = localStorage.getItem(SAVE_KEY) !== null;
-};
+const saveHistoryAvailable = computed(() => saveHistoryEntries.value.length > 0);
+const saveHistoryTimeFormatter = computed(
+  () =>
+    new Intl.DateTimeFormat(String(i18n.locale.value), {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    })
+);
+const saveHistoryListItems = computed<SaveHistoryListItem[]>(() =>
+  saveHistoryEntries.value.map((entry) => ({
+    ...entry,
+    formattedTime: saveHistoryTimeFormatter.value.format(new Date(entry.createdAt)),
+    summary: buildSaveHistorySummary(entry.saveJson),
+  }))
+);
 
 const syncSelectedClearRecordFile = () => {
   if (availableClearRecordFiles.value.length === 0) {
@@ -1015,6 +1086,109 @@ const createSaveData = () => ({
     defense: gameStore.armor.defense ?? 0,
   },
 });
+const serializeCurrentSave = () => JSON.stringify(createSaveData());
+
+const parseSavePayload = (raw: string) => {
+  try {
+    const parsed = JSON.parse(raw);
+    const normalizedSave = normalizeSaveData(parsed);
+    if (!normalizedSave) {
+      return null;
+    }
+
+    return { parsed, normalizedSave };
+  } catch (error) {
+    console.error("Failed to load save data.", error);
+    return null;
+  }
+};
+
+const applyParsedSavePayload = (
+  parsed: unknown,
+  normalizedSave: ReturnType<typeof normalizeSaveData>
+) => {
+  if (!normalizedSave) {
+    return false;
+  }
+
+  gameStore.$patch(normalizedSave);
+  syncLocalizedEquipmentNames();
+
+  if (
+    typeof (parsed as { items?: { stars?: unknown } })?.items?.stars === "number" &&
+    gameStore.starCapacity === 0 &&
+    gameStore.fuel === 0
+  ) {
+    gameStore.starCapacity = (parsed as { items: { stars: number } }).items.stars;
+    gameStore.fuel = (parsed as { items: { stars: number } }).items.stars;
+  }
+
+  if (
+    Array.isArray((parsed as { learnedSkills?: unknown }).learnedSkills) &&
+    (parsed as { learnedSkills: string[] }).learnedSkills.includes("primeval") &&
+    !gameStore.playerName
+  ) {
+    gameStore.setPlayerName(PLAYER_NAME_IDS.LARA_FLARE);
+  } else if (gameStore.playerName) {
+    gameStore.setPlayerName(normalizePlayerName(gameStore.playerName));
+  }
+
+  if (
+    typeof (parsed as { continuousAttackHits?: unknown }).continuousAttackHits ===
+      "number" &&
+    (parsed as { continuousAttackHits: number }).continuousAttackHits > 1
+  ) {
+    gameStore.activateStarDance();
+  }
+
+  if (gameStore.battle.enemy.id) {
+    if (typeof gameStore.battle.enemy.matchReward !== "number") {
+      gameStore.battle.enemy.matchReward = 0;
+    }
+    currentEvent.value = "battle";
+    currentSprite.value = gameStore.battle.enemy.spritePath;
+  }
+
+  gameStore.nextExp = gameStore.calculateNextExp();
+  return true;
+};
+
+const applySavePayload = (raw: string) => {
+  const payload = parseSavePayload(raw);
+  if (!payload) {
+    return false;
+  }
+
+  return applyParsedSavePayload(payload.parsed, payload.normalizedSave);
+};
+
+const buildSaveHistorySummary = (raw: string) => {
+  try {
+    const parsedValue = JSON.parse(raw);
+    const parsed =
+      parsedValue && typeof parsedValue === "object"
+        ? (parsedValue as Record<string, unknown>)
+        : null;
+    const items =
+      parsed?.items && typeof parsed.items === "object"
+        ? (parsed.items as Record<string, unknown>)
+        : null;
+
+    if (!parsed) {
+      return t("game.settings.save_history_summary_invalid");
+    }
+
+    return t("game.settings.save_history_summary", {
+      level: readCachedNumber(parsed.level, 1),
+      stage: readCachedNumber(parsed.stage),
+      distance: readCachedNumber(parsed.distance),
+      matches: readCachedNumber(items?.matches),
+    });
+  } catch (error) {
+    console.error("Failed to parse save history summary.", error);
+    return t("game.settings.save_history_summary_invalid");
+  }
+};
 
 const normalizeCachedReportState = (
   value: unknown
@@ -1171,6 +1345,7 @@ const resetRuntimeState = () => {
   systemDialogResolver = null;
   pendingEquipmentChoice.value = null;
   pendingLevelUpResult.value = null;
+  saveHistoryViewerVisible.value = false;
   clearRecordViewerVisible.value = false;
   resetBattleFlow();
 };
@@ -1181,56 +1356,7 @@ const loadSave = () => {
     return false;
   }
 
-  try {
-    const parsed = JSON.parse(raw);
-    const normalizedSave = normalizeSaveData(parsed);
-    if (!normalizedSave) {
-      return false;
-    }
-
-    gameStore.$patch(normalizedSave);
-    syncLocalizedEquipmentNames();
-
-    if (
-      typeof parsed?.items?.stars === "number" &&
-      gameStore.starCapacity === 0 &&
-      gameStore.fuel === 0
-    ) {
-      gameStore.starCapacity = parsed.items.stars;
-      gameStore.fuel = parsed.items.stars;
-    }
-
-    if (
-      Array.isArray(parsed?.learnedSkills) &&
-      parsed.learnedSkills.includes("primeval") &&
-      !gameStore.playerName
-    ) {
-      gameStore.setPlayerName(PLAYER_NAME_IDS.LARA_FLARE);
-    } else if (gameStore.playerName) {
-      gameStore.setPlayerName(normalizePlayerName(gameStore.playerName));
-    }
-
-    if (
-      typeof parsed?.continuousAttackHits === "number" &&
-      parsed.continuousAttackHits > 1
-    ) {
-      gameStore.activateStarDance();
-    }
-
-    if (gameStore.battle.enemy.id) {
-      if (typeof gameStore.battle.enemy.matchReward !== "number") {
-        gameStore.battle.enemy.matchReward = 0;
-      }
-      currentEvent.value = "battle";
-      currentSprite.value = gameStore.battle.enemy.spritePath;
-    }
-
-    gameStore.nextExp = gameStore.calculateNextExp();
-    return true;
-  } catch (error) {
-    console.error("Failed to load save data.", error);
-    return false;
-  }
+  return applySavePayload(raw);
 };
 
 const createPlayerSnapshot = () => ({
@@ -2448,7 +2574,20 @@ const handleInnSecret = () => {
   message.value = afterMessage;
 };
 
-const handleSave = () => {
+const refreshSaveHistoryEntries = async () => {
+  saveHistoryLoading.value = true;
+
+  try {
+    saveHistoryEntries.value = await listSaveHistory();
+  } catch (error) {
+    console.error("Failed to load save history.", error);
+    saveHistoryEntries.value = [];
+  } finally {
+    saveHistoryLoading.value = false;
+  }
+};
+
+const handleSave = async () => {
   const cost = currentExtra.value.cost ?? 0;
   if (gameStore.items.matches < cost) {
     soundManager.playSound(SOUND.BUBBLE);
@@ -2459,10 +2598,22 @@ const handleSave = () => {
   gameStore.items.matches -= cost;
   currentSprite.value = currentExtra.value.afterSprite ?? currentSprite.value;
   fieldActionConsumed.value = true;
-  localStorage.setItem(SAVE_KEY, JSON.stringify(createSaveData()));
-  syncStoredSaveAvailability();
+  const saveJson = serializeCurrentSave();
+  localStorage.setItem(SAVE_KEY, saveJson);
   soundManager.playSound(SOUND.POPON);
   message.value = t("game.system.saved");
+
+  try {
+    await appendSaveHistory(saveJson);
+    await refreshSaveHistoryEntries();
+  } catch (error) {
+    console.error("Failed to append save history.", error);
+    void refreshSaveHistoryEntries();
+    message.value = joinMessageLines(
+      String(t("game.system.saved")),
+      String(t("game.system.save_history_append_failed"))
+    );
+  }
 };
 
 const openMagicOverlay = () => {
@@ -2482,8 +2633,69 @@ const openSettingsOverlay = () => {
 
 const closeSettingsOverlay = () => {
   soundManager.playSound(SOUND.THATHATHA);
+  saveHistoryViewerVisible.value = false;
   clearRecordViewerVisible.value = false;
   overlay.value = "none";
+};
+
+const openSaveHistoryViewer = async () => {
+  soundManager.playSound(SOUND.POPON);
+  saveHistoryViewerVisible.value = true;
+  await refreshSaveHistoryEntries();
+};
+
+const closeSaveHistoryViewer = () => {
+  soundManager.playSound(SOUND.THATHATHA);
+  saveHistoryViewerVisible.value = false;
+};
+
+const confirmLoadSaveHistory = async (entry: SaveHistoryEntry) => {
+  const title = String(t("game.settings.load_save"));
+  const shouldLoad = await showSystemConfirm(
+    title,
+    String(t("game.settings.save_history_load_confirm"))
+  );
+
+  if (!shouldLoad) {
+    return;
+  }
+
+  const payload = parseSavePayload(entry.saveJson);
+  if (!payload) {
+    await showSystemAlert(title, String(t("game.settings.save_history_load_failed")));
+    return;
+  }
+
+  closeSettingsOverlay();
+  resetRuntimeState();
+  applyParsedSavePayload(payload.parsed, payload.normalizedSave);
+};
+
+const confirmDeleteSaveHistory = async (entry: SaveHistoryEntry) => {
+  const title = String(t("game.settings.save_history_delete"));
+  const shouldDelete = await showSystemConfirm(
+    title,
+    String(t("game.settings.save_history_delete_confirm"))
+  );
+
+  if (!shouldDelete) {
+    return;
+  }
+
+  try {
+    await deleteSaveHistory(entry.id);
+    await refreshSaveHistoryEntries();
+
+    if (!saveHistoryAvailable.value) {
+      saveHistoryViewerVisible.value = false;
+    }
+  } catch (error) {
+    console.error("Failed to delete save history.", error);
+    await showSystemAlert(
+      title,
+      String(t("game.settings.save_history_delete_failed"))
+    );
+  }
 };
 
 const openClearRecordViewer = () => {
@@ -2691,16 +2903,6 @@ const restartFromSettings = () => {
   resetRuntimeState();
 };
 
-const restoreSavedGame = () => {
-  if (!storedSaveAvailable.value) {
-    return;
-  }
-
-  closeSettingsOverlay();
-  resetRuntimeState();
-  loadSave();
-};
-
 const resolveSpellCandidates = (rawInput: string) => {
   const input = rawInput.trim();
   if (!input) {
@@ -2781,9 +2983,9 @@ onUnmounted(() => {
   clearBossBattleMarkerTimer();
 });
 
-syncStoredSaveAvailability();
 loadClearRecordCache();
 loadSave();
+void refreshSaveHistoryEntries();
 </script>
 
 <style lang="scss" scoped>
@@ -3476,6 +3678,92 @@ body {
     .settings-footer {
       display: flex;
       justify-content: flex-end;
+    }
+  }
+
+  .save-history-overlay {
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(0, 0, 0, 0.94);
+    z-index: 32;
+
+    .save-history-panel {
+      width: min(560px, 100%);
+      max-height: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 16px;
+      color: #fff;
+      background: rgba(10, 10, 10, 0.92);
+      border: 1px solid #666;
+      min-height: 0;
+    }
+
+    .save-history-empty {
+      padding: 12px;
+      line-height: 1.5;
+      border: 1px solid #666;
+      background: rgba(0, 0, 0, 0.4);
+    }
+
+    .save-history-list {
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-right: 12px;
+      scrollbar-gutter: stable;
+    }
+
+    .save-history-row {
+      display: flex;
+      gap: 8px;
+      align-items: stretch;
+    }
+
+    .save-history-load-button {
+      flex: 1;
+      min-width: 0;
+      min-height: 64px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 6px;
+      text-align: left;
+      color: #111;
+    }
+
+    .save-history-time {
+      font-weight: 700;
+      color: #111;
+      line-height: 1.2;
+    }
+
+    .save-history-summary {
+      color: #4a4a4a;
+      font-weight: 700;
+      line-height: 1.4;
+    }
+
+    .save-history-delete-button {
+      flex: 0 0 72px;
+      min-width: 72px;
+      min-height: 64px;
+      height: auto;
+      align-self: stretch;
+      margin-right: 4px;
+    }
+
+    .save-history-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
     }
   }
 
