@@ -273,14 +273,6 @@
               {{ t(flipLabelKey) }}
             </button>
           </div>
-          <div
-            v-if="gameStore.fuel > 0"
-            class="buttons buttons-3 battle-item-buttons"
-          >
-            <button @click="handleUseStar">
-              {{ battleLighterLabel }}
-            </button>
-          </div>
         </template>
       </template>
 
@@ -874,7 +866,6 @@ const lighterCounterLabel = computed(() =>
     total: gameStore.starCapacity,
   })
 );
-const battleLighterLabel = computed(() => t("game.items.star_button"));
 type SpellEntry = (typeof SPELLS)[number];
 
 const isSpellLearned = (spellId: string) =>
@@ -2473,6 +2464,10 @@ const handleUseMatch = () => {
 };
 
 const handleUseStar = () => {
+  if (isInBattle.value) {
+    return;
+  }
+
   if (gameStore.fuel <= 0) {
     message.value = t("game.items.no_lighter");
     soundManager.playSound(SOUND.BUBBLE);
@@ -3362,10 +3357,6 @@ body {
           min-width: 75px;
         }
       }
-    }
-
-    .battle-item-buttons {
-      bottom: 0;
     }
 
     .magic-sidebar {
