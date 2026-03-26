@@ -1,6 +1,6 @@
 // 来源说明：
 // - 敌人与 Boss 的名称、BMP 绑定、数值生成式、火柴奖励已由 snow.exe 的
-//   `encountEnemy / encountBoss / setEnemy(0x475174)` 直接坐实。
+//   `encountEnemy / encountBoss / setEnemy(0x476174)` 直接坐实。
 // - `magic.chance` 仍是 Web 层运行抽象，不对应原版内部原始字段。
 export interface EnemyType {
   id: string;
@@ -262,7 +262,7 @@ export const ENEMIES: EnemyType[] = [
     exp: 50,
     stages: [10],
     sprite: {
-      path: "sprite/nazo00.png",
+      path: "sprite/fish01.png",
     },
     magic: {
       id: "cremate",
@@ -328,7 +328,7 @@ export const BOSSES: EnemyType[] = [
     mp: 0,
     attack: 6,
     defense: 3,
-    exp: 25,
+    exp: 50,
     matchReward: 4,
     isBoss: true,
     stage: 2,
