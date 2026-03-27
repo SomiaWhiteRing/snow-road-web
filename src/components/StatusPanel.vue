@@ -25,10 +25,10 @@
     <div class="stat-line" v-if="gameStore.starDanceActive">
       {{ t("game.stats.star_dance") }}
     </div>
-    <div class="stat-line" v-if="gameStore.totalAttack > 0">
+    <div class="stat-line" v-if="attackVisible">
       {{ t("game.stats.attack") }}: {{ attackDisplay }}
     </div>
-    <div class="stat-line" v-if="gameStore.totalDefense > 0">
+    <div class="stat-line" v-if="defenseVisible">
       {{ t("game.stats.defense") }}: {{ defenseDisplay }}
     </div>
     <div class="stat-line" v-if="gameStore.weapon.name">
@@ -48,17 +48,6 @@
 import { computed } from "vue";
 import { useGameStore } from "../stores/game";
 import { useI18n } from "vue-i18n";
-
-const props = withDefaults(
-  defineProps<{
-    battleAttackBonus?: number;
-    battleDefenseBonus?: number;
-  }>(),
-  {
-    battleAttackBonus: 0,
-    battleDefenseBonus: 0,
-  }
-);
 
 const gameStore = useGameStore();
 const { t, te } = useI18n();
@@ -81,15 +70,23 @@ const playerNameDisplay = computed(() => {
   const playerKey = `player.${gameStore.playerName}`;
   return te(playerKey) ? String(t(playerKey)) : gameStore.playerName;
 });
+const realAttack = computed(() => gameStore.attack + (gameStore.weapon.attack ?? 0));
+const realDefense = computed(() => gameStore.defense + (gameStore.armor.defense ?? 0));
+const attackVisible = computed(
+  () => realAttack.value > 0 || gameStore.virtualAttack > 0
+);
+const defenseVisible = computed(
+  () => realDefense.value > 0 || gameStore.virtualDefense > 0
+);
 const attackDisplay = computed(() =>
-  props.battleAttackBonus > 0
-    ? `${gameStore.totalAttack}＋${props.battleAttackBonus}`
-    : `${gameStore.totalAttack}`
+  gameStore.virtualAttack > 0
+    ? `${realAttack.value}＋${gameStore.virtualAttack}`
+    : `${realAttack.value}`
 );
 const defenseDisplay = computed(() =>
-  props.battleDefenseBonus > 0
-    ? `${gameStore.totalDefense}＋${props.battleDefenseBonus}`
-    : `${gameStore.totalDefense}`
+  gameStore.virtualDefense > 0
+    ? `${realDefense.value}＋${gameStore.virtualDefense}`
+    : `${realDefense.value}`
 );
 </script>
 

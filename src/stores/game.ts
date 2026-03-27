@@ -57,8 +57,10 @@ export const useGameStore = defineStore("game", {
     },
   }),
   getters: {
-    totalAttack: (state) => state.attack + (state.weapon.attack ?? 0),
-    totalDefense: (state) => state.defense + (state.armor.defense ?? 0),
+    totalAttack: (state) =>
+      state.attack + (state.weapon.attack ?? 0) + state.virtualAttack,
+    totalDefense: (state) =>
+      state.defense + (state.armor.defense ?? 0) + state.virtualDefense,
     hasMagic: (state) => state.items.books,
   },
   actions: {
@@ -201,12 +203,38 @@ export const useGameStore = defineStore("game", {
       this.virtualMp = 0;
     },
 
+    clearVirtualAttack() {
+      this.virtualAttack = 0;
+    },
+
+    clearVirtualDefense() {
+      this.virtualDefense = 0;
+    },
+
     decayVirtualMp() {
       this.virtualMp = Math.max(0, this.virtualMp - 1);
     },
 
+    decayVirtualAttack() {
+      this.virtualAttack = Math.max(0, this.virtualAttack - 1);
+    },
+
+    decayVirtualDefense() {
+      this.virtualDefense = Math.max(0, this.virtualDefense - 1);
+    },
+
     getVirtualMpCap() {
       return Math.max(0, this.mp * 10);
+    },
+
+    addVirtualAttack(amount: number) {
+      this.virtualAttack = Math.max(0, this.virtualAttack + amount);
+      return this.virtualAttack;
+    },
+
+    addVirtualDefense(amount: number) {
+      this.virtualDefense = Math.max(0, this.virtualDefense + amount);
+      return this.virtualDefense;
     },
 
     addVirtualMp(amount: number) {
@@ -254,7 +282,9 @@ export const useGameStore = defineStore("game", {
         name: payload.name,
         attack: payload.attack,
       };
-      this.virtualAttack = payload.virtualAttack ?? 0;
+      if (payload.virtualAttack !== undefined) {
+        this.virtualAttack = payload.virtualAttack;
+      }
     },
 
     setArmor(payload: {
@@ -268,7 +298,9 @@ export const useGameStore = defineStore("game", {
         name: payload.name,
         defense: payload.defense,
       };
-      this.virtualDefense = payload.virtualDefense ?? 0;
+      if (payload.virtualDefense !== undefined) {
+        this.virtualDefense = payload.virtualDefense;
+      }
     },
 
     clearWeapon() {
@@ -277,7 +309,6 @@ export const useGameStore = defineStore("game", {
         name: null,
         attack: 0,
       };
-      this.virtualAttack = 0;
     },
 
     clearArmor() {
@@ -286,7 +317,6 @@ export const useGameStore = defineStore("game", {
         name: null,
         defense: 0,
       };
-      this.virtualDefense = 0;
     },
 
     setBattleEnemy(enemy: BattleEnemy) {

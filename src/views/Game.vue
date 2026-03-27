@@ -94,10 +94,7 @@
         <img :src="useAsset('sprite/self.png')" alt="character" />
       </div>
 
-      <StatusPanel
-        :battle-attack-bonus="isInBattle ? battleAttackBonus : 0"
-        :battle-defense-bonus="isInBattle ? battleDefenseBonus : 0"
-      />
+      <StatusPanel />
 
       <button
         v-if="
@@ -698,8 +695,6 @@ const spellBuildInput = ref("");
 const spellBuildInputEl = ref<HTMLInputElement | null>(null);
 const shopOffers = ref<ShopOffer[]>([]);
 const shopDistance = ref<number | null>(null);
-const battleAttackBonus = ref(0);
-const battleDefenseBonus = ref(0);
 const gameOver = ref(false);
 const gameCompleted = ref(false);
 const endingMessageKey = ref("game.battle.final_clear");
@@ -1325,8 +1320,6 @@ const resetRuntimeState = () => {
   spellBuildInput.value = "";
   shopOffers.value = [];
   shopDistance.value = null;
-  battleAttackBonus.value = 0;
-  battleDefenseBonus.value = 0;
   gameOver.value = false;
   gameCompleted.value = false;
   endingMessageKey.value = "game.battle.final_clear";
@@ -1678,14 +1671,10 @@ const startBattle = (enemyTemplate: EnemyType) => {
   currentEvent.value = "battle";
   currentSprite.value = enemy.spritePath;
   overlay.value = "none";
-  battleAttackBonus.value = 0;
-  battleDefenseBonus.value = 0;
   resetBattleFlow();
 };
 
 const clearBattleResolutionState = () => {
-  battleAttackBonus.value = 0;
-  battleDefenseBonus.value = 0;
   overlay.value = "none";
   pendingEquipmentChoice.value = null;
   resetBattleFlow();
@@ -1860,7 +1849,7 @@ const performEnemyTurn = () => {
 
 const performEnemyAttack = (): { line: string; defeated: boolean } => {
   const enemy = gameStore.battle.enemy;
-  const defense = gameStore.totalDefense + battleDefenseBonus.value;
+  const defense = gameStore.totalDefense;
   const damage = calculatePhysicalDamage(enemy.attack, defense);
 
   if (damage <= 0) {
@@ -1890,8 +1879,8 @@ const performEnemyAttack = (): { line: string; defeated: boolean } => {
 
 const decayBattleResources = () => {
   gameStore.decayVirtualMp();
-  battleAttackBonus.value = Math.max(0, battleAttackBonus.value - 1);
-  battleDefenseBonus.value = Math.max(0, battleDefenseBonus.value - 1);
+  gameStore.decayVirtualAttack();
+  gameStore.decayVirtualDefense();
 };
 
 const playSpellSound = (spellId: string) => {
@@ -2054,10 +2043,7 @@ const executePlayerBattleAction = () => {
   }
 
   const enemy = gameStore.battle.enemy;
-  const damage = calculatePhysicalDamage(
-    gameStore.totalAttack + battleAttackBonus.value,
-    enemy.defense
-  );
+  const damage = calculatePhysicalDamage(gameStore.totalAttack, enemy.defense);
 
   enemy.hp -= damage;
   soundManager.playSound(damage > 0 ? SOUND.DUN : SOUND.KIN);
@@ -2092,10 +2078,7 @@ const executeStarDanceStep = () => {
   }
 
   const enemy = gameStore.battle.enemy;
-  const damage = calculatePhysicalDamage(
-    gameStore.totalAttack + battleAttackBonus.value,
-    enemy.defense
-  );
+  const damage = calculatePhysicalDamage(gameStore.totalAttack, enemy.defense);
 
   enemy.hp -= damage;
   battleStarDanceCounter.value += 1;
@@ -2355,7 +2338,7 @@ const useDrive = () => {
     ? gameStore.attack
     : Math.floor(Math.random() * 3) + 3;
 
-  battleAttackBonus.value += gain;
+  gameStore.addVirtualAttack(gain);
   gameStore.weapon.attack = Math.max(0, currentPower - 1);
   soundManager.playSound(SOUND.HYUUN);
 
@@ -2382,7 +2365,7 @@ const useFlip = () => {
     ? gameStore.defense
     : Math.floor(Math.random() * 3) + 3;
 
-  battleDefenseBonus.value += gain;
+  gameStore.addVirtualDefense(gain);
   gameStore.armor.defense = Math.max(0, currentPower - 1);
   soundManager.playSound(SOUND.HYUUN);
 
@@ -2504,6 +2487,8 @@ const handleForward = () => {
   }
 
   gameStore.clearVirtualMp();
+  gameStore.clearVirtualAttack();
+  gameStore.clearVirtualDefense();
   overlay.value = "none";
 
   const nextDistance = gameStore.distance + 1;
