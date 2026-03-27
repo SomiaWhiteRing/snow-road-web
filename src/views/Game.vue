@@ -1964,6 +1964,7 @@ const applySpellEffect = (
     case "sun_in_palm": {
       const previousVirtualMp = gameStore.virtualMp;
       gameStore.multiplyVirtualMp(2);
+      soundManager.playSound(SOUND.HYUUN);
       line = String(
         t("game.magic.virtual_mp_multiplied", {
           value: gameStore.virtualMp - previousVirtualMp,

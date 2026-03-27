@@ -205,14 +205,18 @@ export const useGameStore = defineStore("game", {
       this.virtualMp = Math.max(0, this.virtualMp - 1);
     },
 
+    getVirtualMpCap() {
+      return Math.max(0, this.mp * 10);
+    },
+
     addVirtualMp(amount: number) {
-      const cap = this.maxMp * 10;
+      const cap = this.getVirtualMpCap();
       this.virtualMp = Math.min(cap, this.virtualMp + amount);
       return this.virtualMp;
     },
 
     multiplyVirtualMp(multiplier: number) {
-      const cap = this.maxMp * 10;
+      const cap = this.getVirtualMpCap();
       this.virtualMp = Math.min(cap, this.virtualMp * multiplier);
       return this.virtualMp;
     },

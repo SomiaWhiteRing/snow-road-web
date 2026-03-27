@@ -395,7 +395,7 @@ BOSS：
   - `手のひらに太陽を` 使其翻倍
   - 移动后归零
   - 战斗中每回合 -1
-  - 上限为 `MaxMP * 10`
+  - 上限按“当前真实 MP x 10”计算，不是 `MaxMP * 10`
 
 魔法完整表、两个同名 `消し炭になあれ` 的区别，以及 `≪星舞い≫` 的状态行为见 [magic_system.md](/c:/Users/旻/Documents/GitHub/snow-road-web/Reference/magic_system.md)。
 
