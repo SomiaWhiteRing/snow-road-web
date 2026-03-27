@@ -96,6 +96,12 @@ export class ForwardService {
     return this.i18n.t(key, params || {});
   }
 
+  private getThoughtMessageKey(): string {
+    return this.getStore().stage >= 10
+      ? "events.thought.another"
+      : "events.thought.default";
+  }
+
   private getCurrentStageBoss(): EnemyType | undefined {
     const boss = BOSSES.find((entry) => entry.stage === this.getStore().stage);
     if (!boss) {
@@ -225,7 +231,7 @@ export class ForwardService {
       soundManager.playSound(SOUND.STEP);
       return {
         type: "thought",
-        message: this.translateMessage("events.thought.default"),
+        message: this.translateMessage(this.getThoughtMessageKey()),
       };
     }
 

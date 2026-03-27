@@ -5,6 +5,9 @@ export const eventMessages = {
         default: ['好冷啊……', '我', '还要继续', '没有人来救我', '好冷……', '呼出白气',
           '咯吱咯吱', '手都冻僵了', '神明大人', '好冷啊', '哈——'
         ],
+        another: ['好暖和啊……', '真开心啊', '慢慢地……', '还要继续', '一个人也没问题', '我',
+          '咯吱咯吱', '哈——', '呼出热气', '神明大人', '暖到芯里了'
+        ],
         bear_warning: '有熊出没。'
       },
       shop: '是自动贩卖机。',
@@ -31,6 +34,9 @@ export const eventMessages = {
         default: ['はやく……', '私は', 'まだ　まだ', '誰も助けてくれないから', '寒い……', '息が白い',
           'ざっくざっく', '手がかじかむ', 'かみさま', 'さむいよう', 'はーっ'
         ],
+        another: ['あったかい……', 'うれしいな', 'ゆっくりと……', 'まだ　まだ', '一人でも大丈夫', '私は',
+          'ざっくざっく', 'はーっ', '息が燃えるよ', 'かみさま', '芯まであったまる'
+        ],
         bear_warning: '熊が出ます'
       },
       shop: '自動販売機だ。',
@@ -56,6 +62,9 @@ export const eventMessages = {
       thought: {
         default: ['So cold...', 'I', 'Must go on', 'No one will save me', 'It\'s cold...', 'White breath',
           'Crunch crunch', 'My hands are numb', 'Dear God', 'So cold', 'Haah—'
+        ],
+        another: ['So warm...', 'I\'m happy', 'Slowly...', 'Must go on', 'I\'ll be okay on my own', 'I',
+          'Crunch crunch', 'Haah—', 'My breath burns', 'Dear God', 'Warm to the core'
         ],
         bear_warning: 'Beware of bears.'
       },
