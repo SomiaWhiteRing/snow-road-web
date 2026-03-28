@@ -22,6 +22,7 @@ interface Props {
 
 const props = defineProps<Props>();
 const loadedCount = ref(0);
+const hasError = ref(false);
 
 // 添加调试日志
 
@@ -29,20 +30,21 @@ const handleImageLoad = (index: number) => {
   loadedCount.value++;
   props.onProgress?.(loadedCount.value, props.imageSources.length);
 
-  if (loadedCount.value === props.imageSources.length) {
+  if (!hasError.value && loadedCount.value === props.imageSources.length) {
     console.log("All images loaded");
     props.onComplete?.();
   }
 };
 
 const handleImageError = (index: number) => {
+  hasError.value = true;
   console.error(`Failed to load image: ${props.imageSources[index]}`);
   loadedCount.value++; // 即使加载失败也计数，以确保能完成加载过程
   props.onError?.(
     new Error(`Failed to load image: ${props.imageSources[index]}`)
   );
 
-  if (loadedCount.value === props.imageSources.length) {
+  if (!hasError.value && loadedCount.value === props.imageSources.length) {
     props.onComplete?.();
   }
 };

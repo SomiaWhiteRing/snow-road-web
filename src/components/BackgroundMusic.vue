@@ -1,5 +1,5 @@
 <template>
-  <audio ref="audioRef" loop></audio>
+  <audio ref="audioRef" loop crossorigin="anonymous"></audio>
 </template>
 
 <script setup lang="ts">
@@ -57,7 +57,7 @@ const updateBackgroundMusic = async () => {
 
   try {
     if (currentMusic.value !== musicPath) {
-      const musicUrl = await assetManager.getAssetUrl(musicPath);
+      const musicUrl = assetManager.resolveAssetUrl(musicPath);
       audioRef.value.src = musicUrl;
       audioRef.value.volume = 0.5; // 设置适当的音量
       currentMusic.value = musicPath;

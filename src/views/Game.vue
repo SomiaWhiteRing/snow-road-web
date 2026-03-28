@@ -23,21 +23,21 @@
         >
           <img
             class="scene-base"
-            :src="useAsset(sceneBaseAssetPath)"
+            :src="resolveAsset(sceneBaseAssetPath)"
             alt="scene"
           />
           <img
             v-if="currentSprite"
             class="sub-event"
             :class="{ 'battle-sprite': isInBattle }"
-            :src="useAsset(currentSprite)"
+            :src="resolveAsset(currentSprite)"
             alt="sub-event"
           />
           <img
             v-if="battleSpriteFlashVisible && currentSprite"
             class="sub-event battle-sprite-flash"
             :class="battleSpriteFlashClass"
-            :src="useAsset(currentSprite)"
+            :src="resolveAsset(currentSprite)"
             alt="battle-flash"
           />
           <SnowEffect :color="sceneSnowColor" />
@@ -67,7 +67,7 @@
       <div v-if="overlay === 'shop'" class="shop-panel">
         <img
           class="shop-title-image"
-          :src="useAsset('sprite/welcome.png')"
+          :src="resolveAsset('sprite/welcome.png')"
           alt="shop title"
         />
         <button
@@ -91,7 +91,7 @@
 
     <div class="status-area">
       <div class="character">
-        <img :src="useAsset('sprite/self.png')" alt="character" />
+        <img :src="resolveAsset('sprite/self.png')" alt="character" />
       </div>
 
       <StatusPanel />
@@ -352,7 +352,7 @@
       <div class="spell-build-page">
         <img
           class="spell-build-background"
-          :src="useAsset('sprite/selfclosed.png')"
+          :src="resolveAsset('sprite/selfclosed.png')"
           alt="spell build"
         />
         <div
@@ -389,7 +389,7 @@
       <img
         v-if="cutsceneImagePath"
         class="cutscene-image"
-        :src="useAsset(cutsceneImagePath)"
+        :src="resolveAsset(cutsceneImagePath)"
         :alt="gameOver ? 'game over' : 'story'"
       />
       <div
@@ -734,7 +734,7 @@ const bossBattleMarkerOffset = ref({ x: 0, y: 0 });
 let bossBattleMarkerTimer: number | null = null;
 let systemDialogResolver: ((result: boolean) => void) | null = null;
 
-const useAsset = (path: string) => assetManager.useAsset(path).value;
+const resolveAsset = (path: string) => assetManager.resolveAssetUrl(path);
 
 const isInBattle = computed(() => Boolean(gameStore.battle.enemy.id));
 const battleEquipChoiceVisible = computed(

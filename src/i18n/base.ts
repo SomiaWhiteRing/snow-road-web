@@ -3,12 +3,12 @@ export const base = {
     game: {
       title: '雪道',
       loading: {
-        checking: '正在检查资源...',
-        loading: '正在加载游戏资源...',
-        loading_progress: '正在加载游戏资源... ({current}/{total})',
+        checking: '正在检查离线资源...',
+        loading: '正在缓存离线资源...',
+        loading_progress: '正在缓存离线资源... ({current}/{total})',
         preloading: '正在预加载图片资源...',
         preloading_progress: '正在预加载图片资源... ({current}/{total})',
-        error: '资源加载失败，请刷新页面重试...'
+        error: '离线资源初始化失败，请联网后刷新重试...'
       },
       stats: {
         stage: '- Stage {stage} -',
@@ -227,12 +227,12 @@ export const base = {
     game: {
       title: '雪道',
       loading: {
-        checking: 'リソースを確認中...',
-        loading: 'ゲームリソースを読み込み中...',
-        loading_progress: 'ゲームリソースを読み込み中... ({current}/{total})',
+        checking: 'オフラインリソースを確認中...',
+        loading: 'オフラインリソースをキャッシュ中...',
+        loading_progress: 'オフラインリソースをキャッシュ中... ({current}/{total})',
         preloading: '画像リソースを先読み中...',
         preloading_progress: '画像リソースを先読み中... ({current}/{total})',
-        error: '読み込みに失敗しました。ページを更新してください...'
+        error: 'オフライン初期化に失敗しました。オンラインで再読み込みしてください...'
       },
       stats: {
         stage: '- Stage {stage} -',
@@ -451,12 +451,12 @@ export const base = {
     game: {
       title: 'Snow Path',
       loading: {
-        checking: 'Checking resources...',
-        loading: 'Loading game resources...',
-        loading_progress: 'Loading game resources... ({current}/{total})',
+        checking: 'Checking offline resources...',
+        loading: 'Caching offline resources...',
+        loading_progress: 'Caching offline resources... ({current}/{total})',
         preloading: 'Preloading image resources...',
         preloading_progress: 'Preloading image resources... ({current}/{total})',
-        error: 'Loading failed, please refresh the page...'
+        error: 'Offline setup failed. Reconnect and refresh the page...'
       },
       stats: {
         stage: '- Stage {stage} -',

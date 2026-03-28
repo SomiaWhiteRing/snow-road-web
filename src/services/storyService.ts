@@ -98,13 +98,7 @@ export const loadStoryScript = async (
   locale: SupportedLocale = "ja"
 ): Promise<StoryScript> => {
   const assetPath = getStoryAssetPath(storyId, locale);
-  let blob = await assetManager.getAsset(assetPath);
-  let content = await blob.text();
-
-  if (isHtmlDocument(content)) {
-    blob = await assetManager.refreshAsset(assetPath);
-    content = await blob.text();
-  }
+  const content = await assetManager.readTextAsset(assetPath);
 
   if (isHtmlDocument(content)) {
     throw new Error(`Story asset is HTML instead of script: ${assetPath}`);

@@ -61,6 +61,7 @@ import { ref, onMounted, getCurrentInstance, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { assetManager } from "../services/assetManager";
+import { waitForServiceWorkerReady } from "../pwa";
 import SnowEffect from "../components/SnowEffect.vue";
 import { useAssetStore } from "../stores/assetStore";
 import ImagePreloader from "../components/ImagePreloader.vue";
@@ -144,6 +145,7 @@ const handlePreloadComplete = () => {
 const handlePreloadError = (error: any) => {
   console.error("Preload error:", error);
   loadingText.value = t("game.loading.error");
+  loaded.value = false;
   assetStore.setAssetsLoaded(false);
   showPreloader.value = false;
 };
@@ -162,12 +164,14 @@ const handleFullLoading = async () => {
   } catch (error) {
     console.error("加载失败:", error);
     loadingText.value = t("game.loading.error");
+    loaded.value = false;
     assetStore.setAssetsLoaded(false);
   }
 };
 
 onMounted(async () => {
   try {
+    await waitForServiceWorkerReady();
     const hasAssets = await assetManager.hasAssets();
     if (hasAssets) {
       await handlePreload();
@@ -178,6 +182,7 @@ onMounted(async () => {
   } catch (error) {
     console.error("资产加载失败:", error);
     loadingText.value = t("game.loading.error");
+    loaded.value = false;
     assetStore.setAssetsLoaded(false);
   }
 });

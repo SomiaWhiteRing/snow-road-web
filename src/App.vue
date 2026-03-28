@@ -13,7 +13,6 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
-import { assetManager } from "./services/assetManager";
 import { useI18n } from "vue-i18n";
 import { useSettingsStore } from "./stores/settings";
 
@@ -42,7 +41,6 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener("resize", handleResize);
-  assetManager.clearAssets();
 });
 
 const settingsStore = useSettingsStore();

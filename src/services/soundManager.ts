@@ -9,6 +9,7 @@ class SoundManager {
     // 初始化音频池
     for (let i = 0; i < this.POOL_SIZE; i++) {
       const audio = new Audio();
+      audio.crossOrigin = "anonymous";
       audio.volume = 0.6; // 默认音量
       this.audioPool.push(audio);
     }
@@ -18,7 +19,7 @@ class SoundManager {
   async playSound(soundName: string, playbackRate: number = 1) {
     try {
       // 获取音效文件URL
-      const soundUrl = await assetManager.getAssetUrl(`sound/${soundName}`);
+      const soundUrl = assetManager.resolveAssetUrl(`sound/${soundName}`);
       
       // 获取下一个可用的音频元素
       const audio = this.audioPool[this.currentIndex];
