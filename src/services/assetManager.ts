@@ -8,6 +8,9 @@ import {
 } from "../constants/assets";
 import { ASSET_BASE_URL, ASSET_VERSION } from "../constants/assetConfig";
 
+const MIN_RUNTIME_ASSET_FETCH_CONCURRENCY = 8;
+const MAX_RUNTIME_ASSET_FETCH_CONCURRENCY = 16;
+
 const normalizeAssetPath = (path: string) => path.replace(/^\/+/, "");
 
 const buildVersionedAssetUrl = (path: string) =>
@@ -51,10 +54,43 @@ const openAssetCache = () => {
   return caches.open(RUNTIME_ASSET_CACHE_NAME);
 };
 
+const getRuntimeAssetFetchConcurrency = () => {
+  if (typeof navigator === "undefined") {
+    return MIN_RUNTIME_ASSET_FETCH_CONCURRENCY;
+  }
+
+  const hardwareConcurrency = navigator.hardwareConcurrency ?? MIN_RUNTIME_ASSET_FETCH_CONCURRENCY;
+  return Math.max(
+    MIN_RUNTIME_ASSET_FETCH_CONCURRENCY,
+    Math.min(MAX_RUNTIME_ASSET_FETCH_CONCURRENCY, hardwareConcurrency * 2)
+  );
+};
+
 class AssetManager {
   private buildPreparationPromise: Promise<void> | null = null;
   private loadedAssets = 0;
   private imageUrls: string[] = [];
+
+  private async runWithConcurrency(
+    paths: readonly string[],
+    worker: (path: string, index: number) => Promise<void>
+  ) {
+    let nextIndex = 0;
+    const workerCount = Math.min(getRuntimeAssetFetchConcurrency(), paths.length);
+
+    await Promise.all(
+      Array.from({ length: workerCount }, async () => {
+        while (true) {
+          const currentIndex = nextIndex++;
+          if (currentIndex >= paths.length) {
+            return;
+          }
+
+          await worker(paths[currentIndex], currentIndex);
+        }
+      })
+    );
+  }
 
   private async ensureBuildCache() {
     if (!this.buildPreparationPromise) {
@@ -135,7 +171,7 @@ class AssetManager {
     await this.ensureBuildCache();
     this.loadedAssets = 0;
 
-    for (const path of RUNTIME_ASSET_PATHS) {
+    await this.runWithConcurrency(RUNTIME_ASSET_PATHS, async (path) => {
       try {
         await this.ensureCachedResponse(path);
         this.loadedAssets++;
@@ -144,7 +180,7 @@ class AssetManager {
         console.error(`Error loading asset ${path}:`, error);
         throw error;
       }
-    }
+    });
   }
 
   async readTextAsset(path: string): Promise<string> {
@@ -164,15 +200,17 @@ class AssetManager {
     onProgress?: (current: number, total: number) => void
   ): Promise<void> {
     await this.ensureBuildCache();
-    this.imageUrls = [];
+    const resolvedImageUrls = new Array<string>(PRELOAD_IMAGE_ASSET_PATHS.length);
     let loadedCount = 0;
 
-    for (const path of PRELOAD_IMAGE_ASSET_PATHS) {
+    await this.runWithConcurrency(PRELOAD_IMAGE_ASSET_PATHS, async (path, index) => {
       await this.ensureCachedResponse(path);
-      this.imageUrls.push(this.resolveAssetUrl(path));
+      resolvedImageUrls[index] = this.resolveAssetUrl(path);
       loadedCount++;
       onProgress?.(loadedCount, PRELOAD_IMAGE_ASSET_PATHS.length);
-    }
+    });
+
+    this.imageUrls = resolvedImageUrls;
   }
 
   getPreloadImageUrls(): string[] {
