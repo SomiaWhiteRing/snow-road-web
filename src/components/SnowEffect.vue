@@ -6,6 +6,8 @@
 import { ref, onMounted, onUnmounted, watch } from "vue";
 
 const BASE_WIDTH = 600;
+const REFERENCE_FRAME_MS = 1000 / 60;
+const MAX_DELTA_MS = REFERENCE_FRAME_MS * 3;
 
 const props = defineProps({
   // 不同大小雪花的配置
@@ -54,6 +56,11 @@ const props = defineProps({
 const canvas = ref(null);
 let animationFrame = null;
 let resizeObserver = null;
+let lastFrameTime = null;
+
+const resetAnimationClock = () => {
+  lastFrameTime = null;
+};
 
 class Snowflake {
   constructor(width, height, config) {
@@ -75,9 +82,11 @@ class Snowflake {
     this.speedX = Math.random() * (speedX[1] * 2) - speedX[1];
   }
 
-  update() {
-    this.y += this.speedY;
-    this.x += this.speedX;
+  update(deltaMs = REFERENCE_FRAME_MS) {
+    const frameScale = deltaMs / REFERENCE_FRAME_MS;
+
+    this.y += this.speedY * frameScale;
+    this.x += this.speedX * frameScale;
 
     if (this.y > this.height || this.x < 0 || this.x > this.width) {
       this.reset();
@@ -92,14 +101,16 @@ class Snowflake {
 
 let snowflakes = [];
 
-const preRender = (snowflakes, duration = 5000, timestep = 8) => {
-  // 计算需要预渲染的帧数
-  const frames = Math.floor(duration / timestep);
+const preRender = (
+  snowflakes,
+  duration = 5000,
+  timestep = REFERENCE_FRAME_MS
+) => {
+  for (let elapsed = 0; elapsed < duration; elapsed += timestep) {
+    const deltaMs = Math.min(timestep, duration - elapsed);
 
-  // 模拟动画帧
-  for (let i = 0; i < frames; i++) {
     snowflakes.forEach((snowflake) => {
-      snowflake.update();
+      snowflake.update(deltaMs);
     });
   }
 };
@@ -110,12 +121,6 @@ const initCanvas = () => {
   const parent = canvas.value.parentElement;
   const rect = parent.getBoundingClientRect();
   const dpr = window.devicePixelRatio || 1;
-
-  // 获取实际的 CSS 缩放比例
-  const computedStyle = window.getComputedStyle(parent);
-  const transform = computedStyle.transform;
-  const matrix = new DOMMatrix(transform);
-  const scale = matrix.a; // 获取水平缩放值
 
   // 使用原始尺寸设置画布大小，而不是缩放后的尺寸
   canvas.value.width = BASE_WIDTH * dpr;
@@ -138,19 +143,26 @@ const initCanvas = () => {
   );
 
   preRender(snowflakes, 5000);
+  resetAnimationClock();
 };
 
-const animate = () => {
+const animate = (timestamp) => {
   if (!canvas.value) return;
 
   const ctx = canvas.value.getContext("2d");
   const dpr = window.devicePixelRatio || 1;
+  const deltaMs =
+    lastFrameTime === null
+      ? REFERENCE_FRAME_MS
+      : Math.min(timestamp - lastFrameTime, MAX_DELTA_MS);
+
+  lastFrameTime = timestamp;
 
   ctx.clearRect(0, 0, canvas.value.width / dpr, canvas.value.height / dpr);
   ctx.imageSmoothingEnabled = false;
 
   snowflakes.forEach((snowflake) => {
-    snowflake.update();
+    snowflake.update(deltaMs);
     snowflake.draw(ctx);
   });
 
@@ -168,7 +180,8 @@ onMounted(() => {
     resizeObserver.observe(canvas.value.parentElement);
   }
 
-  animate();
+  document.addEventListener("visibilitychange", resetAnimationClock);
+  animationFrame = requestAnimationFrame(animate);
 });
 
 watch(
@@ -193,6 +206,7 @@ onUnmounted(() => {
   if (resizeObserver) {
     resizeObserver.disconnect();
   }
+  document.removeEventListener("visibilitychange", resetAnimationClock);
 });
 </script>
 
