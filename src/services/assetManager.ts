@@ -1,14 +1,18 @@
 import router from "../router";
-import { PRELOAD_IMAGE_ASSET_PATHS, RUNTIME_ASSET_BUILD_STORAGE_KEY, RUNTIME_ASSET_CACHE_NAME, RUNTIME_ASSET_PATHS, TOTAL_RUNTIME_ASSET_COUNT } from "../constants/assets";
-import { APP_BUILD_ID } from "../constants/build";
-
-const ASSET_BASE_URL = "/assets";
+import {
+  PRELOAD_IMAGE_ASSET_PATHS,
+  RUNTIME_ASSET_CACHE_NAME,
+  RUNTIME_ASSET_PATHS,
+  RUNTIME_ASSET_VERSION_STORAGE_KEY,
+  TOTAL_RUNTIME_ASSET_COUNT,
+} from "../constants/assets";
+import { ASSET_BASE_URL, ASSET_VERSION } from "../constants/assetConfig";
 
 const normalizeAssetPath = (path: string) => path.replace(/^\/+/, "");
 
 const buildVersionedAssetUrl = (path: string) =>
   `${ASSET_BASE_URL}/${normalizeAssetPath(path)}?v=${encodeURIComponent(
-    APP_BUILD_ID
+    ASSET_VERSION
   )}`;
 
 const isHtmlDocument = (content: string) =>
@@ -20,9 +24,9 @@ const readStoredBuildId = () => {
   }
 
   try {
-    return localStorage.getItem(RUNTIME_ASSET_BUILD_STORAGE_KEY);
+    return localStorage.getItem(RUNTIME_ASSET_VERSION_STORAGE_KEY);
   } catch (error) {
-    console.error("Failed to read runtime asset build id.", error);
+    console.error("Failed to read runtime asset version.", error);
     return null;
   }
 };
@@ -33,9 +37,9 @@ const writeStoredBuildId = (value: string) => {
   }
 
   try {
-    localStorage.setItem(RUNTIME_ASSET_BUILD_STORAGE_KEY, value);
+    localStorage.setItem(RUNTIME_ASSET_VERSION_STORAGE_KEY, value);
   } catch (error) {
-    console.error("Failed to write runtime asset build id.", error);
+    console.error("Failed to write runtime asset version.", error);
   }
 };
 
@@ -62,7 +66,7 @@ class AssetManager {
 
   private async prepareBuildCache() {
     const storedBuildId = readStoredBuildId();
-    if (storedBuildId === APP_BUILD_ID) {
+    if (storedBuildId === ASSET_VERSION) {
       return;
     }
 
@@ -70,7 +74,7 @@ class AssetManager {
       await caches.delete(RUNTIME_ASSET_CACHE_NAME);
     }
 
-    writeStoredBuildId(APP_BUILD_ID);
+    writeStoredBuildId(ASSET_VERSION);
   }
 
   resolveAssetUrl(path: string) {

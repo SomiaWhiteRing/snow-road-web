@@ -1,0 +1,11 @@
+{
+  "accountId": "52a52be268de73156728686676aee032",
+  "zoneId": "600777043657c581a6ae66f4cf989e8a",
+  "zoneName": "shatranj.space",
+  "bucketName": "snow-road-web-assets",
+  "publicBaseUrl": "https://assets.shatranj.space",
+  "publicDomain": "assets.shatranj.space",
+  "allowedOrigins": [
+    "https://snowroad.shatranj.space"
+  ]
+}

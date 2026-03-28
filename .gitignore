@@ -26,3 +26,4 @@ dist-ssr
 original_game
 temp_rh
 temp_run_original_spelltest
+.tmp/

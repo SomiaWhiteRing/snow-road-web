@@ -1,6 +1,22 @@
+import { readFileSync } from "node:fs";
+import { fileURLToPath, URL } from "node:url";
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import { VitePWA } from "vite-plugin-pwa";
+
+const assetConfig = JSON.parse(
+  readFileSync(
+    fileURLToPath(new URL("./src/config/asset-config.json", import.meta.url)),
+    "utf8"
+  )
+);
+const assetBaseUrl = new URL(assetConfig.baseUrl);
+const assetPathPrefix =
+  assetBaseUrl.pathname === "/" ? "/" : `${assetBaseUrl.pathname.replace(/\/+$/, "")}/`;
+const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const runtimeAssetUrlPattern = new RegExp(
+  `^${escapeRegex(`${assetBaseUrl.origin}${assetPathPrefix}`)}`
+);
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -57,14 +73,12 @@ export default defineConfig({
         navigateFallback: "/index.html",
         runtimeCaching: [
           {
-            urlPattern: ({ url }) =>
-              url.origin === self.location.origin &&
-              url.pathname.startsWith("/assets/"),
+            urlPattern: runtimeAssetUrlPattern,
             handler: "CacheFirst",
             options: {
               cacheName: "snow-road-runtime-assets",
               cacheableResponse: {
-                statuses: [200],
+                statuses: [0, 200],
               },
               rangeRequests: true,
             },
@@ -87,11 +101,4 @@ export default defineConfig({
     },
   },
   publicDir: "public",
-  define: {
-    __APP_BUILD_ID__: JSON.stringify(
-      process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 12) ??
-        process.env.npm_package_version ??
-        "dev"
-    ),
-  },
 });
