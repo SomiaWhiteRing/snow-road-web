@@ -6,8 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview",
-    "publish:assets": "node scripts/cloudflare/publish-assets.mjs"
+    "preview": "vite preview"
   },
   "dependencies": {
     "idb": "^8.0.0",

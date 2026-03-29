@@ -150,7 +150,6 @@ const STORY_PATHS = [
   ),
 ];
 
-export const TITLE_ASSET_PATH = "assets/sprite/title.png";
 export const RUNTIME_ASSET_CACHE_NAME = "snow-road-runtime-assets";
 export const RUNTIME_ASSET_VERSION_STORAGE_KEY =
   "snow-road-runtime-assets-version";

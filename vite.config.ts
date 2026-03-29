@@ -27,7 +27,7 @@ export default defineConfig({
       injectRegister: null,
       registerType: "prompt",
       includeAssets: [
-        "assets/sprite/title.png",
+        "title.png",
         "pwa-192x192.png",
         "pwa-512x512.png",
         "pwa-maskable-512x512.png",
