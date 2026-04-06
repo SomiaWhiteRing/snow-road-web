@@ -60,7 +60,7 @@ export const base = {
       system: {
         saved: '已保存进度。',
         save_history_append_failed: '写入存档历史失败。',
-        clear_record_cached: '『{file}』已缓存到浏览器中，可在设置中查看。'
+        clear_record_cached: '『{file}』已缓存到浏览器中，可在设置中的“通关记录”查看。'
       },
       events: {
         inn_free: '免费暖和了一会儿。'
@@ -284,7 +284,7 @@ export const base = {
       system: {
         saved: 'セーブしました。',
         save_history_append_failed: 'セーブ履歴の保存に失敗しました。',
-        clear_record_cached: '『{file}』をブラウザに保存しました。設定から確認できます。'
+        clear_record_cached: '『{file}』をブラウザに保存しました。設定の「記録」から確認できます。'
       },
       events: {
         inn_free: '無料でひとときの暖を取れた。'
@@ -508,7 +508,7 @@ export const base = {
       system: {
         saved: 'Progress saved.',
         save_history_append_failed: 'Failed to write save history.',
-        clear_record_cached: '"{file}" was cached in the browser. You can read it from Settings.'
+        clear_record_cached: '"{file}" was cached in the browser. You can read it from "Record" in Settings.'
       },
       events: {
         inn_free: 'I warmed up for free.'

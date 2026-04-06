@@ -185,7 +185,7 @@ const ORIGINAL_FINISH_TEXTS: Record<OriginalFinishLocale, OriginalFinishTexts> =
       "レポート.txt": "",
     },
     getClearOutputMessage: (filename) =>
-      `辛苦了。\r\n已在文件夹中输出『${filename}』。`,
+      `辛苦了。\r\n已在文件夹中输出『${filename}』。\r\n（可在设置中的“通关记录”查看）`,
   },
   ja: {
     clearDialogTitle: "雪道",
@@ -321,7 +321,7 @@ const ORIGINAL_FINISH_TEXTS: Record<OriginalFinishLocale, OriginalFinishTexts> =
       "レポート.txt": "",
     },
     getClearOutputMessage: (filename) =>
-      `お疲れ様でした。\r\nフォルダに『${filename}』を出力しました。`,
+      `お疲れ様でした。\r\nフォルダに『${filename}』を出力しました。\r\n（設定の「記録」から確認できます）`,
   },
   en: {
     clearDialogTitle: "Snow Path",
@@ -460,7 +460,7 @@ const ORIGINAL_FINISH_TEXTS: Record<OriginalFinishLocale, OriginalFinishTexts> =
       "レポート.txt": "",
     },
     getClearOutputMessage: (filename) =>
-      `Thank you.\r\n"${filename}" was written to the folder.`,
+      `Thank you.\r\n"${filename}" was written to the folder.\r\n(View it from "Record" in Settings.)`,
   },
 };
 
